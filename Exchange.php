@@ -93,8 +93,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 		if ($this->download->getProperty($n)) {
 			return $this->getCurrency(!isset($args[0]) ? $this->key : $args[0], $n);
 		}
-
-		return parent::__call($name, $args);
+		throw new ExchangeException('Call undefined method '.$name);
 	}
 
 	/** @return Nette\DI\IContainer */
