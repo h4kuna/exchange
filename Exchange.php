@@ -176,7 +176,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 * @param bool|real $vat use vat, but get vat by method $this->formatVat(), look at to globatVat upper
 	 * @return number string
 	 */
-	public function format($number, $from=FALSE, $to=FALSE, $vat=FALSE) {
+	public function format($number, $from=NULL, $to=NULL, $vat=FALSE) {
 		if ($to != FALSE) {
 			$old = $this->web;
 			$to = $this->loadCurrency($to);

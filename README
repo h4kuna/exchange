@@ -1,0 +1,10 @@
+Exchange is PHP script works with currencies.
+
+Preview:
+$ex = new \Exchange\Exchange;
+
+$ex->format(10); // 10 Kč
+$ex->format(10, 'usd'); // czk to usd 170 Kč
+$ex->format(10, 'usd', 'eur'); // 7,01€
+$ex->format(10, true, 'usd'); // $10.00
+$ex->format(10, null, null, 1.1); // 10*1.1 => 11 Kč
