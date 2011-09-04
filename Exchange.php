@@ -121,7 +121,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 * @param string $code
 	 * @return Nette\Utils\Html
 	 */
-	public function currenyLink($code=NULL) {
+	public function currencyLink($code=NULL) {
 		if ($code === NULL) {
 			$code = $this->key();
 		} else {
@@ -134,6 +134,14 @@ class Exchange extends \ArrayIterator implements IExchange {
 			$a->class = 'current';
 		}
 		return $a->href(NULL, array(self::PARAM_CURRENCY => $code));
+	}
+	
+	public function registerAsHelper()
+	{
+		$tpl = $this->context->application->template;
+		$tpl->registerHelper('formatVat', \callback($this, 'formatVat'));
+		$tpl->registerHelper('format', \callback($this, 'format'));
+		$tpl->exchange = $this;
 	}
 
 	/**
