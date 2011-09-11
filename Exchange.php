@@ -11,6 +11,7 @@ use Nette;
  * @since 2009-06-22 - version 0.5
  * @version 2.5
  * @property-read $context
+ * @property-read $date
  */
 class Exchange extends \ArrayIterator implements IExchange {
 
@@ -19,6 +20,8 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 * @var string
 	 */
 	private static $version = FALSE;
+
+	/** @var Nette\Utils\Html */
 	private static $href;
 
 	/**
@@ -46,27 +49,25 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 * @var string
 	 */
 	protected $web;
-//------------------------------------------------------------------------------
-
-	/**
-	 * last working value
-	 * @var array
-	 */
-	protected $lastChange = array(NULL, NULL);
 
 	/** @var bool */
-	private $globalVat = FALSE;
-
-	/** @var \Nette\Web\Session */
-	private $session;
+	protected $globalVat = FALSE;
 
 	/**
 	 * vat, only prefered value [%]
 	 * @example 20% = 1.20
 	 * @var real
 	 */
-	private $vat = 1.2;
+	protected $vat = 1.2;
 
+//------------------------------------------------------------------------------	
+	
+	/**
+	 * last working value
+	 * @var array
+	 */
+	protected $lastChange = array(NULL, NULL);
+	
 	/** @var DateTime */
 	private $date;
 
@@ -93,53 +94,72 @@ class Exchange extends \ArrayIterator implements IExchange {
 		if ($this->download->getProperty($n)) {
 			return $this->getCurrency(!isset($args[0]) ? $this->key : $args[0], $n);
 		}
-		throw new ExchangeException('Call undefined method '.$name);
-	}
-
-	/** @return Nette\DI\IContainer */
-	public function getContext() {
-		return $this->context;
-	}
-
-	public function getDefault() {
-		return $this->default;
+		throw new ExchangeException('Call undefined method ' . $name);
 	}
 
 	/** set date for download */
 	public function setDate($date = NULL) {
 		$this->date = $date instanceof \DateTime ? $date : new \DateTime($date);
-	}
-
-	public function getDate() {
-		if (!$this->date)
-			$this->setDate();
-		return $this->date;
+		$this->download($this->date);
 	}
 
 	/**
 	 * @param string $code
+	 * @param key property of currency
 	 * @return Nette\Utils\Html
 	 */
-	public function currencyLink($code=NULL) {
-		if ($code === NULL) {
-			$code = $this->key();
-		} else {
-			$code = $this->loadCurrency($code);
-		}
+	public function currencyLink($code, $key = self::SYMBOL) {
+		$code = $this->loadCurrency($code);
 		$a = self::getHref();
-		$a->setText($this[$code][self::SYMBOL]);
-				
+		if (isset($this[$code][$key])) {
+			$a->setText($this[$code][$key]);
+		} else {
+			$a->setText($code);
+		}
+
 		if ($this->web === $code) {
 			$a->class = 'current';
 		}
 		return $a->href(NULL, array(self::PARAM_CURRENCY => $code));
 	}
-	
-	public function registerAsHelper()
-	{
+
+	/**
+	 * create link for vat
+	 * @param string $textOn
+	 * @param string $textOff
+	 * @return Nette\Utils\Html 
+	 */
+	public function vatLink($textOn, $textOff) {
+		$a = self::getHref();
+		$a->href(NULL, array(self::PARAM_VAT => !$this->globalVat));
+		if ($this->globalVat) {
+			$a->setText($textOff);
+		} else {
+			$a->setText($textOn);
+		}
+		return $a;
+	}
+
+	/**
+	 * array for form to addSelect
+	 * @param string $key
+	 * @return array
+	 */
+	public function selectInput($key = self::SYMBOL) {
+		$out = array();
+		foreach ($this as $k => $v) {
+			$out[$k] = isset($v[$key])? $v[$key]: $k;
+		}
+		return $out;
+	}
+
+	/**
+	 * create helper to template
+	 */
+	public function registerAsHelper() {
 		$tpl = $this->context->application->template;
-		$tpl->registerHelper('formatVat', \callback($this, 'formatVat'));
-		$tpl->registerHelper('format', \callback($this, 'format'));
+		$tpl->registerHelper('formatVat', callback($this, 'formatVat'));
+		$tpl->registerHelper('format', callback($this, 'format'));
 		$tpl->exchange = $this;
 	}
 
@@ -153,7 +173,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 */
 	public function change($price, $from=FALSE, $to=FALSE, $round=FALSE) {
 		if (is_string($price)) {
-			$price = (double) self::stroke2point($price);
+			$price = (double) Download::stroke2point($price);
 		}
 
 		$from = (!$from) ? $this->default : $this->loadCurrency($from);
@@ -224,11 +244,6 @@ class Exchange extends \ArrayIterator implements IExchange {
 		return $this->numberFormating($this->lastChange[0], $this->lastChange[1]);
 	}
 
-	/** @param bool $code */
-	public function isCurrent() {
-		return $this->web == $this->key();
-	}
-
 	/**
 	 * load currency by code
 	 * @param string $code
@@ -239,7 +254,6 @@ class Exchange extends \ArrayIterator implements IExchange {
 		if (!$this->offsetExists($code)) {
 			$this->offsetSet($code, $this->storage[$code]);
 		}
-
 		return $code;
 	}
 
@@ -282,12 +296,33 @@ class Exchange extends \ArrayIterator implements IExchange {
 
 	/** @return float */
 	public function getVat() {
-		return ($this->vat - 1) * 100;
+		return $this->vat;
+	}
+	
+	/** @return number */
+	public function getPercentVat()
+	{
+		return round(($this->vat - 1) * 100, 2);
 	}
 
 	/** @return string */
 	public function getWeb() {
 		return $this->web;
+	}
+	
+	/** @return Nette\DI\IContainer */
+	public function getContext() {
+		return $this->context;
+	}
+
+	public function getDefault() {
+		return $this->default;
+	}
+	
+	public function getDate() {
+		if (!$this->date)
+			$this->setDate();
+		return $this->date;
 	}
 
 	/**
@@ -303,6 +338,8 @@ class Exchange extends \ArrayIterator implements IExchange {
 		}
 		return self::$version;
 	}
+	
+	// </editor-fold>
 
 //-----------------protected
 	/**
@@ -346,9 +383,9 @@ class Exchange extends \ArrayIterator implements IExchange {
 	/**
 	 * setup session
 	 */
-	protected function session() {
+	protected function session($expiration = '+30 days') {
 		$session = $this->context->session->getSection(__NAMESPACE__);
-		$session->setExpiration('+30 days');
+		$session->setExpiration($expiration);
 		$request = $this->context->httpRequest;
 
 		//-------------crrency------------------------------------------------------
