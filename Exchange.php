@@ -60,14 +60,14 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 */
 	protected $vat = 1.2;
 
-//------------------------------------------------------------------------------	
-	
+//------------------------------------------------------------------------------
+
 	/**
 	 * last working value
 	 * @var array
 	 */
 	protected $lastChange = array(NULL, NULL);
-	
+
 	/** @var DateTime */
 	private $date;
 
@@ -127,7 +127,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	 * create link for vat
 	 * @param string $textOn
 	 * @param string $textOff
-	 * @return Nette\Utils\Html 
+	 * @return Nette\Utils\Html
 	 */
 	public function vatLink($textOn, $textOff) {
 		$a = self::getHref();
@@ -298,7 +298,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	public function getVat() {
 		return $this->vat;
 	}
-	
+
 	/** @return number */
 	public function getPercentVat()
 	{
@@ -309,7 +309,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	public function getWeb() {
 		return $this->web;
 	}
-	
+
 	/** @return Nette\DI\IContainer */
 	public function getContext() {
 		return $this->context;
@@ -318,7 +318,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 	public function getDefault() {
 		return $this->default;
 	}
-	
+
 	public function getDate() {
 		if (!$this->date)
 			$this->setDate();
@@ -338,7 +338,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 		}
 		return self::$version;
 	}
-	
+
 	// </editor-fold>
 
 //-----------------protected
@@ -421,4 +421,3 @@ class Exchange extends \ArrayIterator implements IExchange {
 	}
 
 }
-

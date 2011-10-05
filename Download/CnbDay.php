@@ -39,12 +39,12 @@ class CnbDay extends Download implements ICnb {
 
 			list($row[self::COUNTRY], $row[self::NAME], $row[self::FROM1],
 							$row[self::CODE], $row[self::TO]) = $explode;
-			
+
 			if (($row[self::TO] = (double) $row[self::TO]) <= 0 || isset($code[$row[self::CODE]])) {
 				continue;
 			}
 			$code[$row[self::CODE]] = 1;
-			
+
 			$row[self::FROM1] = (double) $row[self::FROM1];
 
 			$format = $this->createFormat($row[self::CODE]);
@@ -53,7 +53,7 @@ class CnbDay extends Download implements ICnb {
 			if ($row[self::CODE] != $this->default) {
 				$format[Exchange::RATE] /= $this->correction;
 			}
-			
+
 			$this->storage->save($row[self::CODE], array_intersect_key($row, $format) + $format);
 		}
 		ksort($code);

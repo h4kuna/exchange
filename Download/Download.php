@@ -77,12 +77,12 @@ abstract class Download extends Object implements IDownload {
 		$this->storage = $storage;
 		$this->date = $date;
 	}
-	
+
 	public function getRchange()
 	{
 		return $this->rChange;
 	}
-	
+
 	public function getRfound()
 	{
 		return $this->rFound;
@@ -195,7 +195,6 @@ abstract class Download extends Object implements IDownload {
 	protected function setSymbol($string) {
 		return str_replace($this->rFound, '', $string);
 	}
-	
+
 
 }
-
