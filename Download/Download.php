@@ -3,7 +3,6 @@
 namespace Exchange;
 
 use Nette\Object;
-use Utility\CUrl;
 
 /**
  * Description of Download
@@ -158,9 +157,9 @@ abstract class Download extends Object implements IDownload {
 	protected function setProxy(CUrl $curl) {
 		if (self::$proxyName !== NULL) {
 			$curl->setOptions(array(
-					CURLOPT_PROXY => self::$proxyName,
-					CURLOPT_PROXYPORT => self::$proxyPort,
-					CURLOPT_PROXYUSERPWD => self::$proxyAuth,
+					\CURLOPT_PROXY => self::$proxyName,
+					\CURLOPT_PROXYPORT => self::$proxyPort,
+					\CURLOPT_PROXYUSERPWD => self::$proxyAuth,
 			));
 		}
 	}

@@ -3,8 +3,7 @@
 namespace Exchange;
 
 use Nette,
-		\Nette\Object;
-use \Utility\CUrl;
+		Nette\Object;
 
 require_once 'ICnb.php';
 
