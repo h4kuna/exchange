@@ -155,9 +155,10 @@ class Exchange extends \ArrayIterator implements IExchange {
 
 	/**
 	 * create helper to template
+	 * @param Nette\Templating\FileTemplate $tpl user tamplate	 
 	 */
-	public function registerAsHelper() {
-		$tpl = $this->context->application->template;
+	public function registerAsHelper($tpl = NULL) {
+		$tpl = ($tpl === NULL) ? $this->context->application->template : $tpl;
 		$tpl->registerHelper('formatVat', callback($this, 'formatVat'));
 		$tpl->registerHelper('format', callback($this, 'format'));
 		$tpl->exchange = $this;
