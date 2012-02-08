@@ -1,0 +1,26 @@
+#use for nette 2.0 stable
+
+common:
+	parameters:
+		vat: 1.2
+		currency: CZK
+
+	services:
+		eStorage: #you don't change name of this service
+			class: \Exchange\File
+
+		eNumberFormat:
+			class: \Exchange\Format('1 Kč')
+
+		eDownload: #you don't change name of this service
+			class: \Exchange\CnbDay
+			arguments: {@container}
+#			setup:
+#				- setProxy('yyy', 'xxx', 'zzz')
+
+
+		eExchange:
+			class: \Exchange\Exchange
+			arguments: {@container, CZK, %vat%}
+
+development < common: null

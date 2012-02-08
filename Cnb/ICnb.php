@@ -35,6 +35,6 @@ interface ICnb
     const CODE = 'code';
     const COUNTRY = 'country';//only czech
     const NAME = 'name';//only czech
-    const FROM1 = 'from';
+    const HOME = 'home';
     const TO = 'to';
 }
