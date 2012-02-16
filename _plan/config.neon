@@ -6,21 +6,20 @@ common:
 		currency: CZK
 
 	services:
-		eStorage: #you don't change name of this service
-			class: \Exchange\File
+#		eStorage: #you don't change name of this service
+#			class: \Exchange\CnbStorage
 
-		eNumberFormat:
-			class: \Exchange\Format('1 Kč')
-
-		eDownload: #you don't change name of this service
-			class: \Exchange\CnbDay
-			arguments: {@container}
+#		eDownload: #you don't change name of this service
+#			class: \Exchange\CnbDay
+#			arguments: {@container}
 #			setup:
 #				- setProxy('yyy', 'xxx', 'zzz')
 
 
-		eExchange:
+		exchange:
 			class: \Exchange\Exchange
-			arguments: {@container, CZK, %vat%}
+			setup:
+				- loadCurrency('czk', {decimal: 0, symbol: Kč})
+				- loadCurrency('usd', {symbol: $ })
 
 development < common: null
