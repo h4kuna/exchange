@@ -296,7 +296,9 @@ class Exchange extends \ArrayIterator implements IExchange
 		if (!$this->offsetExists($code)) {
 			$store = $this->getStorage();
 			$this->offsetSet($code, $store[$code]);
+		}
 
+		if ($property && !isset($this[$code]['profil'])) {
 			if (!$property) {
 				$profil = $this->getDefaultProfile();
 				$profil->setSymbol($code);
@@ -311,6 +313,7 @@ class Exchange extends \ArrayIterator implements IExchange
 
 			$this[$code]['profil'] = $profil;
 		}
+
 		return $code;
 	}
 
@@ -401,11 +404,8 @@ class Exchange extends \ArrayIterator implements IExchange
 //-------------crrency
 		$qVal = strtoupper($request->getQuery(self::PARAM_CURRENCY));
 		$store = $this->getStorage();
-		$currency = $store[$qVal];
-		if (empty($currency)) {
+		if (!isset($store[$qVal])) {
 			$qVal = NULL;
-		} else {
-			$this->offsetSet($qVal, $currency);
 		}
 
 		if ($qVal) {
