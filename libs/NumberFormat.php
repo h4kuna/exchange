@@ -100,9 +100,11 @@ class NumberFormat extends Object {
     }
 
     public function setSymbol($symbol) {
-        $this->symbol = $symbol;
         if ($this->translator) {
-            $this->symbol = $this->translator->translate($this->symbol);
+            $this->symbol = $this->translator->translate($symbol);
+        }
+        else {
+            $this->symbol = $symbol;
         }
 
         if ($symbol !== NULL) {
