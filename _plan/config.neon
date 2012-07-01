@@ -6,20 +6,24 @@ common:
 		currency: CZK
 
 	services:
-#		eStorage: #you don't change name of this service
-#			class: \Exchange\CnbStorage
+        eSection:
+            class: Nette\Http\SessionSection(@session, 'exchange')
+            setup:
+                - setExpiration('+30 days')
 
-#		eDownload: #you don't change name of this service
-#			class: \Exchange\CnbDay
-#			arguments: {@container}
-#			setup:
-#				- setProxy('yyy', 'xxx', 'zzz')
+#        eDownload:
+#            class: Exchange\CnbDay
 
+        eStorage:
+            class: Exchange\CnbStorage
 
-		exchange:
-			class: \Exchange\Exchange
-			setup:
-				- loadCurrency('czk', {decimal: 0, symbol: Kč})
-				- loadCurrency('usd', {symbol: $ })
+#       eFormat:
+#            class: Exchange\NumberFormat
+
+        exchange:
+            class: \Exchange\Exchange
+            setup:
+                - loadCurrency('czk', {decimal: 0, symbol: Kč}) # zároveň definuje výchozí měnu, tzn. na pořadí žáleží
+                - loadCurrency('usd', {symbol: $ })
 
 development < common: null
