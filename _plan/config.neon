@@ -6,24 +6,26 @@ common:
 		currency: CZK
 
 	services:
+# následují dvě nejsou povinné
+#        eDownload:
+#            class: Exchange\CnbDay
+
+#        eFormat:
+#             class: Exchange\NumberFormat
+
         eSection:
             class: Nette\Http\SessionSection(@session, 'exchange')
             setup:
                 - setExpiration('+30 days')
 
-#        eDownload:
-#            class: Exchange\CnbDay
-
         eStorage:
             class: Exchange\CnbStorage
-
-#       eFormat:
-#            class: Exchange\NumberFormat
 
         exchange:
             class: \Exchange\Exchange
             setup:
-                - loadCurrency('czk', {decimal: 0, symbol: Kč}) # zároveň definuje výchozí měnu, tzn. na pořadí žáleží
+                - setVat(%vat%)
+                - loadCurrency(%currency%, {decimal: 0, symbol: Kč}) # pořadí zároveň definuje výchozí měnu
                 - loadCurrency('usd', {symbol: $ })
 
 development < common: null

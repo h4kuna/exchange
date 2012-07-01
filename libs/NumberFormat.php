@@ -2,7 +2,8 @@
 
 namespace Exchange;
 
-use Nette\Object;
+use Nette\Object,
+    Nette\Localization\ITranslator;
 
 /**
  * @property-write $number
@@ -14,152 +15,146 @@ use Nette\Object;
  * @property-write $mask
  * @property-write $symbol
  */
-class NumberFormat extends Object
-{
-	/** @var string */
-	private $thousand = ' ';
+class NumberFormat extends Object {
 
-	/** @var int */
-	private $decimal = 2;
+    /** @var string */
+    private $thousand = ' ';
 
-	/** @var string */
-	private $point = ',';
+    /** @var int */
+    private $decimal = 2;
 
-	/** @var bool */
-	private $nbsp = TRUE;
+    /** @var string */
+    private $point = ',';
 
-	/** @var bool */
-	private $zeroClear = FALSE;
+    /** @var bool */
+    private $nbsp = TRUE;
 
-	/** @var number */
-	private $number = 0;
+    /** @var bool */
+    private $zeroClear = FALSE;
 
-	/** @var string */
-	private $mask = '1 S';
+    /** @var number */
+    private $number = 0;
 
-	/**
-	 * internal helper
-	 * @var array
-	 */
-	private $workMask;
+    /** @var string */
+    private $mask = '1 S';
 
-	/** @var string */
-	private $symbol;
+    /** @var ITranslator */
+    private $translator;
 
-	public function __construct($symbol = NULL)
-	{
-		$this->setSymbol($symbol)->setMask($this->mask);
-	}
+    /**
+     * internal helper
+     * @var array
+     */
+    private $workMask = array('', '');
 
-	public function getSymbol()
-	{
-		return $this->symbol;
-	}
+    /** @var string */
+    private $symbol;
 
-	public function setDecimal($val)
-	{
-		$this->decimal = $val;
-		return $this;
-	}
+    public function __construct($symbol = NULL, ITranslator $translator = NULL) {
+        $this->translator = $translator;
+        $this->setSymbol($symbol);
+    }
 
-	/**
-	 * @example '1 S', 'S 1'
-	 * S = symbol
-	 * @param string $mask
-	 * @return Format
-	 */
-	public function setMask($mask)
-	{
-		if (strpos($mask, '1') === FALSE || strpos($mask, 'S') === FALSE) {
-			throw new ExchangeException('The mask consists of 1 and S.');
-		}
+    public function getSymbol() {
+        return $this->symbol;
+    }
 
-		$this->mask = $mask;
-		$this->workMask = explode('1', str_replace('S', $this->symbol, $mask));
-		return $this;
-	}
+    public function setDecimal($val) {
+        $this->decimal = $val;
+        return $this;
+    }
 
-	public function setNumber($number)
-	{
-		$this->number = $number;
-		return $this;
-	}
+    /**
+     * @example '1 S', 'S 1'
+     * S = symbol
+     * @param string $mask
+     * @return Format
+     */
+    public function setMask($mask) {
+        if (strpos($mask, '1') === FALSE || strpos($mask, 'S') === FALSE) {
+            throw new ExchangeException('The mask consists of 1 and S.');
+        }
 
-	/**
-	 * @param bool $val
-	 * @return Format
-	 */
-	public function setNbsp($val)
-	{
-		$this->nbsp = (bool) $val;
-		return $this;
-	}
+        $this->mask = $mask;
+        $this->workMask = explode('1', str_replace('S', $this->symbol, $mask));
+        return $this;
+    }
 
-	public function setPoint($val)
-	{
-		$this->point = $val;
-		return $this;
-	}
+    public function setNumber($number) {
+        $this->number = $number;
+        return $this;
+    }
 
-	public function setSymbol($symbol)
-	{
-		$this->symbol = $symbol;
-		if ($symbol !== NULL) {
-			$this->setMask($this->mask);
-		}
-		return $this;
-	}
+    /**
+     * @param bool $val
+     * @return Format
+     */
+    public function setNbsp($val) {
+        $this->nbsp = (bool) $val;
+        return $this;
+    }
 
-	public function setThousand($val)
-	{
-		$this->thousand = $val;
-		return $this;
-	}
+    public function setPoint($val) {
+        $this->point = $val;
+        return $this;
+    }
 
-	public function setZeroClear($val)
-	{
-		$this->zeroClear = (bool) $val;
-		return $this;
-	}
+    public function setSymbol($symbol) {
+        $this->symbol = $symbol;
+        if ($this->translator) {
+            $this->symbol = $this->translator->translate($this->symbol);
+        }
 
-	public function toggleNbsp()
-	{
-		return $this->setNbsp(!$this->nbsp);
-	}
+        if ($symbol !== NULL) {
+            $this->setMask($this->mask);
+        }
+        return $this;
+    }
 
-	public function toggleZeroClear()
-	{
-		return $this->setZeroClear(!$this->zeroClear);
-	}
+    public function setThousand($val) {
+        $this->thousand = $val;
+        return $this;
+    }
 
-	public function render($number = NULL)
-	{
-		if ($number) {
-			$this->setNumber($number);
-		} elseif ($this->number === NULL) {
-			return NULL;
-		}
+    public function setZeroClear($val) {
+        $this->zeroClear = (bool) $val;
+        return $this;
+    }
 
-		$num = number_format($this->number, $this->decimal, $this->point, $this->thousand);
+    public function toggleNbsp() {
+        return $this->setNbsp(!$this->nbsp);
+    }
 
-		if ($this->decimal > 0 && $this->zeroClear) {
-			$num = rtrim(rtrim($num, '0'), $this->point);
-		}
+    public function toggleZeroClear() {
+        return $this->setZeroClear(!$this->zeroClear);
+    }
 
-		if ($this->symbol) {
-			$num = implode($num, $this->workMask);
-		}
+    public function render($number = NULL) {
+        if ($number) {
+            $this->setNumber($number);
+        } elseif ($this->number === NULL) {
+            return NULL;
+        }
 
-		if ($this->nbsp) {
-			$num = str_replace(' ', "\xc2\xa0", $num);
-		}
+        $num = number_format($this->number, $this->decimal, $this->point, $this->thousand);
 
-		return $num;
-	}
+        if ($this->decimal > 0 && $this->zeroClear) {
+            $num = rtrim(rtrim($num, '0'), $this->point);
+        }
 
-	public function __toString()
-	{
-		return $this->render();
-	}
+        if ($this->symbol) {
+            $num = implode($num, $this->workMask);
+        }
+
+        if ($this->nbsp) {
+            $num = str_replace(' ', "\xc2\xa0", $num);
+        }
+
+        return $num;
+    }
+
+    public function __toString() {
+        return $this->render();
+    }
 
 }
