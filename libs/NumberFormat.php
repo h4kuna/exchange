@@ -17,6 +17,9 @@ use Nette\Object,
  */
 class NumberFormat extends Object {
 
+    /** @var string utf-8 &nbsp; */
+    const NBSP = "\xc2\xa0";
+
     /** @var string */
     private $thousand = ' ';
 
@@ -102,8 +105,7 @@ class NumberFormat extends Object {
     public function setSymbol($symbol) {
         if ($this->translator) {
             $this->symbol = $this->translator->translate($symbol);
-        }
-        else {
+        } else {
             $this->symbol = $symbol;
         }
 
@@ -131,14 +133,18 @@ class NumberFormat extends Object {
         return $this->setZeroClear(!$this->zeroClear);
     }
 
-    public function render($number = NULL) {
+    public function render($number = NULL, $decimal = NULL) {
         if ($number) {
             $this->setNumber($number);
-        } elseif ($this->number === NULL) {
+        } elseif (!is_numeric($this->number)) {
             return NULL;
         }
 
-        $num = number_format($this->number, $this->decimal, $this->point, $this->thousand);
+        if ($decimal === NULL) {
+            $decimal = $this->decimal;
+        }
+
+        $num = number_format($this->number, $decimal, $this->point, $this->thousand);
 
         if ($this->decimal > 0 && $this->zeroClear) {
             $num = rtrim(rtrim($num, '0'), $this->point);
@@ -149,7 +155,7 @@ class NumberFormat extends Object {
         }
 
         if ($this->nbsp) {
-            $num = str_replace(' ', "\xc2\xa0", $num);
+            $num = str_replace(' ', self::NBSP, $num);
         }
 
         return $num;
