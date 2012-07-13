@@ -103,6 +103,10 @@ class NumberFormat extends Object {
     }
 
     public function setSymbol($symbol) {
+        if($symbol == $this->symbol) {
+            return $this;
+        }
+
         if ($this->translator) {
             $this->symbol = $this->translator->translate($symbol);
         } else {
