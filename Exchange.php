@@ -1,6 +1,6 @@
 <?php
 
-namespace Exchange;
+namespace h4kuna;
 
 use Nette,
     Nette\Http\SessionSection,
@@ -87,8 +87,8 @@ class Exchange extends \ArrayIterator implements IExchange {
     public function __construct(Storage $storage, Request $request, SessionSection $session, NumberFormat $number = NULL, Download $download = NULL) {
         parent::__construct();
         $this->storage = $storage;
-        $this->download = $download? $download: new CnbDay;
-        $this->number = $number? $number: new NumberFormat;
+        $this->download = $download ? $download : new CnbDay;
+        $this->number = $number ? $number : new NumberFormat;
         $this->session = $session;
         $this->request = $request;
     }

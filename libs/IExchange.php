@@ -1,9 +1,10 @@
 <?php
 
-namespace Exchange;
+namespace h4kuna;
 
 interface IExchange {
-	const RATE = 'rate';
 
-	const CZK = 'CZK';
+    const RATE = 'rate';
+    const CZK = 'CZK';
+
 }

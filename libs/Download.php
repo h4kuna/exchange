@@ -1,6 +1,6 @@
 <?php
 
-namespace Exchange;
+namespace h4kuna;
 
 use Nette\Object;
 
@@ -24,7 +24,7 @@ abstract class Download extends Object implements IDownload {
     protected $correction = 1;
 
     /** @var string */
-    protected $default = Exchange::CZK;
+    protected $default = h4kuna::CZK;
     private $curl;
 
     /**

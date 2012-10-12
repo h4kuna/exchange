@@ -1,7 +1,7 @@
 <?php
 
-namespace Exchange;
+namespace h4kuna;
 
-class ExchangeException extends \RuntimeException
-{
+class ExchangeException extends \RuntimeException {
+
 }

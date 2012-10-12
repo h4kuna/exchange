@@ -1,0 +1,22 @@
+{
+    "name": "h4kuna/exchange",
+    "type": "library",
+    "description": "exchange between currency",
+    "homepage": "https://github.com/h4kuna/exchange",
+    "license": "MIT",
+    "authors": [
+    {
+        "name": "Milan Matějček",
+        "email": "milan.matejcek@gmail.com",
+        "role": "Developer"
+    }
+    ],
+    "require": {
+        "php" : ">=5.3.2",
+        "h4kuna/curl": "1.0.*",
+        "h4kuna/number-format": "1.0.*"
+    },
+    "config": {
+        "vendor-dir": "../../"
+    }
+}

@@ -1,8 +1,8 @@
 <?php
 
-namespace Exchange;
+namespace h4kuna;
 
-interface IDownload
-{
-	public function downloading();
+interface IDownload {
+
+    public function downloading();
 }
