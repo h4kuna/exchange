@@ -17,7 +17,7 @@ abstract class Storage extends Caching\Cache implements IStorage {
     private $date;
 
     public function __construct(Caching\IStorage $storage) {
-        parent::__construct($storage, __NAMESPACE__);
+        parent::__construct($storage, __CLASS__);
     }
 
     public function setDate(\DateTime $date = NULL) {

@@ -13,7 +13,7 @@ class CnbDay extends Download implements ICnb {
      * @return array
      */
     public function downloading() {
-        $data = explode("\n", parent::stroke2point(trim($this->getData())));
+        $data = explode("\n", Math::stroke2point(trim($this->getData())));
         $data[0] = explode(' #', $data[0]);
         $data[1] = self::CNB_CZK;
         return $this->save($data);
@@ -53,15 +53,15 @@ class CnbDay extends Download implements ICnb {
         $curl = $this->getCurl();
         $cnb = NULL;
         foreach ($this->links as $key => $link) {
-            $curl->setOption(CURLOPT_URL, $this->fillDate($link));
+            $curl->setopt(CURLOPT_URL, $this->fillDate($link));
 
-            if ($curl->getErrorNumber() > 0) {
+            if ($curl->errno() > 0) {
                 if ($key == 0)
                     throw new ExchangeException('Let\'s check internet connection.');
                 continue;
             }
 
-            $cnb .= $curl->getResult();
+            $cnb .= $curl->exec();
         }
         return $cnb;
     }

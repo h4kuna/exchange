@@ -4,6 +4,8 @@ namespace h4kuna;
 
 use Nette\Object;
 
+require_once 'IDownload.php';
+
 /**
  * @author Milan Matějček
  */
@@ -24,7 +26,7 @@ abstract class Download extends Object implements IDownload {
     protected $correction = 1;
 
     /** @var string */
-    protected $default = h4kuna::CZK;
+    protected $default = Exchange::CZK;
     private $curl;
 
     /**
@@ -37,15 +39,6 @@ abstract class Download extends Object implements IDownload {
     public function setDate(\DateTime $date = NULL) {
         $this->date = $date;
         return $this;
-    }
-
-    /**
-     * replace stroke to point
-     * @param string $string
-     * @return string
-     */
-    static public function stroke2point($string) {
-        return str_replace(',', '.', $string);
     }
 
     protected function getData() {

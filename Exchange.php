@@ -216,7 +216,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     public function change($price, &$from = NULL, &$to = NULL, $round = FALSE) {
         if (is_string($price)) {
-            $price = (double) Download::stroke2point($price);
+            $price = (double) Math::stroke2point($price);
         }
 
         $from = (!$from) ? $this->default : $this->loadCurrency($from);
@@ -303,7 +303,7 @@ class Exchange extends \ArrayIterator implements IExchange {
             $this->offsetSet($code, $this->storage[$code]);
         }
 
-        if ($property && !isset($this[$code]['profil'])) {
+        if ($property || !isset($this[$code]['profil'])) {
             if (!$property) {
                 $profil = $this->getDefaultProfile();
                 $profil->setSymbol($code);
