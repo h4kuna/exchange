@@ -5,8 +5,8 @@ namespace Exchange25;
 use Dibi,
     DibiException,
     DibiDriverException;
-use Utility\DateTime,
-    Utility\Feast;
+use h4kuna\DateTime,
+    h4kuna\Feast;
 
 require_once 'Download.php';
 require_once 'CnbDbCreate.php';

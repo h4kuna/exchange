@@ -1,7 +1,7 @@
 <?php
 
 namespace Exchange25;
-use DibiConnection, Utility\NonObject;
+use DibiConnection, h4kuna\NonObject;
 
 require_once 'ICnbDb.php';
 
