@@ -16,8 +16,5 @@
         "h4kuna/curl": "1.0.*",
         "h4kuna/number-format": "1.0.*",
         "h4kuna/static": "1.0.*"
-    },
-    "config": {
-        "vendor-dir": "../../"
     }
 }
