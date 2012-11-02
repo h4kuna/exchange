@@ -5,6 +5,9 @@ http://addons.nette.org/cs/cnb
 
 Preview:
 $ex = new \Exchange\Exchange;
+$ex->loadCurrency('CZK');
+$ex->loadCurrency('EUR');
+$ex->loadCurrency('USD');
 
 $ex->format(10); // 10 Kč
 $ex->format(10, 'usd'); // czk to usd 170 Kč
