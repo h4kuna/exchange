@@ -1,5 +1,10 @@
 Exchange is PHP script works with currencies.
 
+For dependency look at to composer.json
+- h4kuna/curl
+- h4kuna/number-format
+- h4kuna/static
+
 More examples
 http://addons.nette.org/cs/cnb
 
