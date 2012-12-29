@@ -18,15 +18,14 @@ require_once 'CnbDb.php';
  * Helper::register('vat');
  */
 
-
 /**
  *
  */
-class Sandbox extends ExchangePoint
-{
-    protected function download()
-    {
-        $obj = __NAMESPACE__ .'\CnbDb';
+class Sandbox extends ExchangePoint {
+
+    protected function download() {
+        $obj = __NAMESPACE__ . '\CnbDb';
         $this->download = new $obj($this);
     }
+
 }
