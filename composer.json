@@ -19,6 +19,6 @@
     },
     "autoload": {
         "files": ["Exchange.php"],
-        "classmap": ['h4kuna/exchange/libs/', 'h4kuna/exchange/Cnb/']
+        "classmap": ["h4kuna/exchange/libs/", "h4kuna/exchange/Cnb/"]
     }
 }
