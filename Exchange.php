@@ -47,16 +47,10 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     protected $web;
 
-    /** @var bool */
-    protected $globalVat = FALSE;
-
     /**
-     * vat, only prefered value [%]
-     * @example 20% = 1.20
-     * @var real
+     * @var Money
      */
-    protected $vat = 1.2;
-    private $percentVat;
+    protected $vat;
 
 //------------------------------------------------------------------------------
 
@@ -128,26 +122,16 @@ class Exchange extends \ArrayIterator implements IExchange {
     }
 
     /**
-     * internal use
+     * 1.2 or 20 or 0.2
      * @param number $vat
+     * @param bool $in
+     * @param bool $out
+     * @return \h4kuna\Exchange
      */
-    protected function setPercentVat($vat) {
-        $this->percentVat = $vat;
-    }
-
-    /**
-     * 1.2 or 20
-     * @param number $vat
-     */
-    public function setVat($vat) {
-        if ($vat > 2) {
-            $this->setPercentVat($vat);
-            $vat /= 100;
-            $vat += 1;
-        } else {
-            $this->setPercentVat(($vat - 1) * 100);
-        }
-        $this->vat = $vat;
+    public function setVat($vat = 21, $in = TRUE, $out = TRUE) {
+        $this->vat = new Money(NULL, $vat);
+        $this->vat->setVatIO($in, $out);
+        return $this;
     }
 
 //-----------------methods for template
@@ -175,8 +159,9 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     public function vatLink($textOn, $textOff) {
         $a = self::getHref();
-        $a->href(NULL, array(self::PARAM_VAT => !$this->globalVat));
-        if ($this->globalVat) {
+        $isVatOn = $this->getVat()->isVatOn();
+        $a->href(NULL, array(self::PARAM_VAT => !$isVatOn));
+        if ($isVatOn) {
             $a->setText($textOff);
         } else {
             $a->setText($textOn);
@@ -238,7 +223,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @param bool|real $vat use vat, but get vat by method $this->formatVat(), look at to globatVat upper
      * @return number string
      */
-    public function format($number, $from = NULL, $to = NULL, $vat = FALSE) {
+    public function format($number, $from = NULL, $to = NULL, $vat = NULL) {
         $old = $this->web;
         if ($to != FALSE) {
             $to = $this->loadCurrency($to);
@@ -249,32 +234,29 @@ class Exchange extends \ArrayIterator implements IExchange {
             $number = $this->change($number, $from, $to);
         }
 
-        $getVat = FALSE;
-        if ($vat === FALSE) {
-            $vat = $this->vat;
-        } elseif ($vat === TRUE) {
-            $getVat = TRUE;
-            $vat = $this->vat;
+        $money = $this->getVat();
+
+        if ($vat === NULL) {
+            $vat = $money->getVat();
         } else {
-            $vat = (double) $vat;
+            $vat = Vat::create($vat);
         }
 
-        $this->lastChange[0] = $number * $vat;
+        $this->lastChange[0] = $number * $vat->getUpDecimal();
         $this->lastChange[1] = $this[$to]['profil'];
 
-        if ($this->globalVat || $getVat) {
-            $number = $this->lastChange[0];
-        }
-
         $out = $this[$to]['profil'];
-        $out->number = $number;
+        $out->setNumber($number);
 
-        if ($to != FALSE) {
+        if ($to !== FALSE) {
             $this->web = $old;
         } else {
             $to = $this->web;
         }
 
+        if ($money->isVatOn()) {
+            return $money->vat($out, $vat);
+        }
         return $out;
     }
 
@@ -334,14 +316,12 @@ class Exchange extends \ArrayIterator implements IExchange {
         return $this;
     }
 
-    /** @return float */
+    /** @return Money */
     public function getVat() {
+        if (!$this->vat) {
+            $this->setVat();
+        }
         return $this->vat;
-    }
-
-    /** @return number */
-    public function getPercentVat() {
-        return $this->percentVat;
     }
 
     /** @return string */
@@ -379,9 +359,6 @@ class Exchange extends \ArrayIterator implements IExchange {
         $this->download->setDefault($this->default);
         $this->download();
         $this->session();
-        if (!$this->percentVat) {
-            $this->setVat($this->vat);
-        }
     }
 
     /**
@@ -414,11 +391,14 @@ class Exchange extends \ArrayIterator implements IExchange {
 //-------------vat
         $qVal = $this->request->getQuery(self::PARAM_VAT);
         if ($qVal !== NULL) {
-            $this->globalVat = $this->session->vat = (bool) $qVal;
+            $this->session->vat = (bool) $qVal;
+            if ($qVal) {
+                $this->getVat()->vatOn();
+            } else {
+                $this->getVat()->vatOff();
+            }
         } elseif (!isset($this->session->vat)) {
-            $this->session->vat = $this->globalVat;
-        } else {
-            $this->globalVat = $this->session->vat;
+            $this->session->vat = $this->getVat()->isVatOn();
         }
     }
 
