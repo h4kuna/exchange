@@ -16,5 +16,9 @@
         "h4kuna/curl": "1.0.*",
         "h4kuna/number-format": "1.0.*",
         "h4kuna/static": "1.0.*"
+    },
+    "autoload": {
+        "files": ["Exchange.php"],
+        "classmap": ['h4kuna/exchange/libs/', 'h4kuna/exchange/Cnb/']
     }
 }
