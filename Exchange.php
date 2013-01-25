@@ -236,16 +236,9 @@ class Exchange extends \ArrayIterator implements IExchange {
 
         $money = $this->getVat();
 
-        if ($vat === NULL) {
-            $vat = $money->getVat();
-        } else {
-            $vat = Vat::create($vat);
-        }
+        $this->lastChange[0] = ($vat === NULL) ? $money->getVat() : Vat::create($vat);
+        $out = $this->lastChange[1] = $this[$to]['profil'];
 
-        $this->lastChange[0] = $number * $vat->getUpDecimal();
-        $this->lastChange[1] = $this[$to]['profil'];
-
-        $out = $this[$to]['profil'];
         $out->setNumber($number);
 
         if ($to !== FALSE) {
@@ -254,10 +247,7 @@ class Exchange extends \ArrayIterator implements IExchange {
             $to = $this->web;
         }
 
-        if ($money->isVatOn()) {
-            return $money->vat($out, $vat);
-        }
-        return $out;
+        return $money->render($out, $vat);
     }
 
     /**
@@ -266,7 +256,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return string
      */
     public function formatVat() {
-        return $this->lastChange[1]->number = $this->lastChange[0];
+        return $this->getVat()->withVat($this->lastChange[1], $this->lastChange[0]);
     }
 
     /**
