@@ -9,7 +9,7 @@ More examples
 http://addons.nette.org/cs/cnb
 
 Preview:
-$ex = new \Exchange\Exchange;
+$ex = new \h4kuna\Exchange;
 $ex->loadCurrency('CZK');
 $ex->loadCurrency('EUR');
 $ex->loadCurrency('USD');
