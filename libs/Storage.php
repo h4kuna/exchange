@@ -4,14 +4,14 @@ namespace h4kuna;
 
 use \Nette\Caching;
 
-abstract class Storage extends Caching\Cache implements IStorage {
+class Storage extends Caching\Cache implements IStorage {
 
     /**
      * one per day
-     * time for refresh HH:MM, default is midnight
+     * time for refresh HH:MM
      * @var string
      */
-    protected $hourRefresh;
+    protected $hourRefresh = '14:30';
 
     /** @var \DateTime */
     private $date;
@@ -52,7 +52,7 @@ abstract class Storage extends Caching\Cache implements IStorage {
                     $dp[Caching\Cache::EXPIRATION]->setTime($hour, $min, 0);
                 }
             }
-            $next = next($pointer);
+            next($pointer);
             $val['next'] = key($pointer); //use for load all
             $this->save($key, $val, $dp);
         }

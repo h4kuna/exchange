@@ -11,7 +11,7 @@ use Nette,
  *
  * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
- * @version 3.1
+ * @version 3.3
  * @property-read $default
  * @property $date
  * @property $vat
@@ -39,18 +39,13 @@ class Exchange extends \ArrayIterator implements IExchange {
      * default money on web, must be UPPER
      * @var string
      */
-    protected $default;
+    private $default;
 
     /**
      * show actual money for web and is first in array, must be UPPER
      * @var string
      */
-    protected $web;
-
-    /**
-     * @var Money
-     */
-    protected $vat;
+    private $web;
 
 //------------------------------------------------------------------------------
 
@@ -69,7 +64,7 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @var Download */
     private $download;
 
-    /** @var NumberFormat */
+    /** @var Money */
     private $number;
 
     /** @var SessionSection */
@@ -78,11 +73,16 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @var Request */
     private $request;
 
-    public function __construct(Storage $storage, Request $request, SessionSection $session, NumberFormat $number = NULL, Download $download = NULL) {
+    public function __construct(Storage $storage, Request $request, SessionSection $session, Money $number = NULL, Download $download = NULL) {
         parent::__construct();
         $this->storage = $storage;
         $this->download = $download ? $download : new CnbDay;
-        $this->number = $number ? $number : new NumberFormat;
+        if ($this->number) {
+            $this->number = $number;
+        } else {
+            $this->number = new Money();
+            $this->setVat();
+        }
         $this->session = $session;
         $this->request = $request;
     }
@@ -95,13 +95,8 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return mixed
      */
     public function __get($name) {
-        $code = strtoupper(substr($name, 0, 3));
-        if (!$this->offsetExists($code)) {
-            $code = $this->web;
-        } else {
-            $name = strtolower(substr($name, 3));
-        }
-
+        $code = $this->loadCurrency(substr($name, 0, 3));
+        $name = strtolower(substr($name, 3));
         return ($name) ? $this[$code][$name] : $this[$code];
     }
 
@@ -129,8 +124,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return \h4kuna\Exchange
      */
     public function setVat($vat = 21, $in = TRUE, $out = TRUE) {
-        $this->vat = new Money(NULL, $vat);
-        $this->vat->setVatIO($in, $out);
+        $this->number->setVat($vat)->setVatIO($in, $out);
         return $this;
     }
 
@@ -159,7 +153,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     public function vatLink($textOn, $textOff) {
         $a = self::getHref();
-        $isVatOn = $this->getVat()->isVatOn();
+        $isVatOn = $this->number->isVatOn();
         $a->href(NULL, array(self::PARAM_VAT => !$isVatOn));
         if ($isVatOn) {
             $a->setText($textOff);
@@ -199,16 +193,26 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @param int $round number round
      * @return double
      */
-    public function change($price, &$from = NULL, &$to = NULL, $round = FALSE) {
-        if (is_string($price)) {
-            $price = (double) Math::stroke2point($price);
-        }
+    public function change($price, $from = NULL, $to = NULL, $round = NULL) {
+        return $this->_change($price, $from, $to, $round);
+    }
 
-        $from = (!$from) ? $this->default : $this->loadCurrency($from);
-        $to = (!$to) ? $this->web : $this->loadCurrency($to);
-        $price = $this[$to][self::RATE] / $this[$from][self::RATE] * $price;
+    /**
+     * transfer number by exchange rate
+     * @param double|int|string $price number
+     * @param string $from default currency
+     * @param string $to output currency
+     * @param int $round number round
+     * @return double
+     */
+    public function _change($price, &$from = NULL, &$to = NULL, $round = NULL) {
+        $_price = new Float($price);
 
-        if ($round !== FALSE) {
+        $from = (!$from) ? $this->getDefault() : $this->loadCurrency($from);
+        $to = (!$to) ? $this->getWeb() : $this->loadCurrency($to);
+        $price = $this[$to][self::RATE] / $this[$from][self::RATE] * $_price->getValue();
+
+        if ($round !== NULL) {
             $price = round($price, $round);
         }
 
@@ -218,25 +222,22 @@ class Exchange extends \ArrayIterator implements IExchange {
     /**
      * count, format price and set vat
      * @param number $number price
-     * @param string|bool $from TRUE currency doesn't counting, FALSE set actual
-     * @param string $to output currency, FALSE set actual
+     * @param string|bool $from FALSE currency doesn't counting, NULL set actual
+     * @param string $to output currency, NULL set actual
      * @param bool|real $vat use vat, but get vat by method $this->formatVat(), look at to globatVat upper
      * @return number string
      */
     public function format($number, $from = NULL, $to = NULL, $vat = NULL) {
-        $old = $this->web;
-        if ($to != FALSE) {
-            $to = $this->loadCurrency($to);
-            $this->web = $to;
+        $old = $this->getWeb();
+        if ($to) {
+            $this->web = $to = $this->loadCurrency($to);
         }
 
-        if ($from !== TRUE) {
-            $number = $this->change($number, $from, $to);
+        if ($from !== FALSE) {
+            $number = $this->_change($number, $from, $to);
         }
 
-        $money = $this->getVat();
-
-        $this->lastChange[0] = ($vat === NULL) ? $money->getVat() : Vat::create($vat);
+        $vat = $this->lastChange[0] = ($vat === NULL) ? $this->number->getVat() : Vat::create($vat);
         $out = $this->lastChange[1] = $this[$to]['profil'];
 
         $out->setNumber($number);
@@ -244,10 +245,10 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($to !== FALSE) {
             $this->web = $old;
         } else {
-            $to = $this->web;
+            $to = $this->getWeb();
         }
 
-        return $money->render($out, $vat);
+        return $this->number->render($out, $vat);
     }
 
     /**
@@ -256,7 +257,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return string
      */
     public function formatVat() {
-        return $this->getVat()->withVat($this->lastChange[1], $this->lastChange[0]);
+        return $this->number->withVat($this->lastChange[1], $this->lastChange[0]);
     }
 
     /**
@@ -266,12 +267,12 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     public function loadCurrency($code, $property = array()) {
         $code = strtoupper($code);
-        if (!$this->default) {
-            $this->default = $code;
-            $this->init();
-        }
 
         if (!$this->offsetExists($code)) {
+            if (!$this->default) {
+                $this->default = $code;
+                $this->init();
+            }
             $this->offsetSet($code, $this->storage[$code]);
         }
 
@@ -290,6 +291,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 
             $this[$code]['profil'] = $profil;
         }
+
         return $code;
     }
 
@@ -298,7 +300,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return Exchange
      */
     public function loadAll() {
-        $code = $this->default;
+        $code = $this->getDefault();
         do {
             $this->loadCurrency($code);
             $code = $this[$code]['next'];
@@ -306,20 +308,18 @@ class Exchange extends \ArrayIterator implements IExchange {
         return $this;
     }
 
-    /** @return Money */
-    public function getVat() {
-        if (!$this->vat) {
-            $this->setVat();
-        }
-        return $this->vat;
-    }
-
     /** @return string */
     public function getWeb() {
+        if ($this->web === NULL) {
+            return $this->getDefault();
+        }
         return $this->web;
     }
 
     public function getDefault() {
+        if ($this->default === NULL) {
+            return $this->loadCurrency(self::CZK);
+        }
         return $this->default;
     }
 
@@ -346,7 +346,7 @@ class Exchange extends \ArrayIterator implements IExchange {
 // </editor-fold>
 //-----------------protected
     protected function init() {
-        $this->download->setDefault($this->default);
+        $this->download->setDefault($this->getDefault());
         $this->download();
         $this->session();
     }
@@ -356,8 +356,8 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return void
      */
     protected function download() {
-        if (!isset($this->storage[$this->default])) {
-            $this->storage->import($this->download->downloading(), $this->default);
+        if (!isset($this->storage[$this->getDefault()])) {
+            $this->storage->import($this->download->downloading(), $this->getDefault());
         }
     }
 
@@ -374,7 +374,7 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($qVal) {
             $this->session->currency = $qVal;
         } elseif (!isset($this->session->currency)) {
-            $this->session->currency = is_null($this->web) ? $this->default : $this->web;
+            $this->session->currency = is_null($this->web) ? $this->getDefault() : $this->getWeb();
         }
         $this->web = $this->session->currency;
 
@@ -383,12 +383,12 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($qVal !== NULL) {
             $this->session->vat = (bool) $qVal;
             if ($qVal) {
-                $this->getVat()->vatOn();
+                $this->number->vatOn();
             } else {
-                $this->getVat()->vatOff();
+                $this->number->vatOff();
             }
         } elseif (!isset($this->session->vat)) {
-            $this->session->vat = $this->getVat()->isVatOn();
+            $this->session->vat = $this->number->isVatOn();
         }
     }
 

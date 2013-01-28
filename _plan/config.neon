@@ -8,21 +8,20 @@ common:
 	services:
 # následují dvě nejsou povinné
 #        eDownload:
-#            class: Exchange\CnbDay
+#            class: \h4kuna\CnbDay
 
 #        eFormat:
-#             class: Exchange\NumberFormat
+#             class: \h4kuna\NumberFormat
 
+#        eStorage:
+#            class: \AnyStorage
         eSection:
             class: Nette\Http\SessionSection(@session, 'exchange')
             setup:
                 - setExpiration('+30 days')
 
-        eStorage:
-            class: Exchange\CnbStorage
-
         exchange:
-            class: \Exchange\Exchange
+            class: \h4kuna\Exchange
             setup:
                 - setVat(%vat%)
                 - loadCurrency(%currency%, {decimal: 0, symbol: Kč}) # pořadí zároveň definuje výchozí měnu
