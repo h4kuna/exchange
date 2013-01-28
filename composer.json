@@ -20,6 +20,6 @@
     },
     "autoload": {
         "files": ["Exchange.php"],
-        "classmap": ["libs/", "Cnb/"]
+        "classmap": ["Cnb/"]
     }
 }

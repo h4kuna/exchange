@@ -2,19 +2,22 @@
 
 common:
 	parameters:
-		vat: 1.2
-		currency: CZK
+		vat: 21
 
 	services:
 # následují dvě nejsou povinné
 #        eDownload:
 #            class: \h4kuna\CnbDay
 
-#        eFormat:
-#             class: \h4kuna\NumberFormat
+        eFormat:
+             class: \h4kuna\Money
+             setup:
+                - setVat(%vat%, FALSE, TRUE)
+                # - setMask('S1') # etc...
 
-#        eStorage:
-#            class: \AnyStorage
+        eStorage:
+            class: \h4kuna\Storage
+
         eSection:
             class: Nette\Http\SessionSection(@session, 'exchange')
             setup:
@@ -23,8 +26,7 @@ common:
         exchange:
             class: \h4kuna\Exchange
             setup:
-                - setVat(%vat%)
-                - loadCurrency(%currency%, {decimal: 0, symbol: Kč}) # pořadí zároveň definuje výchozí měnu
+                - loadCurrency('czk', {decimal: 0, symbol: Kč}) # pořadí zároveň definuje výchozí měnu
                 - loadCurrency('usd', {symbol: $ })
 
 development < common: null

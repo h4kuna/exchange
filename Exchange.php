@@ -6,6 +6,11 @@ use Nette,
     Nette\Http\SessionSection,
     Nette\Http\Request;
 
+require_once 'libs/Download.php';
+require_once 'libs/Storage.php';
+require_once 'libs/ExchangeException.php';
+require_once 'libs/IExchange.php';
+
 /**
  * PHP > 5.3
  *
