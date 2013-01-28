@@ -1,27 +1,86 @@
-Exchange is PHP script works with currencies.
-
 For dependency look at to composer.json
 - h4kuna/curl
 - h4kuna/number-format
 - h4kuna/static
+- h4kuna/data-type
 
-More examples
-http://addons.nette.org/cs/cnb
+Exchange
+-------
+Exchange is PHP script works with currencies.
 
-Preview:
-$ex = new \h4kuna\Exchange;
-$ex->loadCurrency('CZK');
-$ex->loadCurrency('EUR');
-$ex->loadCurrency('USD');
+I will use \Nette\Environment in example, but you look at to [autowire in Nette](http://doc.nette.org/en/configuring#toc-setup).
 
+Example rate:
+- 1 EUR -> 25 CZK
+- 1 USD -> 20 CZK
+
+This is default setup where is not defined custom format and vat:
+```php
+$storage = new Storage(Environment::getContext()->cacheStorage);
+$ex = new \h4kuna\Exchange($storage, Environment::getHttpRequest(), Environment::getSession('exchange'));
+$ex->format(10); // 10,00 CZK
+// this setup you can use for working with vat only
+```
+
+Custom format and vat use [API Money](https://github.com/h4kuna/number-format/blob/master/Money.php) and [NumberFormat](https://github.com/h4kuna/number-format/blob/master/NumberFormat.php):
+```php
+$money = new Money(NULL, 15);// default vat is 15%, you can write as 1.15, 15, 0.15 recomend as percent 15
+$money->setDecimal(1);
+
+$ex = new \h4kuna\Exchange($storage, Environment::getHttpRequest(), Environment::getSession('exchange'), $money);
+
+// keys in array call same as property of NumberFormat
+$ex->loadCurrency('czk', array('symbol' => 'Kč', 'decimal' => 0, 'mask' => '1 S')); // first is default
+$ex->loadCurrency('eur', array('symbol' => '€', 'decimal' => 2, 'mask' => 'S1'));
+$ex->loadCurrency('usd', array('symbol' => '$', 'decimal' => 1, 'mask' => 'S 1', 'point' => '.'));
+```
+
+Easy formating, output is controled via url param **currency**=>CODE(CZK|EUR|USD etc.)
+```php
 $ex->format(10); // 10 Kč
-$ex->format(10, 'usd'); // czk to usd 170 Kč
-$ex->format(10, 'usd', 'eur'); // 7,01€
-$ex->format(10, true, 'usd'); // $10.00
-$ex->format(10, null, null, 1.1); // 10*1.1 => 11 Kč
+$ex->format(10, 'usd'); // usd to default 200 Kč
+$ex->format(10, 'usd', 'eur'); // €8,00
+$ex->format(10, FALSE, 'usd'); // 10.0 $
+```
+
+Example with vat and this is controlled via query param **vat**=(1|0)
+```php
+$ex->setVatIO(21, FALSE, TRUE); // vat percent, input number are without vat, output number are with vat
+$ex->format(10); // 10 * 1.21 => 12.1 => 12 Kč
+$ex->format(10, null, null, 15) => 10 * 1.15 => 8.85 => 9 Kč
+
+$ex->formatVat() // show everytime money with vat, but you can use after format
+```
+
+Use in NetteFramework
+---------------------
+Config
+look at to (config)[https://github.com/h4kuna/exchange/blob/master/_plan/config.neon]
+
+Presenter
+```php
+$this->context->exchange->registerAsHelper($this->template);
+```
+
+Template Latte
+```html
+{$exchange->vatLink('VAT on', 'VAT off')}
+
+<ul>
+{foreach $exchange as $code => $v}
+    <li>{$exchange->currencyLink($code)}</li>
+{/foreach}
+</ul>
+
+{!=10|currency}
+```
+
 
 
 --------------------------------HISTORY-----------------------------------------
+3.2)
+- lepší práce s DPH a rozděleno do více repozitářů
+
 3.1)
 - upraveno pro Nette 2.0.3
 
