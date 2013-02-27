@@ -4,7 +4,8 @@ namespace h4kuna;
 
 use Nette,
     Nette\Http\SessionSection,
-    Nette\Http\Request;
+    Nette\Http\Request,
+    Nette\Utils\Html;
 
 require_once 'libs/Download.php';
 require_once 'libs/Storage.php';
@@ -16,20 +17,13 @@ require_once 'libs/IExchange.php';
  *
  * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
- * @version 3.3
  * @property-read $default
  * @property $date
  * @property $vat
  */
 class Exchange extends \ArrayIterator implements IExchange {
 
-    /**
-     * number of version
-     * @var string
-     */
-    private static $version = FALSE;
-
-    /** @var Nette\Utils\Html */
+    /** @var Html */
     private static $href;
 
     /**
@@ -78,6 +72,9 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @var Request */
     private $request;
 
+    /** @var array */
+    private $tempRate = array('enable' => FALSE);
+
     public function __construct(Storage $storage, Request $request, SessionSection $session, Money $number = NULL, Download $download = NULL) {
         parent::__construct();
         $this->storage = $storage;
@@ -105,20 +102,58 @@ class Exchange extends \ArrayIterator implements IExchange {
         return ($name) ? $this[$code][$name] : $this[$code];
     }
 
-    /** set date for download */
-    public function setDate(\DateTime $date = NULL) {
-//        $date = ($date instanceof \DateTime || !$date) ? $date : new \DateTime($date);
-//        if ($date == $this->date) {
-//            return;
-//        }
-//        $this->date = $date;
-//        $this->download($this->date);
-//        $store = $this->getStorage();
-//        foreach ($this as $k => $v) {
-//            $data = (array) $store[$k];
-//            $data['profil'] = $v['profil'];
-//            $this->offsetSet($k, $data);
-//        }
+    /**
+     *
+     * @param string $code
+     * @param float $rate
+     * @return \h4kuna\Exchange
+     * @throws ExchangeException
+     */
+    public function setTempRate($code, $rate) {
+        $code = $this->loadCurrency($code);
+        if ($code == $this->default) {
+            throw new ExchangeException('You can\'t setup temp rate for default currency.');
+        }
+
+        $this->tempRate = array(
+            'code' => $code,
+            'rate' => $rate,
+            'enable' => FALSE
+        );
+        return $this;
+    }
+
+    /**
+     * enable temp value
+     * @param string $code
+     * @param number $rate
+     * @throws ExchangeException
+     */
+    public function onTempRate($code = NULL, $rate = NULL) {
+        if ($code && $rate) {
+            $this->setTempRate($code, $rate);
+        } elseif (empty($this->tempRate['code'])) {
+            throw new ExchangeException('You forgot set up code and rate.');
+        }
+
+        $this->_setTempRate(TRUE);
+    }
+
+    /**
+     * disable temp value
+     * @return \h4kuna\Exchange
+     */
+    public function offTempRate() {
+        if ($this->tempRate['enable'] === TRUE) {
+            $this->_setTempRate(FALSE);
+        }
+        return $this;
+    }
+
+    private function _setTempRate($bool) {
+        $this->tempRate['enable'] = $bool;
+        self::swap($this->tempRate['rate'], $this[$this->tempRate['code']][self::RATE]);
+        self::swap($this->tempRate['code'], $this->web);
     }
 
     /**
@@ -210,7 +245,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @param int $round number round
      * @return double
      */
-    public function _change($price, &$from = NULL, &$to = NULL, $round = NULL) {
+    private function _change($price, &$from = NULL, &$to = NULL, $round = NULL) {
         $_price = new Float($price);
 
         $from = (!$from) ? $this->getDefault() : $this->loadCurrency($from);
@@ -335,19 +370,6 @@ class Exchange extends \ArrayIterator implements IExchange {
         return $this->date;
     }
 
-    /**
-     * version of this class
-     * @return string
-     */
-    static public function getVersion() {
-        if (self::$version === FALSE) {
-            $rc = new \ReflectionClass(__CLASS__);
-            preg_match('~@version (.*)~', $rc->getDocComment(), $array);
-            self::$version = $array[1];
-        }
-        return self::$version;
-    }
-
 // </editor-fold>
 //-----------------protected
     protected function init() {
@@ -400,7 +422,7 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @return Nette\Utils\Html */
     protected static function getHref() {
         if (!self::$href)
-            self::$href = Nette\Utils\Html::el('a');
+            self::$href = Html::el('a');
         return clone self::$href;
     }
 
@@ -408,4 +430,11 @@ class Exchange extends \ArrayIterator implements IExchange {
         return clone $this->number;
     }
 
+    private static function swap(&$a, &$b) {
+        $c = $a;
+        $a = $b;
+        $b = $c;
+    }
+
 }
+
