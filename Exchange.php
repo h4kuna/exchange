@@ -137,6 +137,7 @@ class Exchange extends \ArrayIterator implements IExchange {
         }
 
         $this->_setTempRate(TRUE);
+        return $this;
     }
 
     /**
