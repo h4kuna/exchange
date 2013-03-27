@@ -129,14 +129,15 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @param number $rate
      * @throws ExchangeException
      */
-    public function onTempRate($code = NULL, $rate = NULL) {
+    public function onTempRate($code = NULL, $rate = NULL, $swapCurrency = TRUE) {
         if ($code && $rate) {
             $this->setTempRate($code, $rate);
         } elseif (empty($this->tempRate['code'])) {
             throw new ExchangeException('You forgot set up code and rate.');
         }
 
-        $this->_setTempRate(TRUE);
+        $this->_setTempRate($swapCurrency ? 2 : 1);
+        return $this;
     }
 
     /**
@@ -144,16 +145,28 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return \h4kuna\Exchange
      */
     public function offTempRate() {
-        if ($this->tempRate['enable'] === TRUE) {
-            $this->_setTempRate(FALSE);
+        if ($this->tempRate['enable']) {
+            $this->_setTempRate(0);
         }
         return $this;
     }
 
-    private function _setTempRate($bool) {
-        $this->tempRate['enable'] = $bool;
+    /**
+     * 0 - off
+     * 1 - only rate
+     * 2 - rate and currency
+     * @param type $int
+     */
+    private function _setTempRate($int) {
+        $old = $this->tempRate['enable'];
+        if ($int) {
+            $old = $int;
+        }
+        $this->tempRate['enable'] = $int;
         self::swap($this->tempRate['rate'], $this[$this->tempRate['code']][self::RATE]);
-        self::swap($this->tempRate['code'], $this->web);
+        if ($old & 2) {
+            self::swap($this->tempRate['code'], $this->web);
+        }
     }
 
     /**
