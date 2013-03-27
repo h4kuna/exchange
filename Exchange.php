@@ -26,10 +26,12 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @var Html */
     private static $href;
 
+    const WITH_CURRENCY = 2;
+    const SWAP_RATE = 1;
+
     /**
      * param in url for change value
      */
-
     const PARAM_CURRENCY = 'currency';
     const PARAM_VAT = 'vat';
 
@@ -129,14 +131,14 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @param number $rate
      * @throws ExchangeException
      */
-    public function onTempRate($code = NULL, $rate = NULL, $swapCurrency = TRUE) {
+    public function onTempRate($code = NULL, $rate = NULL, $swapCurrency = self::WITH_CURRENCY) {
         if ($code && $rate) {
             $this->setTempRate($code, $rate);
         } elseif (empty($this->tempRate['code'])) {
             throw new ExchangeException('You forgot set up code and rate.');
         }
 
-        $this->_setTempRate($swapCurrency ? 2 : 1);
+        $this->_setTempRate($swapCurrency);
         return $this;
     }
 
@@ -164,7 +166,7 @@ class Exchange extends \ArrayIterator implements IExchange {
         }
         $this->tempRate['enable'] = $int;
         self::swap($this->tempRate['rate'], $this[$this->tempRate['code']][self::RATE]);
-        if ($old & 2) {
+        if ($old & self::WITH_CURRENCY) {
             self::swap($this->tempRate['code'], $this->web);
         }
     }
