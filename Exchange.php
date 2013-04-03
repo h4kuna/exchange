@@ -56,16 +56,13 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     protected $lastChange = array(NULL, NULL);
 
-    /** @var DateTime */
-    private $date;
-
     /** @var Storage */
     private $storage;
 
     /** @var Download */
     private $download;
 
-    /** @var Money */
+    /** @var NumberFormat */
     private $number;
 
     /** @var SessionSection */
@@ -74,19 +71,12 @@ class Exchange extends \ArrayIterator implements IExchange {
     /** @var Request */
     private $request;
 
-    /** @var array */
-    private $tempRate = array('enable' => FALSE);
+    /** @var Tax */
+    private $vat;
 
-    public function __construct(Storage $storage, Request $request, SessionSection $session, Money $number = NULL, Download $download = NULL) {
+    public function __construct(Storage $storage, Request $request, SessionSection $session) {
         parent::__construct();
         $this->storage = $storage;
-        $this->download = $download ? $download : new CnbDay;
-        if ($this->number) {
-            $this->number = $number;
-        } else {
-            $this->number = new Money();
-            $this->setVat();
-        }
         $this->session = $session;
         $this->request = $request;
     }
@@ -101,74 +91,7 @@ class Exchange extends \ArrayIterator implements IExchange {
     public function __get($name) {
         $code = $this->loadCurrency(substr($name, 0, 3));
         $name = strtolower(substr($name, 3));
-        return ($name) ? $this[$code][$name] : $this[$code];
-    }
-
-    /**
-     *
-     * @param string $code
-     * @param float $rate
-     * @return \h4kuna\Exchange
-     * @throws ExchangeException
-     */
-    public function setTempRate($code, $rate) {
-        $code = $this->loadCurrency($code);
-        if ($code == $this->default) {
-            throw new ExchangeException('You can\'t setup temp rate for default currency.');
-        }
-
-        $this->tempRate = array(
-            'code' => $code,
-            'rate' => $rate,
-            'enable' => FALSE
-        );
-        return $this;
-    }
-
-    /**
-     * enable temp value
-     * @param string $code
-     * @param number $rate
-     * @throws ExchangeException
-     */
-    public function onTempRate($code = NULL, $rate = NULL, $swapCurrency = self::WITH_CURRENCY) {
-        if ($code && $rate) {
-            $this->setTempRate($code, $rate);
-        } elseif (empty($this->tempRate['code'])) {
-            throw new ExchangeException('You forgot set up code and rate.');
-        }
-
-        $this->_setTempRate($swapCurrency);
-        return $this;
-    }
-
-    /**
-     * disable temp value
-     * @return \h4kuna\Exchange
-     */
-    public function offTempRate() {
-        if ($this->tempRate['enable']) {
-            $this->_setTempRate(0);
-        }
-        return $this;
-    }
-
-    /**
-     * 0 - off
-     * 1 - only rate
-     * 2 - rate and currency
-     * @param type $int
-     */
-    private function _setTempRate($int) {
-        $old = $this->tempRate['enable'];
-        if ($int) {
-            $old = $int;
-        }
-        $this->tempRate['enable'] = $int;
-        self::swap($this->tempRate['rate'], $this[$this->tempRate['code']][self::RATE]);
-        if ($old & self::WITH_CURRENCY) {
-            self::swap($this->tempRate['code'], $this->web);
-        }
+        return ($name) ? $this[$code]->$name : $this[$code];
     }
 
     /**
@@ -179,7 +102,26 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return \h4kuna\Exchange
      */
     public function setVat($vat = 21, $in = TRUE, $out = TRUE) {
-        $this->number->setVat($vat)->setVatIO($in, $out);
+        $this->vat = new Tax($vat);
+        $this->vat->setVatIO($in, $out);
+        return $this;
+    }
+
+    /**
+     * @param \h4kuna\Download $obj
+     * @return \h4kuna\Exchange
+     */
+    public function setDownload(Download $obj) {
+        $this->download = $obj;
+        return $this;
+    }
+
+    /**
+     * @param \h4kuna\NumberFormat $obj
+     * @return \h4kuna\Exchange
+     */
+    public function setDefaulFormat(NumberFormat $obj) {
+        $this->number = $obj;
         return $this;
     }
 
@@ -243,29 +185,27 @@ class Exchange extends \ArrayIterator implements IExchange {
     /**
      * transfer number by exchange rate
      * @param double|int|string $price number
-     * @param string $from default currency
+     * @param string|FALSE $from default currency, FALSE no transfer
      * @param string $to output currency
      * @param int $round number round
      * @return double
      */
-    public function change($price, $from = NULL, $to = NULL, $round = NULL) {
-        return $this->_change($price, $from, $to, $round);
-    }
-
-    /**
-     * transfer number by exchange rate
-     * @param double|int|string $price number
-     * @param string $from default currency
-     * @param string $to output currency
-     * @param int $round number round
-     * @return double
-     */
-    private function _change($price, &$from = NULL, &$to = NULL, $round = NULL) {
+    public function change($price, $from = NULL, $to = NULL, $round = NULL, $vat = NULL) {
         $_price = new Float($price);
+        $price = $_price->getValue();
+        $to = $to ? $this->loadCurrency($to) : $this->getWeb();
 
-        $from = (!$from) ? $this->getDefault() : $this->loadCurrency($from);
-        $to = (!$to) ? $this->getWeb() : $this->loadCurrency($to);
-        $price = $this[$to][self::RATE] / $this[$from][self::RATE] * $_price->getValue();
+        if ($from !== FALSE) {
+            $from = $from ? $this->loadCurrency($from) : $this->getDefault();
+            if ($to != $from) {
+                $price *= $this[$from]->getRate() / $this[$to]->getRate();
+            }
+        }
+
+        $this->lastChange[0] = $vat;
+        $this->lastChange[1] = $this[$to]->profil->setNumber($price);
+
+        $price = $this->getVat()->taxation($price, $vat);
 
         if ($round !== NULL) {
             $price = round($price, $round);
@@ -283,27 +223,9 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return number string
      */
     public function format($number, $from = NULL, $to = NULL, $vat = NULL) {
-        $old = $this->getWeb();
-        if ($to) {
-            $this->web = $to = $this->loadCurrency($to);
-        }
-
-        if ($from !== FALSE) {
-            $number = $this->_change($number, $from, $to);
-        }
-
-        $vat = $this->lastChange[0] = ($vat === NULL) ? $this->number->getVat() : Vat::create($vat);
-        $out = $this->lastChange[1] = $this[$to]['profil'];
-
-        $out->setNumber($number);
-
-        if ($to !== FALSE) {
-            $this->web = $old;
-        } else {
-            $to = $this->getWeb();
-        }
-
-        return $this->number->render($out, $vat);
+        $to = $to ? $this->loadCurrency($to) : $this->getWeb();
+        $number = $this->change($number, $from, $to, NULL, $vat);
+        return $this[$to]->profil->render($number);
     }
 
     /**
@@ -312,7 +234,16 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return string
      */
     public function formatVat() {
-        return $this->number->withVat($this->lastChange[1], $this->lastChange[0]);
+        return $this->lastChange[1]->setNumber($this->vat->withVat($this->lastChange[1]->getNumber(), $this->lastChange[0]))->render();
+    }
+
+    /**
+     * auto upper
+     * @param string $code
+     * @return Currency
+     */
+    public function offsetGet($code) {
+        return parent::offsetGet(strtoupper($code));
     }
 
     /**
@@ -321,36 +252,40 @@ class Exchange extends \ArrayIterator implements IExchange {
      * @return string
      */
     public function loadCurrency($code, $property = array()) {
-        $code = strtoupper($code);
+        $code = ($code) ? strtoupper($code) : $this->getWeb();
 
         if (!$this->offsetExists($code)) {
             if (!$this->default) {
                 $this->default = $code;
                 $this->init();
             }
-            $this->offsetSet($code, $this->storage[$code]);
+            if ($this->storage[$code]) {
+                $this->offsetSet($code, $this->storage[$code]);
+            } else {
+                return $this->getDefault();
+            }
         }
 
-        if ($property || !isset($this[$code]['profil'])) {
+        if ($property || !isset($this[$code]->profil)) {
             if (!$property) {
-                $profil = $this->getDefaultProfile();
+                $profil = $this->getDefaultFormat();
                 $profil->setSymbol($code);
             } elseif (is_array($property)) {
-                $profil = $this->getDefaultProfile();
+                $profil = $this->getDefaultFormat();
                 foreach ($property as $k => $v) {
-                    $profil->{$k} = $v;
+                    $k = 'set' . ucfirst($k);
+                    $profil->$k($v);
                 }
             } elseif ($property instanceof NumberFormat) {
                 $profil = $property;
             }
 
-            $this[$code]['profil'] = $profil;
+            $this[$code]->profil = $profil;
         }
 
         return $code;
     }
 
-// <editor-fold defaultstate="collapsed" desc="getter">
     /**
      * @return Exchange
      */
@@ -363,32 +298,52 @@ class Exchange extends \ArrayIterator implements IExchange {
         return $this;
     }
 
+// <editor-fold defaultstate="collapsed" desc="getter">
+    /** @return Download */
+    public function getDownload() {
+        if (!$this->download) {
+            $this->download = new CnbDay;
+        }
+        return $this->download;
+    }
+
+    /** @var NumberFormat */
+    public function getDefaultFormat() {
+        if (!$this->number) {
+            $this->number = new NumberFormat;
+        }
+
+        return clone $this->number;
+    }
+
     /** @return string */
     public function getWeb() {
-        if ($this->web === NULL) {
-            return $this->getDefault();
+        if (!$this->web) {
+            $this->web = $this->getDefault();
         }
         return $this->web;
     }
 
-    public function getDefault() {
-        if ($this->default === NULL) {
-            return $this->loadCurrency(self::CZK);
+    /** @return Tax */
+    public function getVat() {
+        if (!$this->vat) {
+            $this->setVat();
         }
-        return $this->default;
+        return $this->vat;
     }
 
-    public function getDate() {
-        if (!$this->date) {
-            $this->setDate();
+    /** @var string */
+    public function getDefault() {
+        if (!$this->default) {
+            return $this->loadCurrency(self::CZK); // nenastavovat default!!
         }
-        return $this->date;
+        return $this->default;
     }
 
 // </editor-fold>
 //-----------------protected
     protected function init() {
-        $this->download->setDefault($this->getDefault());
+        $this->getDownload()->setDefault($this->getDefault());
         $this->download();
         $this->session();
     }
@@ -399,7 +354,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     protected function download() {
         if (!isset($this->storage[$this->getDefault()])) {
-            $this->storage->import($this->download->downloading(), $this->getDefault());
+            $this->storage->import($this->getDownload()->downloading(), $this->getDefault());
         }
     }
 
@@ -416,7 +371,7 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($qVal) {
             $this->session->currency = $qVal;
         } elseif (!isset($this->session->currency)) {
-            $this->session->currency = is_null($this->web) ? $this->getDefault() : $this->getWeb();
+            $this->session->currency = $this->getWeb();
         }
         $this->web = $this->session->currency;
 
@@ -425,12 +380,12 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($qVal !== NULL) {
             $this->session->vat = (bool) $qVal;
             if ($qVal) {
-                $this->number->vatOn();
+                $this->getVat()->vatOn();
             } else {
-                $this->number->vatOff();
+                $this->getVat()->vatOff();
             }
         } elseif (!isset($this->session->vat)) {
-            $this->session->vat = $this->number->isVatOn();
+            $this->session->vat = $this->getVat()->isVatOn();
         }
     }
 
@@ -441,14 +396,10 @@ class Exchange extends \ArrayIterator implements IExchange {
         return clone self::$href;
     }
 
-    protected function getDefaultProfile() {
-        return clone $this->number;
-    }
-
-    private static function swap(&$a, &$b) {
-        $c = $a;
-        $a = $b;
-        $b = $c;
+    public function setTempRate($rate, $code = NULL) {
+        $code = $this->loadCurrency($code);
+        $data = $this[$code]->setTempRate($rate);
+        dd($data);
     }
 
 }
