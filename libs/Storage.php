@@ -13,20 +13,11 @@ class Storage extends Caching\Cache implements IStorage {
      * time for refresh HH:MM
      * @var string
      */
-    protected $hourRefresh = '14:30';
+    protected $hourRefresh;
 
-    /** @var \DateTime */
-    private $date;
-
-    public function __construct(Caching\IStorage $storage) {
+    public function __construct(Caching\IStorage $storage, $hour = '14:30') {
         parent::__construct($storage, __CLASS__);
-    }
-
-    public function setDate(\DateTime $date = NULL) {
-        if ($date) {
-            $this->date = $date;
-            parent::__construct($this->getStorage(), __NAMESPACE__ . self::NAMESPACE_SEPARATOR . $date->format('_Y-m-d'));
-        }
+        $this->hourRefresh = $hour;
     }
 
     /**
@@ -47,15 +38,19 @@ class Storage extends Caching\Cache implements IStorage {
 
         foreach ($data as $key => $val) {
             $dp = NULL;
-            if (!$this->date && $key == $default) {
-                $dp = array(Caching\Cache::EXPIRATION => new \DateTime('tomorrow'));
+            if (!($val instanceof Currency)) {
+                throw new ExchangeException('Must be class Currency.');
+            }
+            if ($key == $default) {
+                $dt = new \DateTime('tomorrow');
                 if ($this->hourRefresh) {
                     list($hour, $min) = explode(':', $this->hourRefresh);
-                    $dp[Caching\Cache::EXPIRATION]->setTime($hour, $min, 0);
+                    $dt->setTime($hour, $min, 0);
                 }
+                $dp = array(Caching\Cache::EXPIRATION => $dt);
             }
             next($pointer);
-            $val['next'] = key($pointer); //use for load all
+            $val->next = key($pointer); //use for load all
             $this->save($key, $val, $dp);
         }
     }
