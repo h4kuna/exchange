@@ -31,10 +31,10 @@ interface ICnb {
      * @var const delimiter in self::CNB_CZK
      */
     const PIPE = '|';
-    const CODE = 'code';
-    const COUNTRY = 'country'; //only czech
-    const NAME = 'name'; //only czech
-    const HOME = 'home';
-    const TO = 'to';
+    const CODE = 3;
+    const COUNTRY = 0; //only czech
+    const NAME = 1; //only czech
+    const HOME = 2;
+    const TO = 4;
 
 }

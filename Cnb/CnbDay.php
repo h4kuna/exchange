@@ -24,23 +24,17 @@ class CnbDay extends Download implements ICnb {
     }
 
     protected function save($data) {
-        $row = array(self::COUNTRY, self::NAME, self::HOME, self::CODE, self::TO);
         $code = array($data[0]);
         unset($data[0]);
         foreach ($data as $val) {
             $ex = explode(self::PIPE, $val);
-            if (count($ex) != 5 || $ex[4] <= 0 || isset($code[$ex[4]])) {
+            if (count($ex) != 5 || $ex[self::TO] <= 0 || isset($code[$ex[self::TO]])) {
                 continue;
             }
 
-            $line = array_combine($row, $ex);
-            $line[self::HOME] = (int) $line[self::HOME];
-            $line[Exchange::RATE] = $line[self::HOME] / $line[self::TO];
-
-            if ($line[self::CODE] != $this->default) {
-                $line[Exchange::RATE] /= $this->correction;
-            }
-            $code[$line[self::CODE]] = $line;
+            $obj = $code[$ex[self::CODE]] = new Currency($ex[self::CODE], $ex[self::HOME], $ex[self::TO]);
+            $obj->country = $ex[self::COUNTRY];
+            $obj->name = $ex[self::NAME];
         }
         return $code;
     }
