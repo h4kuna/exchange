@@ -15,7 +15,7 @@ class Storage extends Caching\Cache implements IStorage {
      */
     protected $hourRefresh;
 
-    public function __construct(Caching\IStorage $storage, $hour = '14:30') {
+    public function __construct(Caching\IStorage $storage, $hour = '14:45') {
         parent::__construct($storage, __CLASS__);
         $this->hourRefresh = $hour;
     }
