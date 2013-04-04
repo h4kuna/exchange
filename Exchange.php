@@ -134,7 +134,7 @@ class Exchange extends \ArrayIterator implements IExchange {
     public function currencyLink($code, $symbol = TRUE) {
         $code = $this->loadCurrency($code);
         $a = self::getHref();
-        $a->setText(($symbol) ? $this[$code]['profil']->symbol : $code);
+        $a->setText(($symbol) ? $this[$code]->profil->symbol : $code);
 
         if ($this->web === $code) {
             $a->class = 'current';
