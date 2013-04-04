@@ -198,7 +198,7 @@ class Exchange extends \ArrayIterator implements IExchange {
         if ($from !== FALSE) {
             $from = $from ? $this->loadCurrency($from) : $this->getDefault();
             if ($to != $from) {
-                $price *= $this[$from]->getRate() / $this[$to]->getRate();
+                $price *= $this[$to]->getRate() / $this[$from]->getRate();
             }
         }
 
@@ -396,10 +396,14 @@ class Exchange extends \ArrayIterator implements IExchange {
         return clone self::$href;
     }
 
-    public function setTempRate($rate, $code = NULL) {
+    public function addTempRate($rate, $code = NULL) {
         $code = $this->loadCurrency($code);
-        $data = $this[$code]->setTempRate($rate);
-        dd($data);
+        $this[$code]->setTempRate($rate);
+        return $this;
+    }
+
+    public function removeTempRate($code) {
+        return $this[$code]->removeTempRate();
     }
 
 }

@@ -13,11 +13,11 @@
     ],
     "require": {
         "php" : ">=5.3.2",
-        "h4kuna/curl": "1.0.*",
-        "h4kuna/number-format": "1.1.*",
-        "h4kuna/static": "1.0.*",
-        "h4kuna/data-type": "1.0.*",
-        "h4kuna/unit-conversion": "1.0.*"
+        "h4kuna/curl": "dev-master",
+        "h4kuna/number-format": "dev-master",
+        "h4kuna/static": "dev-master",
+        "h4kuna/data-type": "dev-master",
+        "h4kuna/unit-conversion": "dev-conversion"
     },
     "autoload": {
         "files": ["Exchange.php"],
