@@ -3,7 +3,6 @@
 namespace h4kuna;
 
 require_once 'ICnb.php';
-require_once __DIR__ . '/../libs/Currency.php';
 
 class CnbDay extends Download implements ICnb {
 

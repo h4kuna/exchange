@@ -11,6 +11,7 @@ require_once 'libs/Download.php';
 require_once 'libs/Storage.php';
 require_once 'libs/ExchangeException.php';
 require_once 'libs/IExchange.php';
+require_once 'libs/Currency.php';
 
 /**
  * PHP > 5.3
