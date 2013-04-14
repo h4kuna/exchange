@@ -31,7 +31,7 @@ class Currency extends Object {
     }
 
     public function &__get($name) {
-        if (isset($this->other[$name])) {
+        if (array_key_exists($name, $this->other)) {
             return $this->other[$name];
         }
         return parent::__get($name);
