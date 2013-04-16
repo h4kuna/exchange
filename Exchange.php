@@ -360,6 +360,20 @@ class Exchange extends \ArrayIterator implements IExchange {
     }
 
     /**
+     *
+     * @param code $code
+     * @param bool $session
+     * @return \h4kuna\Exchange
+     */
+    public function setWeb($code, $session = FALSE) {
+        $this->web = $this->loadCurrency($code);
+        if ($session) {
+            $this->session->currency = $this->web;
+        }
+        return $this;
+    }
+
+    /**
      * setup session
      */
     protected function session() {
