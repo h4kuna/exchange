@@ -18,8 +18,14 @@
         "h4kuna/static": "1.0.*",
         "h4kuna/data-type": "1.0.*",
         "h4kuna/unit-conversion": "1.2.*"
-
     },
+    "require-dev": {
+        "h4kuna/curl": "@dev",
+        "h4kuna/number-format": "@dev",
+        "h4kuna/static": "@dev",
+        "h4kuna/data-type": "@dev",
+        "h4kuna/unit-conversion": "@dev"
+	},
     "autoload": {
         "files": ["Exchange.php"],
         "classmap": ["Cnb/"]
