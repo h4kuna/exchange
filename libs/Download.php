@@ -4,8 +4,6 @@ namespace h4kuna;
 
 use Nette\Object;
 
-require_once 'IDownload.php';
-
 /**
  * @author Milan Matějček
  */

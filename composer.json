@@ -5,29 +5,24 @@
     "homepage": "https://github.com/h4kuna/exchange",
     "license": "MIT",
     "authors": [
-    {
-        "name": "Milan Matějček",
-        "email": "milan.matejcek@gmail.com",
-        "role": "Developer"
-    }
+        {
+            "name": "Milan Matějček",
+            "email": "milan.matejcek@gmail.com",
+            "role": "Developer"
+        }
     ],
     "require": {
-        "php" : ">=5.3.2",
-        "h4kuna/curl": "1.0.*",
+        "h4kuna/object-wrapper": "1.0.*",
         "h4kuna/number-format": "1.2.*",
         "h4kuna/static": "1.0.*",
         "h4kuna/data-type": "1.0.*",
         "h4kuna/unit-conversion": "1.2.*"
     },
     "require-dev": {
-        "h4kuna/curl": "@dev",
-        "h4kuna/number-format": "@dev",
-        "h4kuna/static": "@dev",
-        "h4kuna/data-type": "@dev",
-        "h4kuna/unit-conversion": "@dev"
-	},
+        "nette/nette": "@dev"
+    },
     "autoload": {
         "files": ["Exchange.php"],
-        "classmap": ["Cnb/"]
+        "classmap": ["Cnb/", "libs/"]
     }
 }

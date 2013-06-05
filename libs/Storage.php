@@ -4,8 +4,6 @@ namespace h4kuna;
 
 use \Nette\Caching;
 
-require_once 'IStorage.php';
-
 class Storage extends Caching\Cache implements IStorage {
 
     /**

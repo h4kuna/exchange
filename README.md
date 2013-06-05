@@ -1,5 +1,4 @@
 For dependency look at to composer.json
-- h4kuna/curl
 - h4kuna/number-format
 - h4kuna/static
 - h4kuna/data-type

@@ -2,8 +2,6 @@
 
 namespace h4kuna;
 
-require_once 'ICnb.php';
-
 class CnbDay extends Download implements ICnb {
 
     protected $links = array(self::CNB_DAY);
