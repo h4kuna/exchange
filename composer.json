@@ -12,15 +12,12 @@
         }
     ],
     "require": {
-        "nette/nette": "@dev",
-        "h4kuna/object-wrapper": "@dev",
-        "h4kuna/number-format": "@dev",
-        "h4kuna/static": "@dev",
-        "h4kuna/data-type": "@dev",
-        "h4kuna/unit-conversion": "@dev"
-    },
-    "require-dev": {
-        "nette/nette": "@dev"
+        "nette/nette": "2.1.x-dev",
+        "h4kuna/object-wrapper": "1.0.*",
+        "h4kuna/number-format": "1.2.*",
+        "h4kuna/static": "1.0.*",
+        "h4kuna/data-type": "1.0.*",
+        "h4kuna/unit-conversion": "1.2.*"
     },
     "autoload": {
         "files": ["Exchange.php"],
