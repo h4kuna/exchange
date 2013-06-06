@@ -23,4 +23,5 @@ $e->loadCurrency('eur', array('mask' => 'S 1', 'symbol' => '€', 'point' => '.'
 dump($e->format(10));
 dump($e->format(10, FALSE, 'eur'));
 
+echo $e->vatLink('zapnout dph', 'vypnout dph');
 

@@ -145,7 +145,7 @@ class Exchange extends \ArrayIterator implements IExchange {
      */
     public function vatLink($textOn, $textOff) {
         $a = self::getHref();
-        $isVatOn = $this->number->isVatOn();
+        $isVatOn = $this->vat->isVatOn();
         $a->href(NULL, array(self::PARAM_VAT => !$isVatOn));
         if ($isVatOn) {
             $a->setText($textOff);
