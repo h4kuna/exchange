@@ -14,7 +14,6 @@
     "require": {
         "nette/nette": "2.1.x-dev",
         "h4kuna/object-wrapper": "1.0.*",
-        "h4kuna/number-format": "1.2.*",
         "h4kuna/static": "1.0.*",
         "h4kuna/data-type": "1.0.*",
         "h4kuna/unit-conversion": "1.2.*"
