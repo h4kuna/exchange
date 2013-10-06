@@ -1,7 +1,7 @@
 {
     "name": "h4kuna/exchange",
     "type": "library",
-    "description": "exchange between currency",
+    "description": "exchange between currencies",
     "homepage": "https://github.com/h4kuna/exchange",
     "license": "MIT",
     "authors": [
@@ -12,14 +12,12 @@
         }
     ],
     "require": {
-        "nette/nette": "2.1.x-dev",
+        "nette/nette": ">= 2.0.0",
         "h4kuna/object-wrapper": "1.0.*",
-        "h4kuna/static": "1.0.*",
-        "h4kuna/data-type": "1.0.*",
-        "h4kuna/unit-conversion": "1.2.*"
+        "h4kuna/number-format": "dev-master"
     },
     "autoload": {
         "files": ["Exchange.php"],
-        "classmap": ["Cnb/", "libs/"]
+        "classmap": ["Store/", "Driver/", "Currency/"]
     }
 }
