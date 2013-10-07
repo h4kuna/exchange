@@ -56,7 +56,7 @@ class Day extends Download {
     }
 
     public function getPrefix() {
-        return NULL;
+        return 'cnb';
     }
 
 }
