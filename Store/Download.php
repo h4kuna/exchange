@@ -19,7 +19,7 @@ abstract class Download implements IDownload {
      *
      * @var Vat
      */
-    private $correction = 0;
+    protected $correction = 0;
 
     /**
      * Base value for rate
@@ -34,7 +34,7 @@ abstract class Download implements IDownload {
      * @param IStorage $storage
      */
     final public function loadCurrencies(IStorage $storage) {
-        $this->correction = Vat::create($this->correction);
+        $this->setCorrection($this->correction);
         $data = $this->loadData();
         $storage->setPrefix($this->getPrefix());
         $code = NULL;

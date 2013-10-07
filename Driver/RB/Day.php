@@ -7,7 +7,7 @@ use h4kuna\CUrl;
 use h4kuna\Exchange\CurrencyProperty;
 
 /**
- * Description of RB
+ * Raiffeisenbank
  *
  * @author Milan Matějček
  */
