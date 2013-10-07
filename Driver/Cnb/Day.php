@@ -33,7 +33,7 @@ class Day extends Download implements ICnb {
     protected function createCurrencyProperty($row) {
         list($country, $currency, $home, $code, $foreing) = explode('|', $row);
         if ($foreing != 0.0) {
-            return new CurrencyProperty($home, $code, $foreing, $country, $currency);
+            return new CurrencyProperty($home, $code, $this->makeCorrection($home, $foreing), $country, $currency);
         }
         return NULL;
     }

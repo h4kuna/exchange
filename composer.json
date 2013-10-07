@@ -13,8 +13,8 @@
     ],
     "require": {
         "nette/nette": ">= 2.0.0",
-        "h4kuna/object-wrapper": "1.0.*",
-        "h4kuna/number-format": "dev-master"
+        "h4kuna/object-wrapper": ">= 1.0.5",
+        "h4kuna/number-format": ">= 1.2.3"
     },
     "autoload": {
         "files": ["Exchange.php"],

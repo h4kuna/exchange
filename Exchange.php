@@ -10,13 +10,11 @@ use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
 
 /**
- * PHP > 5.3
  *
  * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
- * @property-read $default
- * @property $date
- * @property $vat
+ * @property string $default
+ * @property string $web
  */
 class Exchange extends \ArrayIterator {
 
@@ -325,7 +323,7 @@ class Exchange extends \ArrayIterator {
      */
     public function removeHistory($code) {
         $this->offsetGet($code)->popRate();
-        return $code;
+        return $this;
     }
 
 // </editor-fold>

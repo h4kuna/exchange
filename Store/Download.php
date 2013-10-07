@@ -2,6 +2,8 @@
 
 namespace h4kuna\Exchange;
 
+use h4kuna\Vat;
+
 /**
  * Description of Download
  *
@@ -13,14 +15,28 @@ abstract class Download implements IDownload {
     protected $storeage;
 
     /**
+     * Percent correction
+     *
+     * @var Vat
+     */
+    private $correction = 0;
+
+    /**
+     * Base value for rate
+     *
+     * @var int
+     */
+    protected $base = 1;
+
+    /**
      * Download data from remote source and save
      *
      * @param IStorage $storage
      */
     final public function loadCurrencies(IStorage $storage) {
+        $this->correction = Vat::create($this->correction);
         $data = $this->loadData();
         $storage->setPrefix($this->getPrefix());
-
         $code = NULL;
         foreach ($data as $row) {
             $currency = $this->createCurrencyProperty($row);
@@ -30,6 +46,31 @@ abstract class Download implements IDownload {
             }
         }
         $storage->saveLast($code);
+    }
+
+    /**
+     * Correction for rate
+     *
+     * @param int|float|string|Vat $float
+     * @return Download
+     */
+    public function setCorrection($float) {
+        $this->correction = Vat::create($float);
+        return $this;
+    }
+
+    /**
+     * Change default rate
+     *
+     * @param float $home
+     * @param float $foreing
+     * @return float
+     */
+    final protected function makeCorrection($home, $foreing) {
+        if ($home == $foreing && $home == $this->base) {
+            return $foreing;
+        }
+        return $foreing / $this->correction->getUpDecimal();
     }
 
     /**

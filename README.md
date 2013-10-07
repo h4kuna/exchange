@@ -1,8 +1,6 @@
 For dependency look at to composer.json
 - h4kuna/number-format
-- h4kuna/static
-- h4kuna/data-type
-- h4kuna/unit-conversion
+- h4kuna/object-wrapper
 
 Exchange
 -------
@@ -22,7 +20,7 @@ $ex->format(10); // 10,00 CZK
 // this setup you can use for working with vat only
 ```
 
-Custom format and vat use [API Money](https://github.com/h4kuna/number-format/blob/master/Money.php) and [NumberFormat](https://github.com/h4kuna/number-format/blob/master/NumberFormat.php):
+Custom format and vat use [API Tax](https://github.com/h4kuna/number-format#tax) and [NumberFormat](https://github.com/h4kuna/number-format#numberformat):
 ```php
 $money = new Money(NULL, 15);// default vat is 15%, you can write as 1.15, 15, 0.15 recomend as percent 15
 $money->setDecimal(1);

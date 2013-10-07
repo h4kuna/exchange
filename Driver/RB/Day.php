@@ -34,8 +34,9 @@ class Day extends Download {
         if (!$foreing) {
             return NULL;
         }
+        $quota = $row->getAttribute('quota');
 
-        return new CurrencyProperty($row->getAttribute('quota'), $row->getAttribute('name'), $foreing);
+        return new CurrencyProperty($quota, $row->getAttribute('name'), $this->makeCorrection($quota, $foreing));
     }
 
     /**
