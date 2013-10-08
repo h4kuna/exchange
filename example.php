@@ -6,7 +6,7 @@ include __DIR__ . "/vendor/autoload.php";
 // 2# Create Nette Configurator
 $configurator = new Nette\Config\Configurator;
 $tmp = __DIR__ . '/tmp';
-if (file_exists($tmp)) {
+if (!file_exists($tmp)) {
     throw new \RuntimeException('Create writeable dir: ' . $tmp);
 }
 $configurator->enableDebugger($tmp);
@@ -18,7 +18,10 @@ $configurator->onCompile[] = function ($configurator, $compiler) {
 
 $container = $configurator->createContainer();
 
-$exchange = $container->exchangeExtension->exchange;
+$exchange = Nette\Framework::VERSION == '2.1-dev' ?
+        $container->createServiceExchangeExtension__exchange() :
+        $container->exchangeExtension->exchange;
+
 $exchange->loadCurrency('usd');
 $historyEUR = 20;
 $smallVat = 15;
@@ -67,6 +70,7 @@ $smallVat = 15;
             ?></p>
         <h4>Actual</h4>
         <p><?php echo $exchange->format(10, 'eur', 'czk'); ?></p>
+        <p><small><?php echo Nette\Framework::VERSION ?></small></p>
     </body>
 </html>
 
