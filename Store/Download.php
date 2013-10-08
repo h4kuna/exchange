@@ -3,13 +3,14 @@
 namespace h4kuna\Exchange;
 
 use h4kuna\Vat;
+use Nette\Object;
 
 /**
  * Description of Download
  *
  * @author Milan Matějček
  */
-abstract class Download implements IDownload {
+abstract class Download extends Object implements IDownload {
 
     /** @var IStorage */
     protected $storeage;

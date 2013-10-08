@@ -2,12 +2,14 @@
 
 namespace h4kuna\Exchange;
 
-use Nette;
 use Nette\Http\SessionSection;
 use Nette\Http\Request;
 use Nette\Utils\Html;
+use Nette\Templating\Template;
 use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
+use h4kuna\Tax;
+use h4kuna\Vat;
 
 /**
  *
@@ -25,9 +27,16 @@ class Exchange extends \ArrayIterator {
 
     /**
      * Param in url for change value
+     *
+     * @var string
      */
-    const PARAM_CURRENCY = 'currency';
-    const PARAM_VAT = 'vat';
+    private static $paramCurrency = 'currency';
+
+    /** @var string */
+    private static $paramVat = 'vat';
+
+    /** @var Html */
+    private static $href;
 
     /**
      * Default currency "from" input
@@ -44,6 +53,9 @@ class Exchange extends \ArrayIterator {
     private $web;
 
 // <editor-fold defaultstate="collapsed" desc="Private dependencies">
+
+    /** @var Tax */
+    private $tax;
 
     /**
      * Last changed value
@@ -99,6 +111,43 @@ class Exchange extends \ArrayIterator {
     }
 
     /**
+     * Currency param in url
+     *
+     * @param string $str
+     * @return Exchange
+     */
+    public function setParamCurrency($str) {
+        self::$paramCurrency = $str;
+        return $this;
+    }
+
+    /**
+     * VAT param in url
+     *
+     * @param string $str
+     * @return Exchange
+     */
+    public function setParamVat($str) {
+        self::$paramVat = $str;
+        return $this;
+    }
+
+    /**
+     * Set global VAT
+     *
+     * @param type $v
+     * @param bool $in
+     * @param bool $out
+     * @return Exchange
+     */
+    public function setVat($v, $in, $out) {
+        $this->tax = new Tax($v);
+        $this->tax->setVatIO($in, $out);
+        $this->loadParamVat();
+        return $this;
+    }
+
+    /**
      * Set currency "to"
      *
      * @param string $str
@@ -135,31 +184,31 @@ class Exchange extends \ArrayIterator {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Method for template">
     /**
-     * @param string $code
+     * @param ICurrencyProperty $currency
      * @param bool $symbol
-     * @return Nette\Utils\Html
+     * @return Html
      */
-    public function currencyLink($code, $symbol = TRUE) {
-        $code = $this->loadCurrency($code);
+    public function currencyLink(ICurrencyProperty $currency, $symbol = TRUE) {
+        $code = $currency->getCode();
         $a = self::getHref();
-        $a->setText(($symbol) ? $this[$code]->profil->symbol : $code);
+        $a->setText($symbol ? $currency->getFormat()->getSymbol() : $code);
 
-        if ($this->web === $code) {
+        if ($this->getWeb() === $code) {
             $a->class = 'current';
         }
-        return $a->href(NULL, array(self::PARAM_CURRENCY => $code));
+        return $a->href(NULL, array(self::$paramCurrency => $code));
     }
 
     /**
      * create link for vat
      * @param string $textOn
      * @param string $textOff
-     * @return Nette\Utils\Html
+     * @return Html
      */
     public function vatLink($textOn, $textOff) {
         $a = self::getHref();
-        $isVatOn = $this->vat->isVatOn();
-        $a->href(NULL, array(self::PARAM_VAT => !$isVatOn));
+        $isVatOn = $this->tax->isVatOn();
+        $a->href(NULL, array(self::$paramVat => !$isVatOn));
         if ($isVatOn) {
             $a->setText($textOff);
         } else {
@@ -169,31 +218,19 @@ class Exchange extends \ArrayIterator {
     }
 
     /**
-     * array for form to addSelect
-     * @param string $key
-     * @return array
-     */
-    public function selectInput($key = self::SYMBOL) {
-        $out = array();
-        foreach ($this as $k => $v) {
-            $out[$k] = isset($v[$key]) ? $v[$key] : $k;
-        }
-        return $out;
-    }
-
-    /**
      * create helper to template
      */
-    public function registerAsHelper(Nette\Templating\Template $tpl) {
+    public function registerAsHelper(Template $tpl) {
         $tpl->registerHelper('formatVat', callback($this, 'formatVat'));
         $tpl->registerHelper('currency', callback($this, 'format'));
         $tpl->exchange = $this;
     }
 
-    /** @return Nette\Utils\Html */
-    protected static function getHref() {
-        if (!self::$href)
+    /** @return Html */
+    private static function getHref() {
+        if (!self::$href) {
             self::$href = Html::el('a');
+        }
         return clone self::$href;
     }
 
@@ -206,9 +243,10 @@ class Exchange extends \ArrayIterator {
      * @param string|FALSE $from default currency, FALSE no transfer
      * @param string $to output currency
      * @param int $round
+     * @param int|float|Vat $vat
      * @return float|NULL
      */
-    public function change($price, $from = NULL, $to = NULL, $round = NULL) {
+    public function change($price, $from = NULL, $to = NULL, $round = NULL, $vat = NULL) {
         if (!is_numeric($price)) {
             return NULL;
         }
@@ -221,6 +259,10 @@ class Exchange extends \ArrayIterator {
             if ($to != $from) {
                 $price *= $to->getRate() / $from->getRate();
             }
+        }
+
+        if ($this->tax) {
+            $price = $this->tax->taxation($price, $vat);
         }
 
         if ($round !== NULL) {
@@ -236,13 +278,30 @@ class Exchange extends \ArrayIterator {
      * @param number $number
      * @param string|bool $from FALSE currency doesn't counting, NULL set actual
      * @param string $to output currency, NULL set actual
+     * @param int|float|Vat $vat
      * @return string
      */
-    public function format($number, $from = NULL, $to = NULL) {
+    public function format($number, $from = NULL, $to = NULL, $vat = NULL) {
         $to = $this->offsetGet($to ? $to : $this->getWeb());
-        $number = $this->change($number, $from, $to);
+        $number = $this->change($number, $from, $to, NULL, $vat);
         $this->lastChange = $to->getFormat();
         return $this->lastChange->render($number);
+    }
+
+    /**
+     * Price with VAT every time
+     *
+     * @return string
+     */
+    public function formatVat() {
+        $number = $this->lastChange->getNumber();
+        if ($this->tax->isVatOn()) {
+            return $this->lastChange->render($number);
+        }
+        $this->tax->vatOn();
+        $number = $this->lastChange->render($this->tax->taxation($number));
+        $this->tax->vatOff();
+        return $number;
     }
 
     /**
@@ -269,8 +328,7 @@ class Exchange extends \ArrayIterator {
         try {
             $currency = $this->store->loadCurrency($code);
             if (!$this->default) {
-                $this->default = $code;
-                $this->loadSession();
+                $this->default = $currency->getCode();
             }
         } catch (ExchangeException $e) {
             if (!$this->default) {
@@ -298,6 +356,7 @@ class Exchange extends \ArrayIterator {
             }
 
             $this[$code] = $currency->setFormat($profil);
+            $this->loadParamCurrency($code);
         }
 
         return $currency;
@@ -357,10 +416,10 @@ class Exchange extends \ArrayIterator {
 
     /** @return Tax */
     public function getVat() {
-        if (!$this->vat) {
+        if (!$this->tax) {
             $this->setVat();
         }
-        return $this->vat;
+        return $this->tax->getVat()->getPercent();
     }
 
     /** @return string */
@@ -372,36 +431,33 @@ class Exchange extends \ArrayIterator {
     }
 
 // </editor-fold>
-
+// <editor-fold defaultstate="collapsed" desc="Session setup">
     /**
-     * Setup session
+     * Set currency from query and set local property and save to session
      */
-    protected function loadSession() {
-//-------------crrency
-        $qVal = strtoupper($this->request->getQuery(self::PARAM_CURRENCY));
-        if (!isset($this[$qVal])) {
-            $qVal = NULL;
-        }
+    protected function loadParamCurrency($code) {
+        try {
+            $currency = $this->offsetGet($this->request->getQuery(self::$paramCurrency, $this->session->currency))->getCode();
+            if ($code == $currency) {
+                $this->setWeb($currency, TRUE);
+            }
+        } catch (ExchangeException $e) {
 
-        if ($qVal) {
-            $this->session->currency = $qVal;
-        } elseif (!isset($this->session->currency)) {
-            $this->session->currency = $this->getWeb();
         }
-        $this->web = $this->session->currency;
-
-//-------------vat
-//        $qVal = $this->request->getQuery(self::PARAM_VAT);
-//        if ($qVal !== NULL) {
-//            $this->session->vat = (bool) $qVal;
-//            if ($qVal) {
-//                $this->getVat()->vatOn();
-//            } else {
-//                $this->getVat()->vatOff();
-//            }
-//        } elseif (!isset($this->session->vat)) {
-//            $this->session->vat = $this->getVat();
-//        }
     }
 
+    /**
+     * Set VAT from query and set local property and save to session
+     */
+    protected function loadParamVat() {
+        $session = isset($this->session->vat) ? $this->session->vat : $this->tax->isVatOn();
+        $this->session->vat = $vat = (bool) $this->request->getQuery(self::$paramVat, $session);
+        if ($vat) {
+            $this->tax->vatOn();
+        } else {
+            $this->tax->vatOff();
+        }
+    }
+
+// </editor-fold>
 }
