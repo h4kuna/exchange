@@ -6,7 +6,7 @@ Installation to project
 -----------------------
 The best way to install h4kuna/exchange is using Composer:
 ```sh
-$ composer require h4kuna/exchange:4.0.0.x-dev
+$ composer require h4kuna/exchange:4.0.1
 ```
 
 Run example
@@ -14,7 +14,6 @@ Run example
 ```sh
 $ cd to/your/web/document/root
 $ git clone git@github.com:h4kuna/exchange.git
-$ git checkout 4.0.0
 $ cd exchange
 $ mkdir tmp
 $ chmod 777 tmp
