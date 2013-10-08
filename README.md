@@ -14,6 +14,7 @@ Run example
 ```sh
 $ cd to/you/web/document/root
 $ git clone git@github.com:h4kuna/exchange.git
+$ git checkout 4.0.0
 $ cd exchange
 $ mkdir tmp
 $ chmod 777 tmp
