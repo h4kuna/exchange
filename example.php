@@ -6,6 +6,9 @@ include __DIR__ . "/vendor/autoload.php";
 // 2# Create Nette Configurator
 $configurator = new Nette\Config\Configurator;
 $tmp = __DIR__ . '/tmp';
+if (file_exists($tmp)) {
+    throw new \RuntimeException('Create writeable dir: ' . $tmp);
+}
 $configurator->enableDebugger($tmp);
 $configurator->setTempDirectory($tmp);
 
