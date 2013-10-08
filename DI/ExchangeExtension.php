@@ -54,8 +54,7 @@ class ExchangeExtension extends CompilerExtension {
         // main class Exchange
         $exchange = $builder->addDefinition($this->prefix('exchange'))
                 ->setClass('h4kuna\Exchange\Exchange')
-                ->setArguments(array($this->prefix('@store'), '@httpRequest', $this->prefix('@sessionSection')))
-                ->setAutowired(FALSE);
+                ->setArguments(array($this->prefix('@store'), '@httpRequest', $this->prefix('@sessionSection')));
 
         if ($config['vat']) {
             $exchange->addSetup('setVat', array($config['vat'], $config['vatIn'], $config['vatOut']));
