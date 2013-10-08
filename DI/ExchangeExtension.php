@@ -13,7 +13,7 @@ if (!defined('\Nette\Framework::VERSION_ID') || \Nette\Framework::VERSION_ID < 2
     class_alias('Nette\Config\Compiler', 'Nette\DI\Compiler');
 }
 
-class ExchangeExtension extends \Nette\Config\CompilerExtension {
+class ExchangeExtension extends CompilerExtension {
 
     public $defaults = array(
         'vat' => 21,
@@ -58,7 +58,7 @@ class ExchangeExtension extends \Nette\Config\CompilerExtension {
                 ->setAutowired(FALSE);
 
         if ($config['vat']) {
-            $exchange->addSetup('setVat', $config['vat'], $config['vatIn'], $config['vatOut']);
+            $exchange->addSetup('setVat', array($config['vat'], $config['vatIn'], $config['vatOut']));
         }
 
         foreach ($config['currencies'] as $code => $currency) {

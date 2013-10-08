@@ -15,7 +15,10 @@ $configurator->onCompile[] = function ($configurator, $compiler) {
 
 $container = $configurator->createContainer();
 
-$exchange = $container->exchangeExtension->exchange;
+$exchange = Nette\Framework::VERSION == '2.1-dev' ?
+        $container->createServiceExchangeExtension__exchange() :
+        $container->exchangeExtension->exchange;
+
 $exchange->loadCurrency('usd');
 $historyEUR = 20;
 $smallVat = 15;
@@ -64,6 +67,7 @@ $smallVat = 15;
             ?></p>
         <h4>Actual</h4>
         <p><?php echo $exchange->format(10, 'eur', 'czk'); ?></p>
+        <p><small><?php echo Nette\Framework::VERSION ?></small></p>
     </body>
 </html>
 
