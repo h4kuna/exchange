@@ -9,6 +9,22 @@ The best way to install h4kuna/exchange is using Composer:
 $ composer require h4kuna/exchange:4.0.1
 ```
 
+Example NEON config
+-------------------
+<pre>
+extensions:
+    exchangeExtension: h4kuna\Exchange\DI\ExchangeExtension
+
+exchangeExtension:
+    currencies: {
+            czk: [decimal: 5, symbol: 'Kč', point: ',', thousand: ' ', mask: 'S 1', zeroClear: true]
+            usd: [symbol: '$']
+            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 0] }
+    vat: 20.5
+    vatIn: false
+    vatOut: false
+</pre>
+
 Run example
 -----------
 ```sh
