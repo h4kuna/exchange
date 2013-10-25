@@ -27,7 +27,12 @@ class ExchangeExtension extends CompilerExtension {
 
     public function loadConfiguration() {
         $builder = $this->getContainerBuilder();
+        $currencies = $this->defaults['currencies'];
+        unset($this->defaults['currencies']);
         $config = $this->getConfig($this->defaults);
+        if (!isset($config['currencies'])) {
+            $config['currencies'] = $currencies;
+        }
 
         // driver
         $builder->addDefinition($this->prefix('driver'))
