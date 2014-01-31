@@ -5,11 +5,13 @@ Exchange
 
 Exchange is PHP script works with currencies. This extension is for [Nette framework 2+](http://nette.org/).
 
+Tested for Nette 2.1.
+
 Installation to project
 -----------------------
 The best way to install h4kuna/exchange is using Composer:
 ```sh
-$ composer require h4kuna/exchange:4.0.1
+$ composer require h4kuna/exchange:4.0.2
 ```
 
 Example NEON config
