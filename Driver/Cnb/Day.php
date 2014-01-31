@@ -2,11 +2,15 @@
 
 namespace h4kuna\Exchange\Cnb;
 
+use Nette\DateTime;
+use h4kuna\CUrl\CurlBuilder;
 use h4kuna\Exchange\Download;
 use h4kuna\Exchange\Utils;
-use h4kuna\CUrl;
 
 class Day extends Download {
+
+    /** @var DateTime */
+    private $date;
 
     /**
      * Url where download rating
@@ -23,7 +27,16 @@ class Day extends Download {
      */
     const CNB_CZK = 'Česká Republika|koruna|1|CZK|1';
 
-    //protected $correction = 1.04;
+    /**
+     * Load from history and testing data
+     *
+     * @param string $date
+     * @return Day
+     */
+    public function setDate($date) {
+        $this->date = DateTime::from($date);
+        return $this;
+    }
 
     /**
      * Load data from remote source
@@ -31,9 +44,9 @@ class Day extends Download {
      * @return type
      */
     protected function loadData() {
-        $data = CUrl::download(self::CNB_DAY);
+        $data = CurlBuilder::download($this->createUrl(self::CNB_DAY));
 
-        $another = Curl::download(self::CNB_DAY2);
+        $another = CurlBuilder::download($this->createUrl(self::CNB_DAY2));
         $another = explode("\n", Utils::stroke2point($another));
         unset($another[0], $another[1]);
 
@@ -45,7 +58,7 @@ class Day extends Download {
 
     /**
      * @param string $row
-     * @return \h4kuna\Exchange\Cnb\CurrencyProperty|null
+     * @return CurrencyProperty|NULL
      */
     protected function createCurrencyProperty($row) {
         list($country, $currency, $home, $code, $foreing) = explode('|', $row);
@@ -57,6 +70,18 @@ class Day extends Download {
 
     public function getPrefix() {
         return 'cnb';
+    }
+
+    /**
+     *
+     * @param string $url
+     * @return string
+     */
+    private function createUrl($url) {
+        if ($this->date) {
+            return $url . '?date=' . $this->date->format('d.m.Y');
+        }
+        return $url;
     }
 
 }
