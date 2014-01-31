@@ -1,22 +1,8 @@
 <?php
-include __DIR__ . "/vendor/autoload.php";
+require __DIR__ . '/tests/bootstrap.php';
 
-
-
-// 2# Create Nette Configurator
-$configurator = new Nette\Config\Configurator;
-$tmp = __DIR__ . '/tmp';
-$configurator->enableDebugger($tmp);
-$configurator->setTempDirectory($tmp);
-
-$configurator->onCompile[] = function ($configurator, $compiler) {
-    $compiler->addExtension('exchangeExtension', new h4kuna\Exchange\DI\ExchangeExtension());
-};
-
-$container = $configurator->createContainer();
-
-$exchange = Nette\Framework::VERSION == '2.1-dev' ?
-        $container->createServiceExchangeExtension__exchange() :
+$exchange = Nette\Framework::VERSION == '2.1.0' ?
+        $container->createService('exchangeExtension.exchange') :
         $container->exchangeExtension->exchange;
 
 $exchange->loadCurrency('usd');
