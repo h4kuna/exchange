@@ -345,6 +345,7 @@ class Exchange extends \ArrayIterator {
                 $profil->setSymbol($code);
             } elseif (is_array($property)) {
                 $profil = $this->getDefaultFormat();
+                $profil->setSymbol($code);
                 foreach ($property as $k => $v) {
                     $k = 'set' . ucfirst($k);
                     $profil->$k($v);
@@ -461,3 +462,4 @@ class Exchange extends \ArrayIterator {
 
 // </editor-fold>
 }
+
