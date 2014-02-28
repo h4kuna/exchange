@@ -6,7 +6,7 @@ Installation to project
 -----------------------
 The best way to install h4kuna/exchange is using Composer:
 ```sh
-$ composer require h4kuna/exchange:4.0.1
+$ composer require h4kuna/exchange:4.0.3
 ```
 
 Example NEON config
