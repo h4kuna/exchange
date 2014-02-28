@@ -19,10 +19,9 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
 
     protected function setUp() {
         $storage = new Exchange\Storage(Environment::getContext()->cacheStorage);
-        $download = new Exchange\Cnb\Day;
-        $download->setDate('2000-12-30');
-        $store = new Exchange\Store($storage, $download);
-        $this->object = new Exchange\Exchange($store, Environment::getHttpRequest(), Environment::getSession('exchange'));
+        $store = new Exchange\Store($storage, new Exchange\Cnb\Day);
+        $exchange = new Exchange\Exchange($store, Environment::getHttpRequest(), Environment::getSession('exchange'));
+        $this->object = $exchange->setDate(new \DateTime('2000-12-30'));
         $this->object->loadCurrency('czk');
         $this->object->loadCurrency('eur');
         $this->object->loadCurrency('usd');

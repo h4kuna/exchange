@@ -2,15 +2,11 @@
 
 namespace h4kuna\Exchange\Cnb;
 
-use Nette\DateTime;
 use h4kuna\CUrl\CurlBuilder;
 use h4kuna\Exchange\Download;
 use h4kuna\Exchange\Utils;
 
 class Day extends Download {
-
-    /** @var DateTime */
-    private $date;
 
     /**
      * Url where download rating
@@ -28,32 +24,28 @@ class Day extends Download {
     const CNB_CZK = 'Česká Republika|koruna|1|CZK|1';
 
     /**
-     * Load from history and testing data
+     * Load data from remote source
      *
-     * @param string $date
-     * @return Day
+     * @return array
      */
-    public function setDate($date) {
-        $this->date = DateTime::from($date);
-        return $this;
+    protected function loadData() {
+        $data = $this->downloadList(self::CNB_DAY);
+        $data[1] = self::CNB_CZK;
+        unset($data[0]);
+
+        $another = $this->downloadList(self::CNB_DAY2);
+        unset($another[0], $another[1]);
+
+        return array_merge($data, $another);
     }
 
     /**
-     * Load data from remote source
-     *
-     * @return type
+     * @param string $url
+     * @return array
      */
-    protected function loadData() {
-        $data = CurlBuilder::download($this->createUrl(self::CNB_DAY));
-
-        $another = CurlBuilder::download($this->createUrl(self::CNB_DAY2));
-        $another = explode("\n", Utils::stroke2point($another));
-        unset($another[0], $another[1]);
-
-        $data = explode("\n", Utils::stroke2point($data));
-        $data[1] = self::CNB_CZK;
-        unset($data[0]);
-        return array_merge($data, $another);
+    private function downloadList($url) {
+        $data = CurlBuilder::download($this->createUrl($url));
+        return explode("\n", Utils::stroke2point($data));
     }
 
     /**
@@ -79,7 +71,7 @@ class Day extends Download {
      */
     private function createUrl($url) {
         if ($this->date) {
-            return $url . '?date=' . $this->date->format('d.m.Y');
+            return $url . '?date=' . urlencode($this->date->format('d.m.Y'));
         }
         return $url;
     }

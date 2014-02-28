@@ -80,6 +80,7 @@ class ExchangeExtension extends CompilerExtension {
                 $exchange->addSetup('loadCurrency', array($currency));
             }
         }
+        return $builder;
     }
 
     /**

@@ -39,6 +39,15 @@ class Store extends Object implements IStore {
     }
 
     /**
+     * 
+     * @param \DateTime $date
+     * @return Store
+     */
+    public function setDate(\DateTime $date) {
+        return new static($this->storage->setDate($date), $this->download->setDate($date));
+    }
+
+    /**
      * Use for loadAll where start
      *
      * @return string

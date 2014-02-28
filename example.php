@@ -1,13 +1,13 @@
 <?php
-require __DIR__ . '/tests/bootstrap.php';
-
-$exchange = Nette\Framework::VERSION == '2.1.0' ?
-        $container->createService('exchangeExtension.exchange') :
-        $container->exchangeExtension->exchange;
-
+$container = require __DIR__ . '/tests/bootstrap.php';
+\Nette\Diagnostics\Debugger::timer();
+$exchange = $container->getService('exchangeExtension.exchange');
 $exchange->loadCurrency('usd');
 $historyEUR = 20;
 $smallVat = 15;
+
+$date = new DateTime('2013-12-30');
+$history = $exchange->setDate($date);
 ?>
 <!DOCTYPE html>
 <html>
@@ -42,7 +42,7 @@ $smallVat = 15;
         <h3>VAT for this is: <?php echo $smallVat ?>%</h3>
         <p><?php echo $exchange->format(100, NULL, NULL, $smallVat); ?></p>
 
-        <h3>History for old order in eshop</h3>
+        <h3>History rate for old order in eshop</h3>
         <h4>Before 1:<?php
             echo $historyEUR;
             $exchange->addHistory('eur', $historyEUR);
@@ -53,6 +53,11 @@ $smallVat = 15;
             ?></p>
         <h4>Actual</h4>
         <p><?php echo $exchange->format(10, 'eur', 'czk'); ?></p>
+        
+        <h3>History date <?php echo $date->format('Y-m-d'); ?> </h3>
+        <p>Today: <?php echo $exchange->format(10, 'eur'); ?></p>
+        <p>History: <?php echo $history->format(10, 'eur'); ?></p>
+        
         <p><small><?php echo Nette\Framework::VERSION ?></small></p>
     </body>
 </html>

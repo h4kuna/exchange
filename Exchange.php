@@ -2,14 +2,15 @@
 
 namespace h4kuna\Exchange;
 
-use Nette\Http\SessionSection;
-use Nette\Http\Request;
-use Nette\Utils\Html;
-use Nette\Templating\Template;
+use ArrayIterator;
 use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
 use h4kuna\Tax;
 use h4kuna\Vat;
+use Nette\Http\Request;
+use Nette\Http\SessionSection;
+use Nette\Templating\Template;
+use Nette\Utils\Html;
 
 /**
  *
@@ -18,7 +19,7 @@ use h4kuna\Vat;
  * @property string $default
  * @property string $web
  */
-class Exchange extends \ArrayIterator {
+class Exchange extends ArrayIterator {
 
     /**
      * Czech currency code
@@ -122,6 +123,26 @@ class Exchange extends \ArrayIterator {
     }
 
     /**
+     * 
+     * @param \DateTime $date
+     * @return Exchange
+     */
+    public function setDate(\DateTime $date) {
+        $store = $this->store->setDate($date);
+        $self = new static($store, $this->request, $this->session);
+        $self->setDefaulFormat($this->getDefaultFormat());
+        foreach ($this as $key => $v) {
+            $self->loadCurrency($key, $v->getFormat());
+        }
+
+        return $self;
+    }
+
+    public function getStore() {
+        return $this->store;
+    }
+
+    /**
      * VAT param in url
      *
      * @param string $str
@@ -158,6 +179,17 @@ class Exchange extends \ArrayIterator {
         if ($session) {
             $this->session->currency = $this->web;
         }
+        return $this;
+    }
+
+    /**
+     * Change storage
+     * 
+     * @param Store $store
+     * @return Exchange
+     */
+    protected function setStore(Store $store) {
+        $this->store = $store;
         return $this;
     }
 
@@ -351,6 +383,9 @@ class Exchange extends \ArrayIterator {
                     $profil->$k($v);
                 }
             }
+            else {
+                $profil = $property;
+            }
 
             if (!($profil instanceof INumberFormat)) {
                 throw new ExchangeException('Property of currency must be array or instance of INumberFormat');
@@ -443,7 +478,7 @@ class Exchange extends \ArrayIterator {
                 $this->setWeb($currency, TRUE);
             }
         } catch (ExchangeException $e) {
-
+            
         }
     }
 
@@ -462,4 +497,3 @@ class Exchange extends \ArrayIterator {
 
 // </editor-fold>
 }
-

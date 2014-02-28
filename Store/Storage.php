@@ -2,23 +2,60 @@
 
 namespace h4kuna\Exchange;
 
+use DateTime;
+use Nette\DateTime AS ND;
 use Nette\Caching;
 
 class Storage extends Caching\Cache implements IStorage {
 
-    /** @var \DateTime */
-    protected $refresh;
-
     /** @var string */
     protected $prefix;
 
-    public function __construct(Caching\IStorage $storage, $hour = '14:45') {
-        parent::__construct($storage, __CLASS__);
+    /** @var string represent time */
+    protected $refresh = '14:45';
 
-        $this->refresh = new \DateTime('today ' . $hour);
-        if (new \DateTime >= $this->refresh) {
-            $this->refresh->modify('+1 day');
+    public function __construct(Caching\IStorage $storage, $date = NULL) {
+        if ($date) {
+            $date = '\\' . ND::from($date)->format('Y-m-d');
         }
+        parent::__construct($storage, __CLASS__ . $date);
+    }
+
+    /**
+     * 
+     * @return ND
+     */
+    protected function getRefresh() {
+        if (is_string($this->refresh)) {
+            $this->refresh = new DateTime('today ' . $this->refresh);
+            if (new DateTime >= $this->refresh) {
+                $this->refresh->modify('+1 day');
+            }
+        }
+        return $this->refresh;
+    }
+
+    /**
+     * 
+     * @param string $hour
+     * @return Storage
+     */
+    public function setRefresh($hour) {
+        if ($hour === FALSE) {
+            $this->refresh = FALSE;
+            return $this;
+        }
+        return $this;
+    }
+
+    /**
+     * 
+     * @param mixed $date
+     * @return Storage
+     */
+    public function setDate($date) {
+        $storege = new static($this->getStorage(), $date);
+        return $storege->setRefresh(FALSE);
     }
 
     /**
@@ -26,7 +63,13 @@ class Storage extends Caching\Cache implements IStorage {
      * @param ICurrency $currency
      */
     public function saveCurrency(ICurrencyProperty $currency) {
-        $this->save($currency->getCode(), $currency, array(self::EXPIRE => $this->refresh));
+        $refresh = $this->getRefresh();
+        $expire = NULL;
+        if ($refresh) {
+            $expire = array(self::EXPIRE => $refresh);
+        }
+
+        $this->save($currency->getCode(), $currency, $expire);
     }
 
     /**

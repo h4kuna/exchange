@@ -2,7 +2,9 @@
 
 namespace h4kuna\Exchange;
 
+use h4kuna\Exchange\RB\Day;
 use h4kuna\Vat;
+use Nette\DateTime;
 use Nette\Object;
 
 /**
@@ -11,6 +13,9 @@ use Nette\Object;
  * @author Milan Matějček
  */
 abstract class Download extends Object implements IDownload {
+
+    /** @var DateTime */
+    protected $date;
 
     /** @var IStorage */
     protected $storeage;
@@ -72,6 +77,18 @@ abstract class Download extends Object implements IDownload {
             return $foreing;
         }
         return $foreing / $this->correction->getUpDecimal();
+    }
+
+    /**
+     * Load from history and testing data
+     *
+     * @param \DateTime $date
+     * @return Day
+     */
+    public function setDate(\DateTime $date = NULL) {
+        $self = new static();
+        $self->date = $date;
+        return $self;
     }
 
     /**
