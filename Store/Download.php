@@ -45,6 +45,9 @@ abstract class Download extends Object implements IDownload {
         $storage->setPrefix($this->getPrefix());
         $code = NULL;
         foreach ($data as $row) {
+            if (!$row) {
+                continue;
+            }
             $currency = $this->createCurrencyProperty($row);
             if ($currency !== NULL) {
                 $code = $currency->setNext($code)->getCode();

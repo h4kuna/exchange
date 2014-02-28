@@ -12,7 +12,9 @@ $configurator->setDebugMode();
 
 $configurator->defaultExtensions['exchangeExtension'] = '\h4kuna\Exchange\DI\ExchangeExtension';
 
-return $configurator->createContainer();
+$container = $configurator->createContainer();
+$container->getService('session')->start();
+return $container;
 
 
 
