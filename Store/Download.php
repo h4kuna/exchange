@@ -2,7 +2,6 @@
 
 namespace h4kuna\Exchange;
 
-use h4kuna\Exchange\RB\Day;
 use h4kuna\Vat;
 use Nette\DateTime;
 use Nette\Object;
@@ -13,9 +12,6 @@ use Nette\Object;
  * @author Milan Matějček
  */
 abstract class Download extends Object implements IDownload {
-
-    /** @var DateTime */
-    protected $date;
 
     /** @var IStorage */
     protected $storeage;
@@ -38,11 +34,11 @@ abstract class Download extends Object implements IDownload {
      * Download data from remote source and save
      *
      * @param IStorage $storage
+     * @param \DateTime $date
      */
-    final public function loadCurrencies(IStorage $storage) {
+    final public function loadCurrencies(IStorage $storage, \DateTime $date) {
         $this->setCorrection($this->correction);
-        $data = $this->loadData();
-        $storage->setPrefix($this->getPrefix());
+        $data = $this->loadData($date);
         $code = NULL;
         foreach ($data as $row) {
             if (!$row) {
@@ -83,23 +79,11 @@ abstract class Download extends Object implements IDownload {
     }
 
     /**
-     * Load from history and testing data
-     *
-     * @param \DateTime $date
-     * @return Day
-     */
-    public function setDate(\DateTime $date = NULL) {
-        $self = new static();
-        $self->date = $date;
-        return $self;
-    }
-
-    /**
      * Load data for iterator
      *
      * @return array
      */
-    abstract protected function loadData();
+    abstract protected function loadData(\DateTime $date);
 
     /**
      * Modify data before save to cache

@@ -40,6 +40,13 @@ class Exchange extends ArrayIterator {
     private static $href;
 
     /**
+     * History instances
+     *
+     * @var array
+     */
+    private static $history = array();
+
+    /**
      * Default currency "from" input
      *
      * @var string
@@ -52,6 +59,8 @@ class Exchange extends ArrayIterator {
      * @var string
      */
     private $web;
+
+
 
 // <editor-fold defaultstate="collapsed" desc="Private dependencies">
 
@@ -84,6 +93,7 @@ class Exchange extends ArrayIterator {
         $this->store = $store;
         $this->request = $request;
         $this->session = $session;
+        self::$history[$store->getDate()->format(\DateTime::ISO8601)] = $this;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Setters">
@@ -128,7 +138,14 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDate(\DateTime $date) {
+        $key = $date->format(\DateTime::ISO8601);
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
+        }
         $store = $this->store->setDate($date);
+        if ($store === $this->store) {
+            return $this;
+        }
         $self = new static($store, $this->request, $this->session);
         $self->setDefaulFormat($this->getDefaultFormat());
         foreach ($this as $key => $v) {
@@ -136,10 +153,6 @@ class Exchange extends ArrayIterator {
         }
 
         return $self;
-    }
-
-    public function getStore() {
-        return $this->store;
     }
 
     /**
@@ -179,17 +192,6 @@ class Exchange extends ArrayIterator {
         if ($session) {
             $this->session->currency = $this->web;
         }
-        return $this;
-    }
-
-    /**
-     * Change storage
-     * 
-     * @param Store $store
-     * @return Exchange
-     */
-    protected function setStore(Store $store) {
-        $this->store = $store;
         return $this;
     }
 
@@ -382,8 +384,7 @@ class Exchange extends ArrayIterator {
                     $k = 'set' . ucfirst($k);
                     $profil->$k($v);
                 }
-            }
-            else {
+            } else {
                 $profil = $property;
             }
 

@@ -24,14 +24,6 @@ interface IStorage {
     public function saveCurrency(ICurrencyProperty $currency);
 
     /**
-     * ???
-     *
-     * @param string $str
-     * @return ICurrencyProperty
-     */
-    public function setPrefix($str);
-
-    /**
      * Use for reference to last currency for loadAll
      *
      * @param string $str

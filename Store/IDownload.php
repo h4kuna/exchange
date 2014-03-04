@@ -11,15 +11,9 @@ interface IDownload {
 
     /**
      * Load from remote source and save
-     *
+     * 
+     * @param \DateTime $date
      * @return Currencies
      */
-    public function loadCurrencies(IStorage $storage);
-
-    /**
-     * Prefix for Storage
-     *
-     * @return string
-     */
-    public function getPrefix();
+    public function loadCurrencies(IStorage $storage, \DateTime $date);
 }

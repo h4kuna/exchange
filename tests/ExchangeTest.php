@@ -18,13 +18,21 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     private $object;
 
     protected function setUp() {
-        $storage = new Exchange\Storage(Environment::getContext()->cacheStorage);
-        $store = new Exchange\Store($storage, new Exchange\Cnb\Day);
+        $this->initExchange();
+    }
+
+    private function initExchange(Exchange\Download $driver = NULL) {
+        if ($driver === NULL) {
+            $driver = new Exchange\Cnb\Day;
+        }
+        $storage = new Exchange\Storage(Environment::getContext()->cacheStorage, $driver);
+        $store = new Exchange\Store($storage, $driver);
         $exchange = new Exchange\Exchange($store, Environment::getHttpRequest(), Environment::getSession('exchange'));
         $this->object = $exchange->setDate(new \DateTime('2000-12-30'));
         $this->object->loadCurrency('czk');
         $this->object->loadCurrency('eur');
         $this->object->loadCurrency('usd');
+        $this->object->setWeb('CZK', TRUE);
     }
 
     public function testChange() {
@@ -57,5 +65,11 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->object->removeHistory($code);
         $this->assertSame(0.74, $this->object->change(26, NULL, NULL, 2));
     }
+
+    public function testRbDriver() {
+        $this->initExchange(new Exchange\RB\Day);
+        $this->assertSame(10, $this->object->change(10));
+        $this->assertSame(9.2799, $this->object->change(10, 'eur', 'usd', 4));
+}
 
 }

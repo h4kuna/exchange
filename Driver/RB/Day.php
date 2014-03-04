@@ -2,9 +2,14 @@
 
 namespace h4kuna\Exchange\RB;
 
-use h4kuna\Exchange\Download;
+use DateTime;
+use DOMDocument;
+use DOMElement;
 use h4kuna\CUrl;
 use h4kuna\Exchange\CurrencyProperty;
+use h4kuna\Exchange\Download;
+use h4kuna\Exchange\Exchange;
+use h4kuna\Exchange\ExchangeException;
 
 /**
  * Raiffeisenbank
@@ -42,12 +47,13 @@ class Day extends Download {
     /**
      * Load data from RB
      *
+     * @param DateTime $date
      * @return array
-     * @throws \h4kuna\Exchange\ExchangeException
+     * @throws ExchangeException
      */
-    protected function loadData() {
-        $data = CUrl::download(self::URL);
-        $doc = new \DOMDocument;
+    protected function loadData(DateTime $date) {
+        $data = CUrl\CurlBuilder::download($this->prepareUrl(self::URL, $date));
+        $doc = new DOMDocument;
         $doc->loadXML($data);
         foreach ($doc->getElementsByTagName('exchange_rate') as $v) {
             if ($v->getAttribute('type') == $this->namespace) {
@@ -56,21 +62,29 @@ class Day extends Download {
             }
         }
 
-        throw new \h4kuna\Exchange\ExchangeException('Namespace not found: ' . $this->namespace);
+        throw new ExchangeException('Namespace not found: ' . $this->namespace);
     }
 
     /**
      *
-     * @return \DOMElement
+     * @return DOMElement
      */
     private function czk() {
-        $doc = new \DOMDocument;
-        $doc->loadXML('<' . self::NODE . ' name="' . \h4kuna\Exchange\Exchange::CZK . '" quota="1" rate="1"/>');
+        $doc = new DOMDocument;
+        $doc->loadXML('<' . self::NODE . ' name="' . Exchange::CZK . '" quota="1" rate="1"/>');
         return $doc->getElementsByTagName(self::NODE)->item(0);
     }
 
-    public function getPrefix() {
-        return 'rb';
+    /**
+     * 
+     * @param string $url
+     * @param DateTime $date
+     */
+    private function prepareUrl($url, DateTime $date) {
+        if ($date->format('Y-m-d') == date('Y-m-d')) {
+            return $url;
+        }
+        return $url . '?' . $date->format('\d\a\y=j&\m\o\n\t\h=n&\y\e\a\r=Y');
     }
 
 }

@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange;
 
+use DateTime;
 use Nette\Object;
 
 /**
@@ -16,6 +17,9 @@ class Store extends Object implements IStore {
 
     /** @var Download */
     private $download;
+
+    /** @var DateTime */
+    private $date;
 
     public function __construct(Storage $storage, Download $download) {
         $this->storage = $storage;
@@ -33,18 +37,32 @@ class Store extends Object implements IStore {
         try {
             return $this->checkCurrency($code);
         } catch (ExchangeException $e) {
-            $this->download->loadCurrencies($this->storage);
+            $this->download->loadCurrencies($this->storage, $this->date);
             return $this->checkCurrency($code);
         }
     }
 
     /**
      * 
-     * @param \DateTime $date
+     * @param DateTime $date
      * @return Store
      */
-    public function setDate(\DateTime $date) {
-        return new static($this->storage->setDate($date), $this->download->setDate($date));
+    public function setDate(DateTime $date) {
+        $storage = $this->storage->setDate($date);
+        if($this->storage === $storage) {
+            return $this;
+        }
+        $store = new static($storage, $this->download);
+        $store->date = $date;
+        return $store;
+    }
+
+    /** @return DateTime */
+    public function getDate() {
+        if ($this->date === NULL) {
+            $this->date = new DateTime('midnight');
+        }
+        return $this->date;
     }
 
     /**

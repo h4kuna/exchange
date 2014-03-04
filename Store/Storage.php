@@ -8,17 +8,26 @@ use Nette\Caching;
 
 class Storage extends Caching\Cache implements IStorage {
 
-    /** @var string */
-    protected $prefix;
-
     /** @var string represent time */
     protected $refresh = '14:45';
 
-    public function __construct(Caching\IStorage $storage, $date = NULL) {
-        if ($date) {
-            $date = '\\' . ND::from($date)->format('Y-m-d');
+    /** @var string id of class */
+    private $name;
+    
+    /** @var Download */
+    private $download;
+
+    public function __construct(Caching\IStorage $storage, Download $download, $date = 'now') {
+        $this->download = $download;
+        $this->name = get_class($download);        
+        $date = ND::from($date);
+        $date->setTime(0, 0, 0);
+        $ymd = $date->format('Y-m-d');
+        if (date('Y-m-d') > $ymd) {
+            $this->name .= '\\' . $ymd;
+            $this->offRefresh();
         }
-        parent::__construct($storage, __CLASS__ . $date);
+        parent::__construct($storage, $this->name);
     }
 
     /**
@@ -35,17 +44,26 @@ class Storage extends Caching\Cache implements IStorage {
         return $this->refresh;
     }
 
+    public function getName() {
+        return $this->name;
+    }
+
     /**
      * 
      * @param string $hour
      * @return Storage
      */
     public function setRefresh($hour) {
-        if ($hour === FALSE) {
-            $this->refresh = FALSE;
-            return $this;
-        }
+        $this->refresh = $hour;
         return $this;
+    }
+
+    /**
+     * 
+     * @return Storage
+     */
+    protected function offRefresh() {
+        return $this->setRefresh(FALSE);
     }
 
     /**
@@ -54,8 +72,11 @@ class Storage extends Caching\Cache implements IStorage {
      * @return Storage
      */
     public function setDate($date) {
-        $storege = new static($this->getStorage(), $date);
-        return $storege->setRefresh(FALSE);
+        $storage = new static($this->getStorage(), $this->download, $date);
+        if ($storage->getName() == $this->name) {
+            return $this;
+        }
+        return $storage;
     }
 
     /**
@@ -70,27 +91,6 @@ class Storage extends Caching\Cache implements IStorage {
         }
 
         $this->save($currency->getCode(), $currency, $expire);
-    }
-
-    /**
-     * Prefix for date or driver
-     *
-     * @param string $str
-     * @return Storage
-     */
-    public function setPrefix($str) {
-        if ($str) {
-            $this->prefix = $str . '/';
-        }
-        return $this;
-    }
-
-    public function load($key, $fallback = NULL) {
-        return parent::load($this->prefix . $key, $fallback);
-    }
-
-    public function save($key, $data, array $dependencies = NULL) {
-        return parent::save($this->prefix . $key, $data, $dependencies);
     }
 
     /**

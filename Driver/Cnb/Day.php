@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange\Cnb;
 
+use DateTime;
 use h4kuna\CUrl\CurlBuilder;
 use h4kuna\Exchange\Download;
 use h4kuna\Exchange\Utils;
@@ -25,15 +26,15 @@ class Day extends Download {
 
     /**
      * Load data from remote source
-     *
+     * @param DateTime $date
      * @return array
      */
-    protected function loadData() {
-        $data = $this->downloadList(self::CNB_DAY);
+    protected function loadData(DateTime $date) {
+        $data = $this->downloadList(self::CNB_DAY, $date);
         $data[1] = self::CNB_CZK;
         unset($data[0]);
 
-        $another = $this->downloadList(self::CNB_DAY2);
+        $another = $this->downloadList(self::CNB_DAY2, $date);
         unset($another[0], $another[1]);
 
         return array_merge($data, $another);
@@ -41,10 +42,11 @@ class Day extends Download {
 
     /**
      * @param string $url
+     * @param DateTime $date
      * @return array
      */
-    private function downloadList($url) {
-        $data = CurlBuilder::download($this->createUrl($url));
+    private function downloadList($url, DateTime $date) {
+        $data = CurlBuilder::download($this->createUrl($url, $date));
         return explode("\n", Utils::stroke2point($data));
     }
 
@@ -60,20 +62,14 @@ class Day extends Download {
         return NULL;
     }
 
-    public function getPrefix() {
-        return 'cnb';
-    }
-
     /**
      *
      * @param string $url
+     * @param DateTime $date
      * @return string
      */
-    private function createUrl($url) {
-        if ($this->date) {
-            return $url . '?date=' . urlencode($this->date->format('d.m.Y'));
-        }
-        return $url;
+    private function createUrl($url, DateTime $date) {
+        return $url . '?date=' . urlencode($date->format('d.m.Y'));
     }
 
 }
