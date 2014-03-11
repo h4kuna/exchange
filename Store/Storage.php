@@ -9,7 +9,7 @@ use Nette\Caching;
 class Storage extends Caching\Cache implements IStorage {
 
     /** @var string represent time */
-    protected $refresh = '14:45';
+    protected $refresh = '15:30';
 
     /** @var string id of class */
     private $name;
