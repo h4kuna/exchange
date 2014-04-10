@@ -65,4 +65,11 @@ interface ICurrencyProperty {
      * @return ICurrencyProperty
      */
     public function revertRate();
+
+    /**
+     * Default currency for count rate
+     *
+     * @return ICurrencyProperty
+     */
+    // public function setDefault($property);
 }

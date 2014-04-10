@@ -101,12 +101,16 @@ class Exchange extends ArrayIterator {
     /**
      * Set default "from" currency
      *
-     * @param string $code
+     * @param string|CurrencyProperty $code
      * @return Exchange
      */
     public function setDefault($code) {
-        $currency = $this->offsetGet($code);
-        $this->default = $currency->getCode();
+        if (is_string($code)) {
+            $code = $this->offsetGet($code);
+        } elseif (!($code instanceof CurrencyProperty)) {
+            throw new ExchangeException('Bad declaration of default currency. Use object or currency code.');
+        }
+        $this->default = $code;
         return $this;
     }
 
@@ -133,7 +137,7 @@ class Exchange extends ArrayIterator {
     }
 
     /**
-     * 
+     *
      * @param \DateTime $date
      * @return Exchange
      */
@@ -323,6 +327,17 @@ class Exchange extends ArrayIterator {
     }
 
     /**
+     *
+     * @param float $number
+     * @param string|FALSE $to
+     * @param int|float|Vat $vat
+     * @return string
+     */
+    public function formatTo($number, $to, $vat = NULL) {
+        return $this->format($number, NULL, $to, $vat);
+    }
+
+    /**
      * Price with VAT every time
      *
      * @return string
@@ -362,13 +377,13 @@ class Exchange extends ArrayIterator {
         try {
             $currency = $this->store->loadCurrency($code);
             if (!$this->default) {
-                $this->default = $currency->getCode();
+                $this->setDefault($currency);
             }
         } catch (ExchangeException $e) {
             if (!$this->default) {
                 throw new ExchangeException('Let\'s define possible currency code. Not this: ' . $code);
             }
-            $currency = $this->store->loadCurrency($this->default);
+            $currency = $this->store->loadCurrency($this->default->getCode());
         }
 
         $code = $currency->getCode();
@@ -392,6 +407,7 @@ class Exchange extends ArrayIterator {
                 throw new ExchangeException('Property of currency must be array or instance of INumberFormat');
             }
 
+            $currency->default = & $this->default;
             $this[$code] = $currency->setFormat($profil);
             $this->loadParamCurrency($code);
         }
@@ -425,7 +441,7 @@ class Exchange extends ArrayIterator {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters">
 
-    /** @var string */
+    /** @var CurrencyProperty */
     public function getDefault() {
         if (!$this->default) {
             throw new ExchangeException('Let\'s define currency by method loadCurrency() and first is default.');
@@ -479,7 +495,7 @@ class Exchange extends ArrayIterator {
                 $this->setWeb($currency, TRUE);
             }
         } catch (ExchangeException $e) {
-            
+
         }
     }
 

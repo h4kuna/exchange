@@ -6,6 +6,20 @@ $exchange->loadCurrency('usd');
 $historyEUR = 20;
 $smallVat = 15;
 
+if (false) {
+    $exchange = new \h4kuna\Exchange\Exchange;
+}
+
+$exchange->loadCurrency('rub');
+$code = 'eur';
+$exchange->setDefault($code);
+
+var_dump($exchange->change(1, NULL, 'czk'));
+
+die($exchange->formatTo(1, 'rub'));
+
+
+
 $date = new DateTime('2013-12-30');
 $history = $exchange->setDate($date);
 ?>
@@ -53,11 +67,11 @@ $history = $exchange->setDate($date);
             ?></p>
         <h4>Actual</h4>
         <p><?php echo $exchange->format(10, 'eur', 'czk'); ?></p>
-        
+
         <h3>History date <?php echo $date->format('Y-m-d'); ?> </h3>
         <p>Today: <?php echo $exchange->format(10, 'eur'); ?></p>
         <p>History: <?php echo $history->format(10, 'eur'); ?></p>
-        
+
         <p><small><?php echo Nette\Framework::VERSION ?></small></p>
     </body>
 </html>

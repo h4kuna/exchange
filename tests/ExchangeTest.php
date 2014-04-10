@@ -49,6 +49,7 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->assertSame('10,00' . $n . 'CZK', $this->object->format(10));
         $this->assertSame('10,00' . $n . 'CZK', $this->object->format(10, FALSE));
         $this->assertSame('350,90' . $n . 'CZK', $this->object->format(10, 'eur'));
+
         $this->assertSame('350,90' . $n . 'CZK', $this->object->format(10, 'eur', 'czk'));
         $this->assertSame('9,28' . $n . 'USD', $this->object->format(10, 'eur', 'usd', 2));
         $this->assertSame('10,78' . $n . 'EUR', $this->object->format(10, 'usd', 'eur', 2));
@@ -66,10 +67,19 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(0.74, $this->object->change(26, NULL, NULL, 2));
     }
 
+    public function testSetDefault() {
+        $this->object->setDefault('eur');
+        $this->object->loadCurrency('byr');
+        $this->assertSame(35.09, $this->object->change(1, NULL, 'czk'));
+        var_dump($this->object['BYR']);
+        die();
+        $this->assertSame(17371.287 ,$this->object->change(1, NULL, 'byr', 3));
+    }
+
     public function testRbDriver() {
         $this->initExchange(new Exchange\RB\Day);
         $this->assertSame(10, $this->object->change(10));
         $this->assertSame(9.2799, $this->object->change(10, 'eur', 'usd', 4));
-}
+    }
 
 }

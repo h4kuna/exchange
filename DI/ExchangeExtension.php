@@ -26,7 +26,7 @@ class ExchangeExtension extends CompilerExtension {
     public $defaults = array(
         'vat' => 21,
         'vatIn' => FALSE,
-        'vatOut' => TRUE,
+        'vatOut' => FALSE,
         'currencies' => array(
             'czk' => array('decimal' => 0, 'symbol' => 'Kč'),
             'eur'
