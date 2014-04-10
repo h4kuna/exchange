@@ -2,12 +2,12 @@
 
 namespace h4kuna\Exchange;
 
+use DateTime;
 use h4kuna\Vat;
-use Nette\DateTime;
 use Nette\Object;
 
 /**
- * Description of Download
+ * Download currency from server
  *
  * @author Milan Matějček
  */
@@ -34,9 +34,9 @@ abstract class Download extends Object implements IDownload {
      * Download data from remote source and save
      *
      * @param IStorage $storage
-     * @param \DateTime $date
+     * @param DateTime $date
      */
-    final public function loadCurrencies(IStorage $storage, \DateTime $date) {
+    final public function loadCurrencies(IStorage $storage, DateTime $date) {
         $this->setCorrection($this->correction);
         $data = $this->loadData($date);
         $code = NULL;
@@ -83,7 +83,7 @@ abstract class Download extends Object implements IDownload {
      *
      * @return array
      */
-    abstract protected function loadData(\DateTime $date);
+    abstract protected function loadData(DateTime $date);
 
     /**
      * Modify data before save to cache

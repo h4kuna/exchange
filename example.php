@@ -10,16 +10,6 @@ if (false) {
     $exchange = new \h4kuna\Exchange\Exchange;
 }
 
-$exchange->loadCurrency('rub');
-$code = 'eur';
-$exchange->setDefault($code);
-
-var_dump($exchange->change(1, NULL, 'czk'));
-
-die($exchange->formatTo(1, 'rub'));
-
-
-
 $date = new DateTime('2013-12-30');
 $history = $exchange->setDate($date);
 ?>
