@@ -30,7 +30,8 @@ class ExchangeExtension extends CompilerExtension {
         'currencies' => array(
             'czk' => array('decimal' => 0, 'symbol' => 'Kč'),
             'eur'
-        )
+        ),
+        'driver' => 'h4kuna\Exchange\Cnb\Day'
     );
 
     public function loadConfiguration() {
@@ -44,7 +45,7 @@ class ExchangeExtension extends CompilerExtension {
 
         // driver
         $builder->addDefinition($this->prefix('driver'))
-                ->setClass('h4kuna\Exchange\Cnb\Day');
+                ->setClass($config['driver']);
 
         // session section
         $builder->addDefinition($this->prefix('sessionSection'))
