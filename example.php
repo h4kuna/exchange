@@ -10,6 +10,11 @@ if (false) {
     $exchange = new \h4kuna\Exchange\Exchange;
 }
 
+$rbDriver = $exchange->setDriver(new \h4kuna\Exchange\RB\Day);
+
+
+dump($rbDriver->store);
+die();
 $date = new DateTime('2013-12-30');
 $history = $exchange->setDate($date);
 ?>

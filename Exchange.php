@@ -3,6 +3,7 @@
 namespace h4kuna\Exchange;
 
 use ArrayIterator;
+use DateTime;
 use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
 use h4kuna\Tax;
@@ -75,7 +76,7 @@ class Exchange extends ArrayIterator {
     private $lastChange;
 
     /** @var Store */
-    private $store;
+    public $store;
 
     /** @var NumberFormat */
     private $number;
@@ -93,7 +94,7 @@ class Exchange extends ArrayIterator {
         $this->store = $store;
         $this->request = $request;
         $this->session = $session;
-        self::$history[$store->getDate()->format(\DateTime::ISO8601)] = $this;
+        self::$history[$store->getName()] = $this;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Setters">
@@ -126,6 +127,26 @@ class Exchange extends ArrayIterator {
     }
 
     /**
+     *
+     * @param DateTime $date
+     * @return Exchange
+     */
+    public function setDate(DateTime $date) {
+        $store = $this->store->setDate($date);
+        return $this->bindMe($store);
+    }
+
+    /**
+     *
+     * @param Download $driver
+     * @return Exchange
+     */
+    public function setDriver(Download $driver) {
+        $store = $this->store->setDriver($driver);
+        return $this->bindMe($store);
+    }
+
+    /**
      * Currency param in url
      *
      * @param string $str
@@ -134,29 +155,6 @@ class Exchange extends ArrayIterator {
     public function setParamCurrency($str) {
         self::$paramCurrency = $str;
         return $this;
-    }
-
-    /**
-     *
-     * @param \DateTime $date
-     * @return Exchange
-     */
-    public function setDate(\DateTime $date) {
-        $key = $date->format(\DateTime::ISO8601);
-        if (isset(self::$history[$key])) {
-            return self::$history[$key];
-        }
-        $store = $this->store->setDate($date);
-        if ($store === $this->store) {
-            return $this;
-        }
-        $self = new static($store, $this->request, $this->session);
-        $self->setDefaulFormat($this->getDefaultFormat());
-        foreach ($this as $key => $v) {
-            $self->loadCurrency($key, $v->getFormat());
-        }
-
-        return $self;
     }
 
     /**
@@ -510,6 +508,26 @@ class Exchange extends ArrayIterator {
         } else {
             $this->tax->vatOff();
         }
+    }
+
+    /**
+     *
+     * @param Store $store
+     * @return Exchange
+     */
+    private function bindMe(Store $store) {
+        $key = $store->getName();
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
+        }
+
+        $exchange = new static($store, $this->request, $this->session);
+        $exchange->setDefaulFormat($this->getDefaultFormat());
+        foreach ($this as $key => $v) {
+            $exchange->loadCurrency($key, $v->getFormat());
+        }
+
+        return self::$history[$key] = $exchange;
     }
 
 // </editor-fold>

@@ -78,6 +78,11 @@ abstract class Download extends Object implements IDownload {
         return $foreing / $this->correction->getUpDecimal();
     }
 
+    /** @return string */
+    public function getName() {
+        return get_class($this);
+    }
+
     /**
      * Load data for iterator
      *

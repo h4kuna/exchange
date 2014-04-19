@@ -11,27 +11,8 @@ class Storage extends Caching\Cache implements IStorage {
     /** @var string represent time */
     protected $refresh = '15:30';
 
-    /** @var string id of class */
-    private $name;
-    
-    /** @var Download */
-    private $download;
-
-    public function __construct(Caching\IStorage $storage, Download $download, $date = 'now') {
-        $this->download = $download;
-        $this->name = get_class($download);        
-        $date = ND::from($date);
-        $date->setTime(0, 0, 0);
-        $ymd = $date->format('Y-m-d');
-        if (date('Y-m-d') > $ymd) {
-            $this->name .= '\\' . $ymd;
-            $this->offRefresh();
-        }
-        parent::__construct($storage, $this->name);
-    }
-
     /**
-     * 
+     *
      * @return ND
      */
     protected function getRefresh() {
@@ -44,12 +25,12 @@ class Storage extends Caching\Cache implements IStorage {
         return $this->refresh;
     }
 
-    public function getName() {
-        return $this->name;
+    public function setDriver($name) {
+        return new static($this->getStorage(), $name);
     }
 
     /**
-     * 
+     *
      * @param string $hour
      * @return Storage
      */
@@ -59,7 +40,7 @@ class Storage extends Caching\Cache implements IStorage {
     }
 
     /**
-     * 
+     *
      * @return Storage
      */
     protected function offRefresh() {
@@ -67,16 +48,12 @@ class Storage extends Caching\Cache implements IStorage {
     }
 
     /**
-     * 
-     * @param mixed $date
+     *
+     * @param string $name
      * @return Storage
      */
-    public function setDate($date) {
-        $storage = new static($this->getStorage(), $this->download, $date);
-        if ($storage->getName() == $this->name) {
-            return $this;
-        }
-        return $storage;
+    public function createStorage($name) {
+        return new static($this->getStorage(), $name);
     }
 
     /**

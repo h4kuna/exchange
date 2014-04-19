@@ -53,16 +53,16 @@ class ExchangeExtension extends CompilerExtension {
                 ->setArguments(array('@session', $this->name))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
-        // storage
-        $builder->addDefinition($this->prefix('storage'))
-                ->setClass('h4kuna\Exchange\Storage')
-                ->setArguments(array('@cacheStorage'))
-                ->setShared(FALSE)->setAutowired(FALSE);
-
         // store
         $builder->addDefinition($this->prefix('store'))
                 ->setClass('h4kuna\Exchange\Store')
                 ->setArguments(array($this->prefix('@storage'), $this->prefix('@driver')))
+                ->setShared(FALSE)->setAutowired(FALSE);
+
+        // storage
+        $builder->addDefinition($this->prefix('storage'))
+                ->setClass('h4kuna\Exchange\Storage')
+                ->setArguments(array('@cacheStorage', $this->prefix('@store')))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
         // main class Exchange

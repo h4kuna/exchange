@@ -19,7 +19,14 @@ class Store extends Object implements IStore {
     private $download;
 
     /** @var DateTime */
-    private $date;
+    protected $date;
+
+    /**
+     * History instances
+     *
+     * @var array
+     */
+    private static $history = array();
 
     public function __construct(Storage $storage, Download $download) {
         $this->storage = $storage;
@@ -43,18 +50,35 @@ class Store extends Object implements IStore {
     }
 
     /**
-     * 
+     *
      * @param DateTime $date
      * @return Store
      */
     public function setDate(DateTime $date) {
-        $storage = $this->storage->setDate($date);
-        if($this->storage === $storage) {
-            return $this;
+        $key = $this->loadNameByDate($date);
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
         }
-        $store = new static($storage, $this->download);
+
+        $store = new static($this->storage->createStorage($key), $this->download);
         $store->date = $date;
         return $store;
+    }
+
+    /**
+     * Change driver runtime
+     *
+     * @param Download $driver
+     * @return Store
+     */
+    public function setDriver(Download $driver) {
+        $key = $this->loadNameByDriver($driver);
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
+        }
+        $store = new static($this->storage->setDriver($key), $driver);
+        $store->date = $this->getDate();
+        return self::$history[$key] = $store;
     }
 
     /** @return DateTime */
@@ -63,6 +87,28 @@ class Store extends Object implements IStore {
             $this->date = new DateTime('midnight');
         }
         return $this->date;
+    }
+
+    /** @return string */
+    public function getName() {
+        return $this->getNameOf($this->getDate()) . $this->download->getName();
+    }
+
+    /**
+     *
+     * @param Download $driver
+     * @return string
+     */
+    private function loadNameByDriver(Download $driver) {
+        return $this->getNameOf($this->getDate()) . $driver->getName();
+    }
+
+    /**
+     * @param DateTime $date
+     * @return string
+     */
+    private function loadNameByDate(DateTime $date) {
+        return $this->getNameOf($date) . $this->download->getName();
     }
 
     /**
@@ -87,6 +133,23 @@ class Store extends Object implements IStore {
         }
 
         throw new ExchangeException('Undefined currency code: ' . $code);
+    }
+
+    /**
+     *
+     * @param DateTime $date
+     * @return string|NULL
+     */
+    private function getNameOf(DateTime $date) {
+        $ymd = $date->format('Y-m-d');
+        if (date('Y-m-d') > $ymd) {
+            return '\\' . $ymd;
+        }
+        return NULL;
+    }
+
+    public function __toString() {
+        return (string) $this->getName();
     }
 
 }
