@@ -76,7 +76,7 @@ class Day extends Download {
     }
 
     /**
-     * 
+     *
      * @param string $url
      * @param DateTime $date
      */

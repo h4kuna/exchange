@@ -62,7 +62,7 @@ class ExchangeExtension extends CompilerExtension {
         // storage
         $builder->addDefinition($this->prefix('storage'))
                 ->setClass('h4kuna\Exchange\Storage')
-                ->setArguments(array('@cacheStorage', $this->prefix('@store')))
+                ->setArguments(array('@cacheStorage'))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
         // main class Exchange

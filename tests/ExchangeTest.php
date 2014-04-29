@@ -22,12 +22,11 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     }
 
     private function initExchange(Exchange\Download $driver = NULL) {
-        if ($driver === NULL) {
-            $driver = new Exchange\Cnb\Day;
+        /* @var $exchange \h4kuna\Exchange\Exchange */
+        $exchange = Environment::getService('exchangeExtension.exchange');
+        if ($driver !== NULL) {
+            $exchange = $exchange->setDriver($driver);
         }
-        $storage = new Exchange\Storage(Environment::getContext()->cacheStorage, $driver);
-        $store = new Exchange\Store($storage, $driver);
-        $exchange = new Exchange\Exchange($store, Environment::getHttpRequest(), Environment::getSession('exchange'));
         $this->object = $exchange->setDate(new \DateTime('2000-12-30'));
         $this->object->loadCurrency('czk');
         $this->object->loadCurrency('eur');
@@ -46,11 +45,11 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
 
     public function testFormat() {
         $n = NumberFormat::NBSP;
-        $this->assertSame('10,00' . $n . 'CZK', $this->object->format(10));
-        $this->assertSame('10,00' . $n . 'CZK', $this->object->format(10, FALSE));
-        $this->assertSame('350,90' . $n . 'CZK', $this->object->format(10, 'eur'));
+        $this->assertSame('10' . $n . 'Kč', $this->object->format(10));
+        $this->assertSame('10' . $n . 'Kč', $this->object->format(10, FALSE));
+        $this->assertSame('351' . $n . 'Kč', $this->object->format(10, 'eur'));
 
-        $this->assertSame('350,90' . $n . 'CZK', $this->object->format(10, 'eur', 'czk'));
+        $this->assertSame('351' . $n . 'Kč', $this->object->format(10, 'eur', 'czk'));
         $this->assertSame('9,28' . $n . 'USD', $this->object->format(10, 'eur', 'usd', 2));
         $this->assertSame('10,78' . $n . 'EUR', $this->object->format(10, 'usd', 'eur', 2));
     }
@@ -71,15 +70,13 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->object->setDefault('eur');
         $this->object->loadCurrency('byr');
         $this->assertSame(35.09, $this->object->change(1, NULL, 'czk'));
-        var_dump($this->object['BYR']);
-        die();
-        $this->assertSame(17371.287 ,$this->object->change(1, NULL, 'byr', 3));
+        $this->assertSame(17371.287, $this->object->change(1, NULL, 'byr', 3));
     }
 
     public function testRbDriver() {
         $this->initExchange(new Exchange\RB\Day);
         $this->assertSame(10, $this->object->change(10));
-        $this->assertSame(9.2799, $this->object->change(10, 'eur', 'usd', 4));
+        $this->assertSame(9.1575, $this->object->change(10, 'eur', 'usd', 4));
     }
 
 }

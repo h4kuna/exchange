@@ -76,7 +76,7 @@ class Exchange extends ArrayIterator {
     private $lastChange;
 
     /** @var Store */
-    public $store;
+    private $store;
 
     /** @var NumberFormat */
     private $number;
