@@ -49,15 +49,6 @@ class Storage extends Caching\Cache implements IStorage {
 
     /**
      *
-     * @param string $name
-     * @return Storage
-     */
-    public function createStorage($name) {
-        return new static($this->getStorage(), $name);
-    }
-
-    /**
-     *
      * @param ICurrency $currency
      */
     public function saveCurrency(ICurrencyProperty $currency) {

@@ -31,7 +31,8 @@ class ExchangeExtension extends CompilerExtension {
             'czk' => array('decimal' => 0, 'symbol' => 'Kč'),
             'eur'
         ),
-        'driver' => 'h4kuna\Exchange\Cnb\Day'
+        'driver' => 'h4kuna\Exchange\Cnb\Day',
+        'storage' => 'h4kuna\Exchange\Storage'
     );
 
     public function loadConfiguration() {
@@ -56,13 +57,13 @@ class ExchangeExtension extends CompilerExtension {
         // store
         $builder->addDefinition($this->prefix('store'))
                 ->setClass('h4kuna\Exchange\Store')
-                ->setArguments(array($this->prefix('@storage'), $this->prefix('@driver')))
+                ->setArguments(array($this->prefix('@storageFactory'), $this->prefix('@driver')))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
-        // storage
-        $builder->addDefinition($this->prefix('storage'))
-                ->setClass('h4kuna\Exchange\Storage')
-                ->setArguments(array('@cacheStorage'))
+        // storage factory
+        $builder->addDefinition($this->prefix('storageFactory'))
+                ->setClass('h4kuna\Exchange\StorageFactory')
+                ->setArguments(array('@cacheStorage', $config['storage']))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
         // main class Exchange

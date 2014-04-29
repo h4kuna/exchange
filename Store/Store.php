@@ -15,6 +15,9 @@ class Store extends Object implements IStore {
     /** @var Storage */
     private $storage;
 
+    /** @var IStorageFactory */
+    private $storageFactory;
+
     /** @var Download */
     private $download;
 
@@ -28,8 +31,8 @@ class Store extends Object implements IStore {
      */
     private static $history = array();
 
-    public function __construct(Storage $storage, Download $download) {
-        $this->storage = $storage;
+    public function __construct(IStorageFactory $storage, Download $download) {
+        $this->storageFactory = $storage;
         $this->download = $download;
     }
 
@@ -44,9 +47,29 @@ class Store extends Object implements IStore {
         try {
             return $this->checkCurrency($code);
         } catch (ExchangeException $e) {
-            $this->download->loadCurrencies($this->storage, $this->date);
+            $this->download->loadCurrencies($this->getStorage(), $this->date);
             return $this->checkCurrency($code);
         }
+    }
+
+    /**
+     * New instance
+     *
+     * @return Storage
+     */
+    protected function createStorage($name) {
+        return $this->storageFactory->create($name);
+    }
+
+    /**
+     *
+     * @return Storage
+     */
+    public function getStorage() {
+        if ($this->storage === NULL) {
+            $this->storage = $this->createStorage($this->getName());
+        }
+        return $this->storage;
     }
 
     /**
@@ -60,7 +83,7 @@ class Store extends Object implements IStore {
             return self::$history[$key];
         }
 
-        $store = new static($this->storage->createStorage($key), $this->download);
+        $store = new static($this->storageFactory, $this->download);
         $store->date = $date;
         return $store;
     }
@@ -76,7 +99,7 @@ class Store extends Object implements IStore {
         if (isset(self::$history[$key])) {
             return self::$history[$key];
         }
-        $store = new static($this->storage->setDriver($key), $driver);
+        $store = new static($this->storageFactory, $driver);
         $store->date = $this->getDate();
         return self::$history[$key] = $store;
     }
