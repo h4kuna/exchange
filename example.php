@@ -1,6 +1,7 @@
 <?php
 $container = require __DIR__ . '/tests/bootstrap.php';
 \Nette\Diagnostics\Debugger::timer();
+/* @var $exchange \h4kuna\Exchange\Exchange */
 $exchange = $container->getService('exchangeExtension.exchange');
 $exchange->loadCurrency('usd');
 $historyEUR = 20;
