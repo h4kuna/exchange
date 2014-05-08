@@ -1,6 +1,6 @@
 <?php
 
-namespace h4kuna\Exchange\Cnb;
+namespace h4kuna\Exchange\Driver\Cnb;
 
 use DateTime;
 use h4kuna\CUrl\CurlBuilder;
@@ -29,14 +29,13 @@ class Day extends Download {
      * @param DateTime $date
      * @return array
      */
-    protected function loadData(DateTime $date) {
+    protected function loadFromSource(DateTime $date) {
         $data = $this->downloadList(self::CNB_DAY, $date);
         $data[1] = self::CNB_CZK;
         unset($data[0]);
 
         $another = $this->downloadList(self::CNB_DAY2, $date);
         unset($another[0], $another[1]);
-        dd();
         return array_merge($data, $another);
     }
 
@@ -69,7 +68,12 @@ class Day extends Download {
      * @return string
      */
     private function createUrl($url, DateTime $date) {
-        return $url . '?date=' . urlencode($date->format('d.m.Y'));
+        $checkFormat = 'd.m.Y';
+        $paramValue = $date->format($checkFormat);
+        if ($paramValue != date($checkFormat)) {
+            return $url . '?date=' . urlencode($paramValue);
+        }
+        return $url;
     }
 
 }

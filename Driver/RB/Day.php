@@ -1,6 +1,6 @@
 <?php
 
-namespace h4kuna\Exchange\RB;
+namespace h4kuna\Exchange\Driver\RB;
 
 use DateTime;
 use DOMDocument;
@@ -51,7 +51,7 @@ class Day extends Download {
      * @return array
      * @throws ExchangeException
      */
-    protected function loadData(DateTime $date) {
+    protected function loadFromSource(DateTime $date) {
         $data = CUrl\CurlBuilder::download($this->prepareUrl(self::URL, $date));
         $doc = new DOMDocument;
         $doc->loadXML($data);

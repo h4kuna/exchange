@@ -1,6 +1,6 @@
 <?php
 
-namespace h4kuna\Exchange\Ecb;
+namespace h4kuna\Exchange\Driver\Ecb;
 
 use DateTime;
 use h4kuna\CUrl\CurlBuilder;
@@ -21,7 +21,7 @@ class Day extends Download {
      * @param DateTime $date
      * @return array
      */
-    protected function loadData(DateTime $date) {
+    protected function loadFromSource(DateTime $date) {
         $data = CurlBuilder::download(self::URL_DAY);
         $xml = simplexml_load_string($data);
 
