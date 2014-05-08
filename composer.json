@@ -17,7 +17,8 @@
         "h4kuna/number-format": ">=1.2.3"
     },
     "autoload": {
-        "files": ["Exchange.php", "ExchangeException.php", "Utils.php"],
-        "classmap": ["Store/", "Driver/", "CurrencyProperty/", "DI/"]
+        "psr-4": {
+            "h4kuna\\Exchange\\": ""
+        }
     }
 }
