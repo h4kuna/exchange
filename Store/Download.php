@@ -11,7 +11,7 @@ use Nette\Object;
  *
  * @author Milan Matějček
  */
-abstract class Download extends Object implements IDownload {
+abstract class Download extends Object {
 
     /** @var IStorage */
     protected $storeage;
@@ -36,10 +36,11 @@ abstract class Download extends Object implements IDownload {
      * @param IStorage $storage
      * @param DateTime $date
      */
-    final public function loadCurrencies(IStorage $storage, DateTime $date) {
+    final public function loadCurrencies(DateTime $date) {
         $this->setCorrection($this->correction);
-        $data = $this->loadData($date);
+        $data = $this->loadFromSource($date);
         $code = NULL;
+        $out = array();
         foreach ($data as $row) {
             if (!$row) {
                 continue;
@@ -47,10 +48,8 @@ abstract class Download extends Object implements IDownload {
             $currency = $this->createCurrencyProperty($row);
             if ($currency !== NULL) {
                 $code = $currency->setNext($code)->getCode();
-                $storage->saveCurrency($currency);
             }
         }
-        $storage->saveLast($code);
     }
 
     /**
@@ -88,12 +87,17 @@ abstract class Download extends Object implements IDownload {
      *
      * @return array
      */
-    abstract protected function loadData(DateTime $date);
+    abstract protected function loadFromSource(DateTime $date);
 
     /**
      * Modify data before save to cache
      *
-     * @return ICurrencyProperty
+     * @return CurrencyProperty|NULL
      */
     abstract protected function createCurrencyProperty($row);
+
+    protected function createUrl($url, DateTime $date) {
+        
+    }
+
 }

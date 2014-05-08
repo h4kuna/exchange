@@ -23,19 +23,6 @@ interface ICurrencyProperty {
     public function getRate();
 
     /**
-     * This is setup automaticaly
-     *
-     * @param string
-     * @return ICurrencyProperty
-     */
-    public function setNext($code);
-
-    /**
-     * @param string
-     */
-    public function getNext();
-
-    /**
      * Set how render currency
      *
      * @param INumberFormat $nf

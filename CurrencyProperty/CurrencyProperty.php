@@ -18,14 +18,8 @@ class CurrencyProperty implements ICurrencyProperty {
     /** @var float */
     private $foreing;
 
-    /** @var float */
-    private $rate;
-
     /** @var INumberFormat */
     private $format;
-
-    /** @var string */
-    private $next;
 
     /** @var array */
     private $stack = array();
@@ -62,17 +56,6 @@ class CurrencyProperty implements ICurrencyProperty {
 
     public function setFormat(INumberFormat $nf) {
         $this->format = $nf;
-        return $this;
-    }
-
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Reference to next currency">
-    public function getNext() {
-        return $this->next;
-    }
-
-    public function setNext($code) {
-        $this->next = $code;
         return $this;
     }
 

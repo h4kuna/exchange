@@ -47,7 +47,7 @@ class Store extends Object implements IStore {
         try {
             return $this->checkCurrency($code);
         } catch (ExchangeException $e) {
-            $this->download->loadCurrencies($this->getStorage(), $this->date);
+            $this->download->loadCurrencies($this->date);
             return $this->checkCurrency($code);
         }
     }
