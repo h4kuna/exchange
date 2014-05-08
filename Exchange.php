@@ -66,7 +66,7 @@ class Exchange extends ArrayIterator {
 // <editor-fold defaultstate="collapsed" desc="Private dependencies">
 
     /** @var Tax */
-    private $tax;
+    protected $tax;
 
     /**
      * Last changed value
@@ -493,7 +493,7 @@ class Exchange extends ArrayIterator {
                 $this->setWeb($currency, TRUE);
             }
         } catch (ExchangeException $e) {
-
+            
         }
     }
 
@@ -526,6 +526,8 @@ class Exchange extends ArrayIterator {
         foreach ($this as $key => $v) {
             $exchange->loadCurrency($key, $v->getFormat());
         }
+
+        $exchange->tax = $this->tax;
 
         return self::$history[$key] = $exchange;
     }

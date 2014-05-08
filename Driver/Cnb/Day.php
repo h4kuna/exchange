@@ -36,7 +36,7 @@ class Day extends Download {
 
         $another = $this->downloadList(self::CNB_DAY2, $date);
         unset($another[0], $another[1]);
-
+        dd();
         return array_merge($data, $another);
     }
 
