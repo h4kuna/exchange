@@ -4,10 +4,11 @@ namespace Tests;
 
 require_once __DIR__ . '/bootstrap.php';
 
+use DateTime;
 use h4kuna\Exchange;
+use h4kuna\NumberFormat;
 use Nette\Environment;
 use PHPUnit_Framework_TestCase;
-use h4kuna\NumberFormat;
 
 /**
  * @author Milan Matějček
@@ -18,20 +19,13 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     private $object;
 
     protected function setUp() {
-        $this->initExchange();
-    }
-
-    private function initExchange(Exchange\Download $driver = NULL) {
-        /* @var $exchange \h4kuna\Exchange\Exchange */
-        $exchange = Environment::getService('exchangeExtension.exchange');
-        if ($driver !== NULL) {
-            $exchange = $exchange->setDriver($driver);
-        }
-        $this->object = $exchange->setDate(new \DateTime('2000-12-30'));
+        $this->object = Environment::getContext()->createService('exchangeExtension.exchange')
+                ->setDate(new DateTime('2000-12-30'));
+        $this->object->setDefault('czk');
         $this->object->loadCurrency('czk');
         $this->object->loadCurrency('eur');
         $this->object->loadCurrency('usd');
-        $this->object->setWeb('CZK', TRUE);
+        $this->object->setWeb('czk', TRUE);
     }
 
     public function testChange() {
@@ -54,10 +48,6 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->assertSame('10,78' . $n . 'EUR', $this->object->format(10, 'usd', 'eur', 2));
     }
 
-    public function testLoadAll() {
-        $this->object->loadAll();
-    }
-
     public function testHistory() {
         $code = 'eur';
         $this->object->addHistory($code, 26)->setWeb($code);
@@ -70,13 +60,23 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->object->setDefault('eur');
         $this->object->loadCurrency('byr');
         $this->assertSame(35.09, $this->object->change(1, NULL, 'czk'));
-        $this->assertSame(17371.287, $this->object->change(1, NULL, 'byr', 3));
+        $this->assertSame(17633.166, $this->object->change(1, NULL, 'byr', 3));
     }
 
-    public function testRbDriver() {
-        $this->initExchange(new Exchange\RB\Day);
-        $this->assertSame(10, $this->object->change(10));
-        $this->assertSame(9.1575, $this->object->change(10, 'eur', 'usd', 4));
+    public function testEcbDriver() {
+        $rb = $this->object->setDriver(new Exchange\Driver\Rb\Day);
+        $this->assertSame(10, $rb->change(10));
+        $this->assertSame(9.1575, $rb->change(10, 'eur', 'usd', 4));
+    }
+
+    public function testLoadAll() {
+        $this->object->loadAll();
+        $this->assertSame(152, $this->object->count());
+    }
+
+    private function d($v) {
+        \Nette\Diagnostics\Debugger::enable(FALSE);
+        dump($v);
     }
 
 }
