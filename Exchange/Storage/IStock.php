@@ -12,9 +12,7 @@ interface IStock {
 
     const ALL_CURRENCIES = 'all';
 
-    /**
-     * @return ICurrency
-     */
+    /** @return ICurrency */
     public function loadCurrency($code);
 
     /**

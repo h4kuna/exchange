@@ -63,7 +63,7 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(17633.166, $this->object->change(1, NULL, 'byr', 3));
     }
 
-    public function testEcbDriver() {
+    public function testRbDriver() {
         $rb = $this->object->setDriver(new Exchange\Driver\Rb\Day);
         $this->assertSame(10, $rb->change(10));
         $this->assertSame(9.1575, $rb->change(10, 'eur', 'usd', 4));
