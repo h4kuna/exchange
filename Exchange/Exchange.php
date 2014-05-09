@@ -4,12 +4,16 @@ namespace h4kuna\Exchange;
 
 use ArrayIterator;
 use DateTime;
+use h4kuna\Exchange\Currency\IProperty;
+use h4kuna\Exchange\Driver\Download;
+use h4kuna\Exchange\Storage\IWarehouse;
 use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
 use h4kuna\Tax;
 use h4kuna\Vat;
 use Nette\Http\Request;
 use Nette\Http\SessionSection;
+use Nette\Reflection\Property;
 use Nette\Templating\Template;
 use Nette\Utils\Html;
 
@@ -75,8 +79,8 @@ class Exchange extends ArrayIterator {
      */
     private $lastChange;
 
-    /** @var Store */
-    private $store;
+    /** @var IWarehouse */
+    private $warehouse;
 
     /** @var NumberFormat */
     private $number;
@@ -89,12 +93,12 @@ class Exchange extends ArrayIterator {
 
 // </editor-fold>
 
-    public function __construct(Store $store, Request $request, SessionSection $session) {
+    public function __construct(IWarehouse $warehouse, Request $request, SessionSection $session) {
         parent::__construct();
-        $this->store = $store;
+        $this->warehouse = $warehouse;
         $this->request = $request;
         $this->session = $session;
-        self::$history[$store->getName()] = $this;
+        self::$history[$warehouse->getName()] = $this;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Setters">
@@ -102,13 +106,13 @@ class Exchange extends ArrayIterator {
     /**
      * Set default "from" currency
      *
-     * @param string|CurrencyProperty $code
+     * @param string|Property $code
      * @return Exchange
      */
     public function setDefault($code) {
         if (is_string($code)) {
             $code = $this->offsetGet($code);
-        } elseif (!($code instanceof CurrencyProperty)) {
+        } elseif (!($code instanceof IProperty)) {
             throw new ExchangeException('Bad declaration of default currency. Use object or currency code.');
         }
         $this->default = $code;
@@ -132,8 +136,8 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDate(DateTime $date) {
-        $store = $this->store->setDate($date);
-        return $this->bindMe($store);
+        $warehouse = $this->warehouse->setDate($date);
+        return $this->bindMe($warehouse);
     }
 
     /**
@@ -142,8 +146,8 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDriver(Download $driver) {
-        $store = $this->store->setDriver($driver);
-        return $this->bindMe($store);
+        $warehouse = $this->warehouse->setDriver($driver);
+        return $this->bindMe($warehouse);
     }
 
     /**
@@ -203,11 +207,11 @@ class Exchange extends ArrayIterator {
      * Load currency property
      *
      * @param string $index
-     * @return ICurrencyProperty
+     * @return IProperty
      * @throws ExchangeException
      */
     public function offsetGet($index) {
-        if ($index instanceof ICurrencyProperty) {
+        if ($index instanceof IProperty) {
             return $index;
         }
         $index = strtoupper($index);
@@ -220,11 +224,11 @@ class Exchange extends ArrayIterator {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Method for template">
     /**
-     * @param ICurrencyProperty $currency
+     * @param IProperty $currency
      * @param bool $symbol
      * @return Html
      */
-    public function currencyLink(ICurrencyProperty $currency, $symbol = TRUE) {
+    public function currencyLink(IProperty $currency, $symbol = TRUE) {
         $code = $currency->getCode();
         $a = self::getHref();
         $a->setText($symbol ? $currency->getFormat()->getSymbol() : $code);
@@ -357,11 +361,12 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function loadAll() {
-        $code = $this->store->loadCode();
-        do {
-            $currency = $this->loadCurrency($code);
-            $code = $currency->getNext();
-        } while ($code);
+        foreach ($this->warehouse->getListCurrencies() as $code) {
+            if (!$this->offsetExists($code)) {
+                $this->loadCurrency($code);
+            }
+        }
+
         return $this;
     }
 
@@ -369,11 +374,11 @@ class Exchange extends ArrayIterator {
      * Load currency by code
      *
      * @param string $code
-     * @return ICurrencyProperty
+     * @return IProperty
      */
     public function loadCurrency($code, $property = array()) {
         try {
-            $currency = $this->store->loadCurrency($code);
+            $currency = $this->warehouse->loadCurrency($code);
             if (!$this->default) {
                 $this->setDefault($currency);
             }
@@ -381,7 +386,7 @@ class Exchange extends ArrayIterator {
             if (!$this->default) {
                 throw new ExchangeException('Let\'s define possible currency code. Not this: ' . $code);
             }
-            $currency = $this->store->loadCurrency($this->default->getCode());
+            $currency = $this->default;
         }
 
         $code = $currency->getCode();
@@ -405,7 +410,6 @@ class Exchange extends ArrayIterator {
                 throw new ExchangeException('Property of currency must be array or instance of INumberFormat');
             }
 
-            $currency->default = & $this->default;
             $this[$code] = $currency->setFormat($profil);
             $this->loadParamCurrency($code);
         }
@@ -439,7 +443,7 @@ class Exchange extends ArrayIterator {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters">
 
-    /** @var CurrencyProperty */
+    /** @var Property */
     public function getDefault() {
         if (!$this->default) {
             throw new ExchangeException('Let\'s define currency by method loadCurrency() and first is default.');
@@ -512,16 +516,16 @@ class Exchange extends ArrayIterator {
 
     /**
      *
-     * @param Store $store
+     * @param IWarehouse $warehouse
      * @return Exchange
      */
-    private function bindMe(Store $store) {
-        $key = $store->getName();
+    private function bindMe(IWarehouse $warehouse) {
+        $key = $warehouse->getName();
         if (isset(self::$history[$key])) {
             return self::$history[$key];
         }
 
-        $exchange = new static($store, $this->request, $this->session);
+        $exchange = new static($warehouse, $this->request, $this->session);
         $exchange->setDefaulFormat($this->getDefaultFormat());
         foreach ($this as $key => $v) {
             $exchange->loadCurrency($key, $v->getFormat());
