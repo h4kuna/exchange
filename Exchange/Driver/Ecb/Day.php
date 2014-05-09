@@ -4,9 +4,13 @@ namespace h4kuna\Exchange\Driver\Ecb;
 
 use DateTime;
 use h4kuna\CUrl\CurlBuilder;
-use h4kuna\Exchange\Driver\Download;
 use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Driver\Download;
+use h4kuna\Exchange\ExchangeException;
 
+/**
+ * @author Petr Poupě <pupe.dupe@gmail.com>
+ */
 class Day extends Download {
 
     /**
@@ -42,7 +46,7 @@ class Day extends Download {
     }
 
     protected function createUrlDay($url, DateTime $date) {
-        return $url;
+        throw new ExchangeException('This driver does not support history.');
     }
 
 }
