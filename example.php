@@ -1,34 +1,14 @@
 <?php
-
-include __DIR__ . "/vendor/autoload.php";
-
-$cnb = new \h4kuna\Exchange\Driver\Cnb\Day();
-
-exit;
-
-
 $container = require __DIR__ . '/tests/bootstrap.php';
 \Nette\Diagnostics\Debugger::timer();
 /* @var $exchange \h4kuna\Exchange\Exchange */
-// $exchange = $container->getService('exchangeExtension.exchange');
-// $exchange->loadCurrency('usd');
-
-$cnb = new \h4kuna\Exchange\Cnb\Day;
-dump($cnb->loadCurrencies(new \DateTime));
-exit;
-
-
-
-// $exchange = $exchange->setDriver(new h4kuna\Exchange\Ecb\Day);
+$exchange = $container->getService('exchangeExtension.exchange');
+$exchange->loadCurrency('usd');
 
 $historyEUR = 20;
 $smallVat = 15;
 
-if (false) {
-    $exchange = new \h4kuna\Exchange\Exchange;
-}
-
-$rbDriver = $exchange->setDriver(new \h4kuna\Exchange\RB\Day);
+$rbDriver = $exchange->setDriver(new \h4kuna\Exchange\Driver\Rb\Day);
 
 $date = new DateTime('2013-12-30');
 $history = $exchange->setDate($date);
