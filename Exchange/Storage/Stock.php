@@ -58,10 +58,16 @@ class Stock extends Caching\Cache implements IStock {
         foreach ($currencies as $currency) {
             $this->saveCurrency($currency);
         }
+        $this->save(self::ALL_CURRENCIES, array_keys($currencies));
     }
 
     public function loadCurrency($code) {
         return $this->load($code);
+    }
+
+    /** @return array */
+    public function getCurrenciesList() {
+        return $this->loadCurrency(self::ALL_CURRENCIES);
     }
 
 }

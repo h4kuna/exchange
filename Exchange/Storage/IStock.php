@@ -10,6 +10,8 @@ use h4kuna\Exchange\Currency\IProperty;
  */
 interface IStock {
 
+    const ALL_CURRENCIES = 'all';
+
     /**
      * @return ICurrency
      */
@@ -36,4 +38,7 @@ interface IStock {
      * @param mixed $hour
      */
     public function setRefresh($hour);
+
+    /** @return array */
+    public function getCurrenciesList();
 }
