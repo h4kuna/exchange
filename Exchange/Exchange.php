@@ -190,7 +190,8 @@ class Exchange extends ArrayIterator {
     /**
      * Set currency "to"
      *
-     * @param string $str
+     * @param string $code
+     * @param bool $session
      * @return Exchange
      */
     public function setWeb($code, $session = FALSE) {
@@ -240,7 +241,8 @@ class Exchange extends ArrayIterator {
     }
 
     /**
-     * create link for vat
+     * Create link for vat
+     * 
      * @param string $textOn
      * @param string $textOff
      * @return Html
@@ -258,7 +260,9 @@ class Exchange extends ArrayIterator {
     }
 
     /**
-     * create helper to template
+     * Create helper to template
+     * @todo predelat callback
+     * @param Template $tpl
      */
     public function registerAsHelper(Template $tpl) {
         $tpl->registerHelper('formatVat', callback($this, 'formatVat'));
