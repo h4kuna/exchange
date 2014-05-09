@@ -41,7 +41,7 @@ abstract class Download extends Object {
 
     /** @return string */
     public function getName() {
-        return get_class($this);
+        return str_replace(__NAMESPACE__ . '\\', '', get_class($this));
     }
 
     /**
