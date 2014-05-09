@@ -25,13 +25,6 @@ class Warehouse extends Object implements IWarehouse {
     /** @var DateTime */
     protected $date;
 
-    /**
-     * History instances
-     *
-     * @var array
-     */
-    private static $history = array();
-
     public function __construct(Factory $factory, Download $download) {
         $this->storageFactory = $factory;
         $this->download = $download;
@@ -86,14 +79,9 @@ class Warehouse extends Object implements IWarehouse {
      * @return Store
      */
     public function setDate(DateTime $date) {
-        $key = $this->loadNameByDate($date);
-        if (isset(self::$history[$key])) {
-            return self::$history[$key];
-        }
-
         $store = new static($this->storageFactory, $this->download);
         $store->date = $date;
-        return self::$history[$key] = $store;
+        return $store;
     }
 
     /**
@@ -103,35 +91,14 @@ class Warehouse extends Object implements IWarehouse {
      * @return Store
      */
     public function setDriver(Download $driver) {
-        $key = $this->loadNameByDriver($driver);
-        if (isset(self::$history[$key])) {
-            return self::$history[$key];
-        }
         $store = new static($this->storageFactory, $driver);
         $store->date = $this->date;
-        return self::$history[$key] = $store;
+        return $store;
     }
 
     /** @return string */
     public function getName() {
         return $this->getNameOf($this->date) . $this->download->getName();
-    }
-
-    /**
-     *
-     * @param Download $driver
-     * @return string
-     */
-    private function loadNameByDriver(Download $driver) {
-        return $this->getNameOf($this->date) . $driver->getName();
-    }
-
-    /**
-     * @param DateTime $date
-     * @return string
-     */
-    private function loadNameByDate(DateTime $date) {
-        return $this->getNameOf($date) . $this->download->getName();
     }
 
     /**
