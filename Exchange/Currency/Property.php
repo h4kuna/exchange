@@ -2,7 +2,6 @@
 
 namespace h4kuna\Exchange\Currency;
 
-use h4kuna\Exchange\ExchangeException;
 use h4kuna\INumberFormat;
 
 /**
@@ -25,9 +24,6 @@ class Property implements IProperty {
     /** @var array */
     private $stack = array();
 
-    /** @var Property fill by reference */
-    public $default;
-
     public function __construct($home, $code, $foreing) {
         $this->home = floatval($home);
         $this->code = strtoupper($code);
@@ -47,10 +43,7 @@ class Property implements IProperty {
     }
 
     public function getRate() {
-        if ($this->default === NULL) {
-            throw new ExchangeException('Default currency is not defined.');
-        }
-        return ($this->foreing / $this->home) / ($this->default->foreing / $this->default->home);
+        return $this->foreing / $this->home;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Number will format for render">
@@ -72,7 +65,7 @@ class Property implements IProperty {
      */
     public function popRate() {
         if ($this->stack) {
-            $this->foreing = array_pop($this->stack);
+            $this->home = array_pop($this->stack);
         }
         return $this;
     }
@@ -84,8 +77,8 @@ class Property implements IProperty {
      * @return Property
      */
     public function pushRate($number) {
-        array_push($this->stack, $this->foreing);
-        $this->foreing = $number;
+        array_push($this->stack, $this->home);
+        $this->home = $number;
         return $this;
     }
 
@@ -96,7 +89,7 @@ class Property implements IProperty {
      */
     public function revertRate() {
         if ($this->stack) {
-            $this->foreing = end($this->stack);
+            $this->home = end($this->stack);
             $this->stack = array();
         }
         return $this;
