@@ -66,7 +66,7 @@ class Stock extends Caching\Cache implements IStock {
     }
 
     /** @return array */
-    public function getCurrenciesList() {
+    public function getListCurrencies() {
         return $this->loadCurrency(self::ALL_CURRENCIES);
     }
 

@@ -45,6 +45,7 @@ class Warehouse extends Object implements IWarehouse {
      */
     public function loadCurrency($code) {
         try {
+            $code = strtoupper($code);
             return $this->checkCurrency($code);
         } catch (ExchangeException $e) {
             $this->getStock()->saveCurrencies($this->download->loadCurrencies($this->date));
@@ -153,6 +154,10 @@ class Warehouse extends Object implements IWarehouse {
 
     public function __toString() {
         return (string) $this->getName();
+    }
+
+    public function getListCurrencies() {
+        return $this->getStock()->getListCurrencies();
     }
 
 }

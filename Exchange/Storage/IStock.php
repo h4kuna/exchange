@@ -40,5 +40,5 @@ interface IStock {
     public function setRefresh($hour);
 
     /** @return array */
-    public function getCurrenciesList();
+    public function getListCurrencies();
 }

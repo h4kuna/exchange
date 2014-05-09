@@ -34,4 +34,7 @@ interface IWarehouse {
      * @param Download $driver
      */
     public function setDriver(Download $driver);
+
+    /** @return array */
+    public function getListCurrencies();
 }
