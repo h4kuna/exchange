@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange\Currency;
 
+use h4kuna\Exchange\ExchangeException;
 use h4kuna\INumberFormat;
 
 /**
@@ -46,7 +47,10 @@ class Property implements IProperty {
     }
 
     public function getRate() {
-        return ($this->default->foreing / $this->default->home) / ($this->foreing / $this->home);
+        if ($this->default === NULL) {
+            throw new ExchangeException('Default currency is not defined.');
+        }
+        return ($this->foreing / $this->home) / ($this->default->foreing / $this->default->home);
     }
 
 // <editor-fold defaultstate="collapsed" desc="Number will format for render">
