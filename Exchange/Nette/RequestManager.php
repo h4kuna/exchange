@@ -23,30 +23,38 @@ final class RequestManager extends hESR {
         $this->session = $session;
     }
 
-    protected function getSessionVat() {
-        return isset($this->session->{$this->getParamVat()}) ? $this->session->{$this->getParamVat()} : NULL;
-    }
-
-    protected function getRequestVat() {
-        return $this->request->getQuery($this->getParamVat());
-    }
-
     public function setSessionVat($value) {
-        $this->session->{$this->getParamVat()} = (bool) $value;
-        return $this;
-    }
-
-    protected function getRequestCurrency() {
-        return $this->request->getQuery($this->getParamCurrency());
-    }
-
-    protected function getSessionCurrency() {
-        return isset($this->session->{$this->getParamCurrency()}) ? $this->session->{$this->getParamCurrency()} : NULL;
+        $this->session->{$this->getParamVat()} = $value = (bool) $value;
+        return $value;
     }
 
     public function setSessionCurrency($code) {
         $this->session->{$this->getParamCurrency()} = $code;
-        return $this;
+        return $code;
+    }
+
+    public function loadParamCurrency($code) {
+        $paramGet = $this->request->getQuery($this->getParamCurrency());
+        if ($paramGet) {
+            return $this->setSessionCurrency($paramGet);
+        }
+
+        if (isset($this->session->{$this->getParamCurrency()})) {
+            return $this->session->{$this->getParamCurrency()};
+        }
+        return $this->setSessionCurrency($code);
+    }
+
+    public function loadParamVat($default) {
+        $paramGet = $this->request->getQuery($this->getParamVat());
+        if ($paramGet !== NULL) {
+            return $this->setSessionVat($paramGet);
+        }
+
+        if (isset($this->session->{$this->getParamVat()})) {
+            return $this->session->{$this->getParamVat()};
+        }
+        return $this->setSessionVat($default);
     }
 
 }
