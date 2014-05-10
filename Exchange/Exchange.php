@@ -14,7 +14,6 @@ use h4kuna\Vat;
 use Nette\Http\Request;
 use Nette\Http\SessionSection;
 use Nette\Reflection\Property;
-use Nette\Templating\Template;
 use Nette\Utils\Html;
 
 /**
@@ -265,17 +264,6 @@ class Exchange extends ArrayIterator {
             $a->setText($textOn);
         }
         return $a;
-    }
-
-    /**
-     * Create helper to template
-     * @todo predelat callback
-     * @param Template $tpl
-     */
-    public function registerAsHelper(Template $tpl) {
-        $tpl->registerHelper('formatVat', callback($this, 'formatVat'));
-        $tpl->registerHelper('currency', callback($this, 'format'));
-        $tpl->exchange = $this;
     }
 
     /** @return Html */
