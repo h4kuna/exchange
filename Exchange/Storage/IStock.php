@@ -2,13 +2,14 @@
 
 namespace h4kuna\Exchange\Storage;
 
+use ArrayAccess;
 use h4kuna\Exchange\Currency\IProperty;
 
 /**
  *
  * @author Milan Matějček
  */
-interface IStock {
+interface IStock extends ArrayAccess {
 
     const ALL_CURRENCIES = 'all';
 
