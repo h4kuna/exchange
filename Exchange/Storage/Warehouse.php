@@ -103,6 +103,23 @@ class Warehouse extends Object implements IWarehouse {
 
     /**
      *
+     * @param Download $driver
+     * @return string
+     */
+    public function loadNameByDriver(Download $driver) {
+        return $this->getNameOf($this->date) . $driver->getName();
+    }
+
+    /**
+     * @param DateTime $date
+     * @return string
+     */
+    public function loadNameByDate(DateTime $date) {
+        return $this->getNameOf($date) . $this->download->getName();
+    }
+
+    /**
+     *
      * @param DateTime $date
      * @return string|NULL
      */

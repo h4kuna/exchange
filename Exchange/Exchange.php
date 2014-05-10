@@ -136,6 +136,10 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDate(DateTime $date) {
+        $key = $this->warehouse->loadNameByDate($date);
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
+        }
         $warehouse = $this->warehouse->setDate($date);
         return $this->bindMe($warehouse);
     }
@@ -146,6 +150,10 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDriver(Download $driver) {
+        $key = $this->warehouse->loadNameByDriver($driver);
+        if (isset(self::$history[$key])) {
+            return self::$history[$key];
+        }
         $warehouse = $this->warehouse->setDriver($driver);
         return $this->bindMe($warehouse);
     }
@@ -421,6 +429,20 @@ class Exchange extends ArrayIterator {
         return $currency;
     }
 
+    /** @deprecated */
+    public function addHistory($code, $rate) {
+        trigger_error(__METHOD__ . '() is deprecated; use $this->addRate() instead.', E_USER_DEPRECATED);
+        $this->offsetGet($code)->pushRate($rate);
+        return $this;
+    }
+
+    /** @deprecated */
+    public function removeHistory($code) {
+        trigger_error(__METHOD__ . '() is deprecated; use $this->removeRate() instead.', E_USER_DEPRECATED);
+        $this->offsetGet($code)->popRate();
+        return $this;
+    }
+
     /**
      * Add history rate for rating
      *
@@ -428,18 +450,18 @@ class Exchange extends ArrayIterator {
      * @param float $rate
      * @return Exchange
      */
-    public function addHistory($code, $rate) {
+    public function addRate($code, $rate) {
         $this->offsetGet($code)->pushRate($rate);
         return $this;
     }
 
     /**
-     * Rwmove history rating
-     *
+     * Remove history rating
+     * 
      * @param string $code
      * @return Exchange
      */
-    public function removeHistory($code) {
+    public function removeRate($code) {
         $this->offsetGet($code)->popRate();
         return $this;
     }
@@ -518,17 +540,26 @@ class Exchange extends ArrayIterator {
         }
     }
 
+    /** @return string */
+    public function getName() {
+        return $this->warehouse->getName();
+    }
+
+    /**
+     * 
+     * @param string $name
+     * @return Exchange
+     */
+    public function getHistory($name) {
+        return isset(self::$history[$name]) ? self::$history[$name] : NULL;
+    }
+
     /**
      *
      * @param IWarehouse $warehouse
      * @return Exchange
      */
     private function bindMe(IWarehouse $warehouse) {
-        $key = $warehouse->getName();
-        if (isset(self::$history[$key])) {
-            return self::$history[$key];
-        }
-
         $exchange = new static($warehouse, $this->request, $this->session);
         $exchange->setDefaulFormat($this->getDefaultFormat());
         foreach ($this as $key => $v) {

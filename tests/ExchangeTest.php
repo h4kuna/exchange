@@ -48,11 +48,11 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->assertSame('10,78' . $n . 'EUR', $this->object->format(10, 'usd', 'eur', 2));
     }
 
-    public function testHistory() {
+    public function testChangeRate() {
         $code = 'eur';
-        $this->object->addHistory($code, 26)->setWeb($code);
+        $this->object->addRate($code, 26)->setWeb($code);
         $this->assertSame(1.0, $this->object->change(26));
-        $this->object->removeHistory($code);
+        $this->object->removeRate($code);
         $this->assertSame(0.74, $this->object->change(26, NULL, NULL, 2));
     }
 
@@ -72,6 +72,12 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     public function testLoadAll() {
         $this->object->loadAll();
         $this->assertSame(152, $this->object->count());
+    }
+    
+    public function testHetory() {
+        $ex2010 = $this->object->setDate(new \DateTime('2010-12-30'));
+        $this->assertSame('2000-12-30\Cnb\Day', $this->object->getName());
+        $this->assertSame('2010-12-30\Cnb\Day', $ex2010->getName());
     }
 
     private function d($v) {

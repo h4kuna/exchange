@@ -37,4 +37,18 @@ interface IWarehouse {
 
     /** @return array */
     public function getListCurrencies();
+
+    /**
+     * 
+     * @param Download $river
+     * @return string
+     */
+    public function loadNameByDriver(Download $river);
+
+    /**
+     * 
+     * @param \DateTime $date
+     * @retrun string
+     */
+    public function loadNameByDate(\DateTime $date);
 }
