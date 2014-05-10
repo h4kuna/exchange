@@ -7,7 +7,7 @@ use Nette\Caching;
 use h4kuna\Exchange\Currency\IProperty;
 use h4kuna\Exchange\Storage\IStock;
 
-class Cache extends Caching\Cache implements IStock {
+final class Cache extends Caching\Cache implements IStock {
 
     /** @var string represent time */
     private $refresh = '15:30';

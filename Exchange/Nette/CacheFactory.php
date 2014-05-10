@@ -12,7 +12,7 @@ use h4kuna\Exchange\Storage\IStock;
  *
  * @author Milan Matejcek
  */
-class CacheFactory extends Object implements IFactory {
+final class CacheFactory extends Object implements IFactory {
 
     /** @var IStorage */
     private $storage;

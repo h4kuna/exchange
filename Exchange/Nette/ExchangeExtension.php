@@ -11,7 +11,7 @@ use Nette\DI\CompilerExtension;
  * Nette\Config\Compiler, Nette\DI\Compiler
  * Nette\Utils\PhpGenerator\ClassType, Nette\PhpGenerator\ClassType
  */
-class ExchangeExtension extends CompilerExtension {
+final class ExchangeExtension extends CompilerExtension {
 
     public $defaults = array(
         'vat' => array(
