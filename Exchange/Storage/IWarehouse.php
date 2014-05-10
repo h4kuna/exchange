@@ -11,6 +11,8 @@ use h4kuna\Exchange\Driver\Download;
  */
 interface IWarehouse {
 
+    public function __construct(IFactory $factory, Download $download);
+
     /** @return ICurrency */
     public function loadCurrency($code);
 
@@ -47,8 +49,8 @@ interface IWarehouse {
 
     /**
      * 
-     * @param \DateTime $date
+     * @param DateTime $date
      * @retrun string
      */
-    public function loadNameByDate(\DateTime $date);
+    public function loadNameByDate(DateTime $date);
 }

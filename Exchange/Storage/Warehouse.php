@@ -25,7 +25,7 @@ class Warehouse extends Object implements IWarehouse {
     /** @var DateTime */
     protected $date;
 
-    public function __construct(Factory $factory, Download $download) {
+    public function __construct(IFactory $factory, Download $download) {
         $this->storageFactory = $factory;
         $this->download = $download;
     }

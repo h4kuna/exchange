@@ -11,6 +11,11 @@ use Nette\StaticClassException;
  */
 class Utils {
 
+    /**
+     * Czech currency code
+     */
+    const CZK = 'CZK';
+
     public function __construct() {
         throw new StaticClassException;
     }

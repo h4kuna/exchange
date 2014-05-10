@@ -10,7 +10,7 @@ $configurator->enableDebugger($tmp);
 $configurator->setTempDirectory($tmp);
 $configurator->setDebugMode();
 
-$configurator->defaultExtensions['exchangeExtension'] = '\h4kuna\Exchange\DI\ExchangeExtension';
+$configurator->defaultExtensions['exchangeExtension'] = '\h4kuna\Exchange\Nette\ExchangeExtension';
 
 $container = $configurator->createContainer();
 $container->getService('session')->start();

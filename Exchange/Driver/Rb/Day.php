@@ -8,7 +8,7 @@ use DOMElement;
 use h4kuna\CUrl;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Driver\Download;
-use h4kuna\Exchange\Exchange;
+use h4kuna\Exchange\Utils;
 use h4kuna\Exchange\ExchangeException;
 
 /**
@@ -65,7 +65,7 @@ class Day extends Download {
      */
     private function czk() {
         $doc = new DOMDocument;
-        $doc->loadXML('<' . self::NODE . ' name="' . Exchange::CZK . '" quota="1" rate="1"/>');
+        $doc->loadXML('<' . self::NODE . ' name="' . Utils::CZK . '" quota="1" rate="1"/>');
         return $doc->getElementsByTagName(self::NODE)->item(0);
     }
 

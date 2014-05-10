@@ -11,7 +11,7 @@ use Nette\Templating\FileTemplate;
 trait TExchange {
 
     /** @var Exchange */
-    private $_exchange;
+    public $_exchange;
 
     /**
      * @param Exchange $exchange

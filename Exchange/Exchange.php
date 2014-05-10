@@ -7,12 +7,11 @@ use DateTime;
 use h4kuna\Exchange\Currency\IProperty;
 use h4kuna\Exchange\Driver\Download;
 use h4kuna\Exchange\Storage\IWarehouse;
+use h4kuna\Exchange\Storage\IRequestManager;
 use h4kuna\INumberFormat;
 use h4kuna\NumberFormat;
 use h4kuna\Tax;
 use h4kuna\Vat;
-use Nette\Http\Request;
-use Nette\Http\SessionSection;
 use Nette\Reflection\Property;
 use Nette\Utils\Html;
 
@@ -24,21 +23,6 @@ use Nette\Utils\Html;
  * @property string $web
  */
 class Exchange extends ArrayIterator {
-
-    /**
-     * Czech currency code
-     */
-    const CZK = 'CZK';
-
-    /**
-     * Param in url for change value
-     *
-     * @var string
-     */
-    private static $paramCurrency = 'currency';
-
-    /** @var string */
-    private static $paramVat = 'vat';
 
     /** @var Html */
     private static $href;
@@ -53,14 +37,14 @@ class Exchange extends ArrayIterator {
     /**
      * Default currency "from" input
      *
-     * @var string
+     * @var IProperty
      */
     private $default;
 
     /**
      * Display currency "to" output
      *
-     * @var string
+     * @var IProperty
      */
     private $web;
 
@@ -84,19 +68,15 @@ class Exchange extends ArrayIterator {
     /** @var NumberFormat */
     private $number;
 
-    /** @var SessionSection */
-    private $session;
-
-    /** @var Request */
+    /** @var IRequestManager */
     private $request;
 
 // </editor-fold>
 
-    public function __construct(IWarehouse $warehouse, Request $request, SessionSection $session) {
+    public function __construct(IWarehouse $warehouse, IRequestManager $request) {
         parent::__construct();
         $this->warehouse = $warehouse;
         $this->request = $request;
-        $this->session = $session;
         self::$history[$warehouse->getName()] = $this;
     }
 
@@ -109,12 +89,7 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setDefault($code) {
-        if (is_string($code)) {
-            $code = $this->offsetGet($code);
-        } elseif (!($code instanceof IProperty)) {
-            throw new ExchangeException('Bad declaration of default currency. Use object or currency code.');
-        }
-        $this->default = $code;
+        $this->default = $this->offsetGet($code);
         return $this;
     }
 
@@ -158,28 +133,6 @@ class Exchange extends ArrayIterator {
     }
 
     /**
-     * Currency param in url
-     *
-     * @param string $str
-     * @return Exchange
-     */
-    public function setParamCurrency($str) {
-        self::$paramCurrency = $str;
-        return $this;
-    }
-
-    /**
-     * VAT param in url
-     *
-     * @param string $str
-     * @return Exchange
-     */
-    public function setParamVat($str) {
-        self::$paramVat = $str;
-        return $this;
-    }
-
-    /**
      * Set global VAT
      *
      * @param type $v
@@ -189,8 +142,7 @@ class Exchange extends ArrayIterator {
      */
     public function setVat($v, $in, $out) {
         $this->tax = new Tax($v);
-        $this->tax->setVatIO($in, $out);
-        $this->loadParamVat();
+        $this->tax->setVatIO($in, $this->request->loadParamVat($out));
         return $this;
     }
 
@@ -202,9 +154,9 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     public function setWeb($code, $session = FALSE) {
-        $this->web = $this->offsetGet($code)->getCode();
+        $this->web = $this->offsetGet($code);
         if ($session) {
-            $this->session->currency = $this->web;
+            $this->request->setSessionCurrency($this->web->getCode());
         }
         return $this;
     }
@@ -214,7 +166,7 @@ class Exchange extends ArrayIterator {
     /**
      * Load currency property
      *
-     * @param string $index
+     * @param string|IProperty $index
      * @return IProperty
      * @throws ExchangeException
      */
@@ -227,51 +179,6 @@ class Exchange extends ArrayIterator {
             return parent::offsetGet($index);
         }
         throw new ExchangeException('Undefined currency code: ' . $index . ', you must call loadCurrency before.');
-    }
-
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Method for template">
-    /**
-     * @param IProperty $currency
-     * @param bool $symbol
-     * @return Html
-     */
-    public function currencyLink(IProperty $currency, $symbol = TRUE) {
-        $code = $currency->getCode();
-        $a = self::getHref();
-        $a->setText($symbol ? $currency->getFormat()->getSymbol() : $code);
-
-        if ($this->getWeb() === $code) {
-            $a->class = 'current';
-        }
-        return $a->href(NULL, array(self::$paramCurrency => $code));
-    }
-
-    /**
-     * Create link for vat
-     * 
-     * @param string $textOn
-     * @param string $textOff
-     * @return Html
-     */
-    public function vatLink($textOn, $textOff) {
-        $a = self::getHref();
-        $isVatOn = $this->tax->isVatOn();
-        $a->href(NULL, array(self::$paramVat => !$isVatOn));
-        if ($isVatOn) {
-            $a->setText($textOff);
-        } else {
-            $a->setText($textOn);
-        }
-        return $a;
-    }
-
-    /** @return Html */
-    private static function getHref() {
-        if (!self::$href) {
-            self::$href = Html::el('a');
-        }
-        return clone self::$href;
     }
 
 // </editor-fold>
@@ -296,7 +203,7 @@ class Exchange extends ArrayIterator {
         if ($from === NULL || $from) {
             $from = $this->offsetGet($from ? $from : $this->getDefault());
 
-            if ($to != $from) {
+            if ($to !== $from) {
                 $price *= $to->getRate() / $from->getRate();
             }
         }
@@ -411,10 +318,14 @@ class Exchange extends ArrayIterator {
             }
 
             $this[$code] = $currency->setFormat($profil);
-            $this->loadParamCurrency($code);
         }
 
         return $currency;
+    }
+
+    /** @return bool */
+    public function isVatOn() {
+        return $this->tax->isVatOn();
     }
 
     /** @deprecated */
@@ -457,7 +368,7 @@ class Exchange extends ArrayIterator {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Getters">
 
-    /** @var Property */
+    /** @var IProperty */
     public function getDefault() {
         if (!$this->default) {
             throw new ExchangeException('Let\'s define currency by method loadCurrency() and first is default.');
@@ -491,42 +402,22 @@ class Exchange extends ArrayIterator {
         return $this->tax->getVat()->getPercent();
     }
 
-    /** @return string */
+    /** @return IProperty */
     public function getWeb() {
         if (!$this->web) {
-            $this->web = $this->getDefault();
+            $code = $this->request->loadParamCurrency($this->getDefault()->getCode());
+            $this->web = $this->offsetGet($code);
         }
         return $this->web;
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Session setup">
-    /**
-     * Set currency from query and set local property and save to session
-     */
-    protected function loadParamCurrency($code) {
-        try {
-            $currency = $this->offsetGet($this->request->getQuery(self::$paramCurrency, $this->session->currency))->getCode();
-            if ($code == $currency) {
-                $this->setWeb($currency, TRUE);
-            }
-        } catch (ExchangeException $e) {
-            
-        }
+    /** @return IRequestManager */
+    public function getRequestManager() {
+        return $this->request;
     }
 
-    /**
-     * Set VAT from query and set local property and save to session
-     */
-    protected function loadParamVat() {
-        $session = isset($this->session->vat) ? $this->session->vat : $this->tax->isVatOn();
-        $this->session->vat = $vat = (bool) $this->request->getQuery(self::$paramVat, $session);
-        if ($vat) {
-            $this->tax->vatOn();
-        } else {
-            $this->tax->vatOff();
-        }
-    }
+// </editor-fold>
+// <editor-fold defaultstate="collapsed" desc="Session setup">
 
     /** @return string */
     public function getName() {
@@ -548,7 +439,7 @@ class Exchange extends ArrayIterator {
      * @return Exchange
      */
     private function bindMe(IWarehouse $warehouse) {
-        $exchange = new static($warehouse, $this->request, $this->session);
+        $exchange = new static($warehouse, $this->request);
         $exchange->setDefaulFormat($this->getDefaultFormat());
         foreach ($this as $key => $v) {
             $exchange->loadCurrency($key, $v->getFormat());

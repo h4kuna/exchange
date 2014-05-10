@@ -1,9 +1,7 @@
 <?php
 
-namespace h4kuna\Exchange\DI;
+namespace h4kuna\Exchange\Nette;
 
-use Nette\Configurator;
-use Nette\DI\Compiler;
 use Nette\DI\CompilerExtension;
 
 /**
@@ -16,15 +14,17 @@ use Nette\DI\CompilerExtension;
 class ExchangeExtension extends CompilerExtension {
 
     public $defaults = array(
-        'vat' => 21,
-        'vatIn' => FALSE,
-        'vatOut' => FALSE,
+        'vat' => array(
+            'value' => 21,
+            'in' => FALSE,
+            'out' => FALSE
+        ),
         'currencies' => array(
             'czk' => array('decimal' => 0, 'symbol' => 'Kč'),
             'eur'
         ),
         'driver' => 'h4kuna\Exchange\Driver\Cnb\Day',
-        'storage' => 'h4kuna\Exchange\Storage\Stock'
+        'storage' => 'h4kuna\Exchange\Nette\Cache'
     );
 
     public function loadConfiguration() {
@@ -46,25 +46,31 @@ class ExchangeExtension extends CompilerExtension {
                 ->setArguments(array('@session', $this->name))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
+        // request manager
+        $builder->addDefinition($this->prefix('requestManager'))
+                ->setClass('h4kuna\Exchange\Nette\RequestManager')
+                ->setArguments(array('@httpRequest', $this->prefix('@sessionSection')))
+                ->setShared(FALSE)->setAutowired(FALSE);
+
         // storage factory
-        $builder->addDefinition($this->prefix('stockFactory'))
-                ->setClass('h4kuna\Exchange\Storage\Factory')
+        $builder->addDefinition($this->prefix('cacheFactory'))
+                ->setClass('h4kuna\Exchange\Nette\CacheFactory')
                 ->setArguments(array('@cacheStorage', $config['storage']))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
         // warehouse
         $builder->addDefinition($this->prefix('warehouse'))
                 ->setClass('h4kuna\Exchange\Storage\Warehouse')
-                ->setArguments(array($this->prefix('@stockFactory'), $this->prefix('@driver')))
+                ->setArguments(array($this->prefix('@cacheFactory'), $this->prefix('@driver')))
                 ->setShared(FALSE)->setAutowired(FALSE);
 
         // main class Exchange
         $exchange = $builder->addDefinition($this->prefix('exchange'))
                 ->setClass('h4kuna\Exchange\Exchange')
-                ->setArguments(array($this->prefix('@warehouse'), '@httpRequest', $this->prefix('@sessionSection')));
+                ->setArguments(array($this->prefix('@warehouse'), $this->prefix('@requestManager')));
 
         if ($config['vat']) {
-            $exchange->addSetup('setVat', array($config['vat'], $config['vatIn'], $config['vatOut']));
+            $exchange->addSetup('setVat', array($config['vat']['value'], $config['vat']['in'], $config['vat']['out']));
         }
 
         foreach ($config['currencies'] as $code => $currency) {

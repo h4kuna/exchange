@@ -9,7 +9,6 @@ $historyEUR = 20;
 $smallVat = 15;
 
 $rbDriver = $exchange->setDriver(new \h4kuna\Exchange\Driver\Rb\Day);
-
 $date = new DateTime('2013-12-30');
 $history = $exchange->setDate($date);
 ?>
@@ -29,9 +28,11 @@ $history = $exchange->setDate($date);
     <body>
         <ul class="list-inline">
             <li>VAT: <?php echo $exchange->getVat() ?>%</li>
-            <li>Control VAT: <?php echo $exchange->vatLink('On', 'Off'); ?></li>
-            <li>Currencies: <?php foreach ($exchange as $v): ?>
-                    <?php echo $exchange->currencyLink($v); ?>
+            <li>Control VAT: <a href="?<?php echo $exchange->getRequestManager()->getParamVat(); ?>=<?php echo (int) !$exchange->isVatOn(); ?>">
+                    <?php echo $exchange->isVatOn() ? 'Off' : 'On'; ?></a></li>
+            <li>Currencies: <?php foreach ($exchange as $code => $v): ?>
+                    <a href="?<?php echo $exchange->getRequestManager()->getParamCurrency(); ?>=<?php echo $code; ?>">
+                        <?php echo $code . ' (' . $v->getFormat()->getSymbol() . ')' ?></a>
                 <?php endforeach; ?>
             </li>
         </ul>
@@ -49,11 +50,11 @@ $history = $exchange->setDate($date);
         <h3>History rate for old order in eshop</h3>
         <h4>Before 1:<?php
             echo $historyEUR;
-            $exchange->addHistory('eur', $historyEUR);
+            $exchange->addRate('eur', $historyEUR);
             ?></h4>
         <p><?php
             echo $exchange->format(10, 'eur', 'czk');
-            $exchange->removeHistory('eur');
+            $exchange->removeRate('eur');
             ?></p>
         <h4>Actual</h4>
         <p><?php echo $exchange->format(10, 'eur', 'czk'); ?></p>
