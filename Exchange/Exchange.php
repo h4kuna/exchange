@@ -325,6 +325,9 @@ class Exchange extends ArrayIterator {
 
     /** @return bool */
     public function isVatOn() {
+        if ($this->tax === NULL) {
+            throw new ExchangeException('Let\'s define vat by setVat().');
+        }
         return $this->tax->isVatOn();
     }
 
@@ -397,7 +400,7 @@ class Exchange extends ArrayIterator {
     /** @return Tax */
     public function getVat() {
         if (!$this->tax) {
-            $this->setVat();
+            return NULL;
         }
         return $this->tax->getVat()->getPercent();
     }
