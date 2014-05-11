@@ -5,6 +5,12 @@ $container = require __DIR__ . '/tests/bootstrap.php';
 $exchange = $container->getService('exchangeExtension.exchange');
 $exchange->loadCurrency('usd');
 
+// Without Nette
+//$builder = new h4kuna\Exchange\NoFramework\Builder($tmp);
+//$exchange = $builder->create();
+//$exchange->loadCurrency('CZK');
+//$exchange->loadCurrency('EUR');
+
 $historyEUR = 20;
 $smallVat = 15;
 

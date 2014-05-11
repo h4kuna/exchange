@@ -2,7 +2,7 @@ Exchange
 -------
 [![Build Status](https://travis-ci.org/h4kuna/exchange.png)](https://travis-ci.org/h4kuna/exchange)
 
-Exchange is PHP script works with currencies. This extension is for [Nette framework 2+](http://nette.org/).
+Exchange is PHP script works with currencies. This extension is primary for [Nette framework 2+](http://nette.org/), but you can use without Nette for another framework or [without framework](https://github.com/h4kuna/exchange/tree/master/NoFramework).
 
 Installation to project
 -----------------------
