@@ -318,6 +318,7 @@ class Exchange extends ArrayIterator {
             }
 
             $this[$code] = $currency->setFormat($profil);
+            $currency->default = &$this->default;
         }
 
         return $currency;

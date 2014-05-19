@@ -24,6 +24,9 @@ class Property implements IProperty {
     /** @var array */
     private $stack = array();
 
+    /** @var Property */
+    public $default;
+
     public function __construct($home, $code, $foreing) {
         $this->home = floatval($home);
         $this->code = strtoupper($code);
@@ -43,7 +46,7 @@ class Property implements IProperty {
     }
 
     public function getRate() {
-        return $this->foreing / $this->home;
+        return ($this->foreing / $this->home) / ($this->default->getForeing() / $this->default->getHome());
     }
 
 // <editor-fold defaultstate="collapsed" desc="Number will format for render">
