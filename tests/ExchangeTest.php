@@ -9,6 +9,7 @@ use h4kuna\Exchange;
 use h4kuna\NumberFormat;
 use Nette\Environment;
 use PHPUnit_Framework_TestCase;
+use Tracy\Debugger;
 
 /**
  * @author Milan Matějček
@@ -21,7 +22,6 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     protected function setUp() {
         $this->object = Environment::getContext()->createService('exchangeExtension.exchange')
                 ->setDate(new DateTime('2000-12-30'));
-        $this->object->setDefault('czk');
         $this->object->loadCurrency('czk');
         $this->object->loadCurrency('eur');
         $this->object->loadCurrency('usd');
@@ -59,8 +59,10 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
     public function testSetDefault() {
         $this->object->setDefault('eur');
         $this->object->loadCurrency('byr');
+        // kurz z 30.12.200
         $this->assertSame(35.09, $this->object->change(1, NULL, 'czk'));
-        $this->assertSame(17633.166, $this->object->change(1, NULL, 'byr', 3));
+        $this->assertSame(197.0, $this->object->change(100000, 'byr', 'czk'));
+        $this->assertSame(17812.183, $this->object->change(1, NULL, 'byr', 3));
     }
 
     public function testRbDriver() {
@@ -73,16 +75,19 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
         $this->object->loadAll();
         $this->assertSame(152, $this->object->count());
     }
-    
+
     public function testHetory() {
         $ex2010 = $this->object->setDate(new \DateTime('2010-12-30'));
         $this->assertSame('2000-12-30\Cnb\Day', $this->object->getName());
         $this->assertSame('2010-12-30\Cnb\Day', $ex2010->getName());
     }
 
-    private function d($v) {
-        \Nette\Diagnostics\Debugger::enable(FALSE);
-        dump($v);
+    private function dd($v) {
+        Debugger::enable(FALSE);
+        foreach (func_get_args() as $v) {
+            dump($v);
+        };
+        exit;
     }
 
 }

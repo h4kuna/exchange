@@ -13,7 +13,6 @@ use h4kuna\NumberFormat;
 use h4kuna\Tax;
 use h4kuna\Vat;
 use Nette\Reflection\Property;
-use Nette\Utils\Html;
 
 /**
  *
@@ -23,9 +22,6 @@ use Nette\Utils\Html;
  * @property string $web
  */
 class Exchange extends ArrayIterator {
-
-    /** @var Html */
-    private static $href;
 
     /**
      * History instances
@@ -413,6 +409,11 @@ class Exchange extends ArrayIterator {
             $this->web = $this->offsetGet($code);
         }
         return $this->web;
+    }
+
+    /** @var IWarehouse */
+    public function getWarehouse() {
+        return $this->warehouse;
     }
 
     /** @return IRequestManager */
