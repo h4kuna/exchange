@@ -44,25 +44,25 @@ final class ExchangeExtension extends CompilerExtension {
         $builder->addDefinition($this->prefix('sessionSection'))
                 ->setClass('Nette\Http\SessionSection')
                 ->setArguments(array('@session', $this->name))
-                ->setShared(FALSE)->setAutowired(FALSE);
+                ->setAutowired(FALSE);
 
         // request manager
         $builder->addDefinition($this->prefix('requestManager'))
                 ->setClass('h4kuna\Exchange\Nette\RequestManager')
                 ->setArguments(array('@httpRequest', $this->prefix('@sessionSection')))
-                ->setShared(FALSE)->setAutowired(FALSE);
+                ->setAutowired(FALSE);
 
         // storage factory
         $builder->addDefinition($this->prefix('cacheFactory'))
                 ->setClass('h4kuna\Exchange\Nette\CacheFactory')
                 ->setArguments(array('@cacheStorage', $config['storage']))
-                ->setShared(FALSE)->setAutowired(FALSE);
+                ->setAutowired(FALSE);
 
         // warehouse
         $builder->addDefinition($this->prefix('warehouse'))
                 ->setClass('h4kuna\Exchange\Storage\Warehouse')
                 ->setArguments(array($this->prefix('@cacheFactory'), $this->prefix('@driver')))
-                ->setShared(FALSE)->setAutowired(FALSE);
+                ->setAutowired(FALSE);
 
         // main class Exchange
         $exchange = $builder->addDefinition($this->prefix('exchange'))
