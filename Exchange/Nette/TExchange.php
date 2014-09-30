@@ -34,7 +34,7 @@ trait TExchange {
         $template->registerHelper('currency', function ($number, $from = NULL, $to = NULL, $vat = NULL) use ($exchange) {
             return $exchange->format($number, $from, $to, $vat);
         });
-        $template->registerHelper('formatTo', function ($number, $from = NULL, $to = NULL, $vat = NULL) use ($exchange) {
+        $template->registerHelper('formatTo', function ($number, $to = NULL, $vat = NULL) use ($exchange) {
             return $exchange->formatTo($number, $to, $vat);
         });
         return $template;
