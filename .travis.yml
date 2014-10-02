@@ -10,4 +10,4 @@ before_script:
   - chmod 777 tests/temp
 
 script:
-  - phpunit tests/
+  - phpunit

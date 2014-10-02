@@ -58,11 +58,11 @@ class ExchangeTest extends PHPUnit_Framework_TestCase {
 
     public function testSetDefault() {
         $this->object->setDefault('eur');
-        $this->object->loadCurrency('byr');
-        // kurz z 30.12.200
+        $this->object->loadCurrency('sit');
+        // kurz z 30.12.2000
         $this->assertSame(35.09, $this->object->change(1, NULL, 'czk'));
-        $this->assertSame(197.0, $this->object->change(100000, 'byr', 'czk'));
-        $this->assertSame(17812.183, $this->object->change(1, NULL, 'byr', 3));
+        $this->assertSame(164.35, $this->object->change(1000, 'sit', 'czk'));
+        $this->assertSame(213.508, $this->object->change(1, NULL, 'sit', 3));
     }
 
     public function testRbDriver() {
