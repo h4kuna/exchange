@@ -3,11 +3,12 @@ php:
   - 5.3.3
   - 5.4
   - 5.5
+  - 5.6
+  - 7.0
 
 before_script:
   - composer self-update
-  - composer install --no-interaction --prefer-source --dev
-  - chmod 777 tests/temp
+  - composer install --no-interaction --prefer-source
 
 script:
-  - phpunit
+    - ./tests/run-tests.sh

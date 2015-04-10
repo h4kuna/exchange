@@ -15,7 +15,7 @@ Example NEON config
 -------------------
 <pre>
 extensions:
-    exchangeExtension: h4kuna\Exchange\DI\ExchangeExtension
+    exchangeExtension: h4kuna\Exchange\Nette\DI\ExchangeExtension
 
 exchangeExtension:
     currencies: {
