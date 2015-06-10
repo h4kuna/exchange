@@ -55,8 +55,8 @@ class Warehouse extends Object implements IWarehouse {
      */
     private function checkCurrency($code) {
         $stock = $this->getStock();
-        if ($stock[$code]) {
-            return $stock[$code];
+        if ($stock->load($code)) {
+            return $stock->load($code);
         }
 
         throw new ExchangeException('Undefined currency code: ' . $code);
