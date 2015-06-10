@@ -8,10 +8,10 @@ use h4kuna\Exchange\Currency\IProperty;
 use h4kuna\Exchange\Driver\Download;
 use h4kuna\Exchange\Storage\IWarehouse;
 use h4kuna\Exchange\Storage\IRequestManager;
-use h4kuna\INumberFormat;
-use h4kuna\NumberFormat;
-use h4kuna\Tax;
-use h4kuna\Vat;
+use h4kuna\Number\INumberFormat;
+use h4kuna\Number\NumberFormat;
+use h4kuna\Number\Tax;
+use h4kuna\Number\Vat;
 use Nette\Reflection\Property;
 
 /**
