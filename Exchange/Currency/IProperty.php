@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Currency;
 
-use h4kuna\INumberFormat;
+use h4kuna\Number\INumberFormat;
 
 /**
  *
