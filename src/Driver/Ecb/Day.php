@@ -47,6 +47,12 @@ class Day extends Exchange\Driver\Download
 		return new Exchange\Currency\Property(1, $row['currency'], $row['rate']);
 	}
 
+	/**
+	 * @param string $url
+	 * @param DateTime $date
+	 * @return string
+	 * @throws Exchange\ExchangeException
+	 */
 	protected function createUrlDay($url, DateTime $date = NULL)
 	{
 		if ($date) {

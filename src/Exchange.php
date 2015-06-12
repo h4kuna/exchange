@@ -98,10 +98,10 @@ class Exchange extends \ArrayIterator
 
     /**
      *
-     * @param DateTime $date
+     * @param DateTime|NULL $date NULL - mean reset to current
      * @return self
      */
-    public function setDate(DateTime $date)
+    public function setDate(DateTime $date = NULL)
     {
         $key = $this->warehouse->loadNameByDate($date);
         if (isset(self::$history[$key])) {

@@ -2,19 +2,13 @@
 
 namespace h4kuna\Exchange\NoFramework;
 
-use h4kuna\Exchange\Driver\Cnb\Day,
-	h4kuna\Exchange\Exchange,
-	h4kuna\Exchange\Storage\Warehouse;
+use h4kuna\Exchange;
 
 /**
- *
  * @author Milan Matějček
  */
-class Builder
+class ExchangeFactory
 {
-
-	/** @var Exchange */
-	private $exchange;
 
 	/** @var string */
 	private $temp;
@@ -28,27 +22,29 @@ class Builder
 	/** @var float */
 	private $vat;
 
-	public function __construct($temp, $vat, $in = FALSE, $out = FALSE)
+	public function __construct($temp, $vat = 0, $in = FALSE, $out = FALSE)
 	{
 		$this->temp = $temp;
+		$this->setVat($vat, $in, $out);
+	}
+
+	public function setVat($vat, $in, $out)
+	{
 		$this->vat = $vat;
 		$this->in = $in;
 		$this->out = $out;
 	}
 
 	/**
-	 *
-	 * @return Exchange
+	 * @return Exchange\Exchange
 	 */
 	public function create()
 	{
-		if ($this->exchange !== NULL) {
-			return $this->exchange;
+		$exchange = new Exchange\Exchange($this->createWarehouse(), $this->createRequestManager());
+		if ($this->vat) {
+			$exchange->setVat($this->vat, $this->in, $this->out);
 		}
-
-		$this->exchange = new Exchange($this->createWarehouse(), $this->createRequestManager());
-		$this->exchange->setVat($this->vat, $this->in, $this->out);
-		return $this->exchange;
+		return $exchange;
 	}
 
 	protected function createRequestManager()
@@ -58,12 +54,12 @@ class Builder
 
 	protected function createDriver()
 	{
-		return new Day;
+		return new Exchange\Driver\Cnb\Day;
 	}
 
 	protected function createWarehouse()
 	{
-		return new Warehouse($this->createFactoryCache(), $this->createDriver());
+		return new Exchange\Storage\Warehouse($this->createFactoryCache(), $this->createDriver());
 	}
 
 	protected function createFactoryCache()

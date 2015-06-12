@@ -81,7 +81,8 @@ class ExchangeTest extends TestCase
 
 	public function testEcbDriver()
 	{
-		Assert::true($this->exchange->setDriver(new Driver\Ecb\Day) instanceof Exchange);
+		$current = $this->exchange->setDate();
+		Assert::true($current->setDriver(new Driver\Ecb\Day) instanceof Exchange);
 	}
 
 	public function testLoadAll()

@@ -33,7 +33,6 @@ class Warehouse extends Object implements IWarehouse
 
 	/**
 	 * Load currency and property
-	 *
 	 * @param string $code
 	 * @return IProperty
 	 */
@@ -50,7 +49,6 @@ class Warehouse extends Object implements IWarehouse
 
 	/**
 	 * Check currency is loaded or exists
-	 *
 	 * @param string $code
 	 * @return IProperty
 	 * @throws Exchange\UnknownCurrencyException
@@ -67,7 +65,6 @@ class Warehouse extends Object implements IWarehouse
 	}
 
 	/**
-	 *
 	 * @return Stock
 	 */
 	private function getStock()
@@ -79,7 +76,6 @@ class Warehouse extends Object implements IWarehouse
 	}
 
 	/**
-	 *
 	 * @param DateTime $date
 	 * @return Store
 	 */
@@ -92,7 +88,6 @@ class Warehouse extends Object implements IWarehouse
 
 	/**
 	 * Change driver runtime
-	 *
 	 * @param Exchange\Driver\Download $driver
 	 * @return Store
 	 */
@@ -110,7 +105,6 @@ class Warehouse extends Object implements IWarehouse
 	}
 
 	/**
-	 *
 	 * @param Exchange\Driver\Download $driver
 	 * @return string
 	 */
@@ -123,13 +117,12 @@ class Warehouse extends Object implements IWarehouse
 	 * @param DateTime $date
 	 * @return string
 	 */
-	public function loadNameByDate(DateTime $date)
+	public function loadNameByDate(DateTime $date = NULL)
 	{
 		return $this->getNameOf($date) . $this->download->getName();
 	}
 
 	/**
-	 *
 	 * @param DateTime $date
 	 * @return string|NULL
 	 */
