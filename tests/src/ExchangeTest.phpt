@@ -79,6 +79,17 @@ class ExchangeTest extends TestCase
 		Assert::same(213.508, $this->exchange->change(1, NULL, 'sit', 3));
 	}
 
+	public function testSetDefaultSimple()
+	{
+		$this->exchange->setDefault('czk');
+		Assert::same('10 Kč', $this->exchange->format(10));
+		$this->exchange->setDefault('gbp');
+		Assert::same('564 Kč', $this->exchange->format(10));
+		Assert::same('£10,00', $this->exchange->format(10, NULL, 'gbp'));
+		$this->exchange->setWeb('gbp');
+		Assert::same('£10,00', $this->exchange->format(10));
+	}
+
 	public function testEcbDriver()
 	{
 		$current = $this->exchange->setDate();
@@ -91,7 +102,7 @@ class ExchangeTest extends TestCase
 		Assert::same(29, $this->exchange->count());
 	}
 
-	public function testHetory()
+	public function testHitory()
 	{
 		$ex2010 = $this->exchange->setDate(new \DateTime('2010-12-30'));
 		Assert::same('2000-12-30\Cnb\Day', $this->exchange->getName());

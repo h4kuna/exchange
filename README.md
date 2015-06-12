@@ -1,6 +1,6 @@
 Exchange
 -------
-[![Build Status](https://travis-ci.org/h4kuna/exchange.png)](https://travis-ci.org/h4kuna/exchange)
+[![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
 
 Exchange is PHP script works with currencies. This extension is primary for [Nette framework 2+](http://nette.org/), but you can use without Nette for another framework or [without framework](https://github.com/h4kuna/exchange/tree/master/Exchange/NoFramework).
 
@@ -8,33 +8,60 @@ Installation to project
 -----------------------
 The best way to install h4kuna/exchange is using Composer:
 ```sh
-$ composer require h4kuna/exchange:4.0.*
+$ composer require h4kuna/exchange
 ```
 
 Example NEON config
 -------------------
-<pre>
+```sh
 extensions:
     exchangeExtension: h4kuna\Exchange\Nette\DI\ExchangeExtension
 
 exchangeExtension:
     currencies: {
-            czk: [decimal: 5, symbol: 'Kč', point: ',', thousand: ' ', mask: 'S 1', zeroClear: true]
+            czk: [decimal: 0, symbol: 'Kč', point: ',', thousand: ' ', mask: '1 S', flag: 10]
             usd: [symbol: '$']
-            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 0] }
-    vat: 20.5
+            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 2] }
+    vat: 21
     vatIn: false
     vatOut: false
-</pre>
-
-Run example
------------
-```sh
-$ cd to/your/web/document/root
-$ git clone git@github.com:h4kuna/exchange.git
-$ cd exchange
-$ mkdir tmp
-$ chmod 777 tmp
-$ composer install
 ```
-Run in browser example.php and you can see how it is work.
+
+
+Basic usage.
+```php
+/* @var $exchange h4kuna\Exchange\Exchange */
+$exchange->setDate(new DateTime('2000-12-30'));
+$exchange->format(10, 'eur', 'czk'); // 351 Kč
+```
+
+Method format has parameters:
+	- money (int/float)
+	- from, this can be global set by method setDefault()
+	- to, this can be global set by method setWeb()
+	- vat, this can be global set by method setVat()
+
+If you want all currencies. Default is load whose are in config.
+```php
+$exchange->loadAll(); // array of h4kuna\Exchange\Currency\IProperty
+```
+
+Change default currency. Normaly default is first in config.
+```php
+$exchange->setDefault('czk');
+$this->exchange->format(10); // 10 Kč
+$exchange->setDefault('gbp');
+$exchange->format(10); // 564 Kč, there is czk output
+$exchange->format(10, NULL, 'gbp'); // £10.00
+// or
+$exchange->setWeb('gbp');
+$exchange->format(10); // £10.00
+```
+
+Change driver on fly.
+```php
+$exchange->setDate(); // reset history to current
+$ecbDriver = $exchange->setDriver(new Driver\Ecb\Day); // Ecb does not support history, yet
+$ecbDriverExchange->format(10);
+```
+
