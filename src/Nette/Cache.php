@@ -3,11 +3,11 @@
 namespace h4kuna\Exchange\Nette;
 
 use DateTime,
-	h4kuna\Exchange\Currency\IProperty,
-	h4kuna\Exchange\Storage\IStock,
+	h4kuna\Exchange\Currency,
+	h4kuna\Exchange\Storage,
 	Nette\Caching;
 
-final class Cache extends Caching\Cache implements IStock
+final class Cache extends Caching\Cache implements Storage\IStock
 {
 
 	/** @var string represent time */
@@ -26,7 +26,6 @@ final class Cache extends Caching\Cache implements IStock
 	}
 
 	/**
-	 *
 	 * @param string $hour
 	 * @return Storage
 	 */
@@ -37,9 +36,9 @@ final class Cache extends Caching\Cache implements IStock
 	}
 
 	/**
-	 * @param IProperty $currency
+	 * @param Currency\IProperty $currency
 	 */
-	public function saveCurrency(IProperty $currency)
+	public function saveCurrency(Currency\IProperty $currency)
 	{
 		$refresh = $this->getRefresh();
 		$expire = NULL;
@@ -51,7 +50,6 @@ final class Cache extends Caching\Cache implements IStock
 	}
 
 	/**
-	 *
 	 * @param array $currencies
 	 */
 	public function saveCurrencies(array $currencies)

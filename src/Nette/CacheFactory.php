@@ -26,7 +26,6 @@ final class CacheFactory extends Nette\Object implements Storage\IFactory
 	}
 
 	/**
-	 *
 	 * @param string $name
 	 * @return Storage\IStock
 	 */
