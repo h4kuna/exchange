@@ -25,9 +25,8 @@ interface IProperty
 
 	/**
 	 * Set how render currency
-	 *
 	 * @param Number\INumberFormat $nf
-	 * @return IProperty
+	 * @return self
 	 */
 	public function setFormat(Number\INumberFormat $nf);
 
@@ -36,28 +35,25 @@ interface IProperty
 
 	/**
 	 * Set history rate
-	 *
 	 * @param float $number
-	 * @return IProperty
+	 * @return self
 	 */
 	public function pushRate($number);
 
 	/**
-	 * @return IProperty
+	 * @return self
 	 */
 	public function popRate();
 
 	/**
 	 * Set last value in stack and clear stack
-	 *
-	 * @return IProperty
+	 * @return self
 	 */
 	public function revertRate();
 
 	/**
 	 * Default currency for count rate
-	 *
-	 * @return IProperty
+	 * @return self
 	 */
 	// public function setDefault($property);
 }

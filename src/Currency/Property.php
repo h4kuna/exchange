@@ -25,7 +25,10 @@ class Property implements IProperty
 	/** @var array */
 	private $stack = array();
 
-	/** @var Property */
+	/**
+	 * Is need added by reference!
+	 * @var self
+	 */
 	public $default;
 
 	public function __construct($home, $code, $foreing)
@@ -67,9 +70,8 @@ class Property implements IProperty
 	}
 
 	/**
-	 * Remove first in stack and set up
-	 *
-	 * @return Property
+	 * Remove first in stack and set up.
+	 * @return self
 	 */
 	public function popRate()
 	{
@@ -80,10 +82,9 @@ class Property implements IProperty
 	}
 
 	/**
-	 * Add new rate
-	 *
+	 * Add new rate.
 	 * @param type $number
-	 * @return Property
+	 * @return self
 	 */
 	public function pushRate($number)
 	{
@@ -93,9 +94,8 @@ class Property implements IProperty
 	}
 
 	/**
-	 * Set last rate in stack and clear
-	 *
-	 * @return Property
+	 * Set last rate in stack and clear.
+	 * @return self
 	 */
 	public function revertRate()
 	{
