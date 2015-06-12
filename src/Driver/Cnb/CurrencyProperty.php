@@ -2,12 +2,12 @@
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
-use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Currency;
 
 /**
  * @author Milan Matějček
  */
-class CurrencyProperty extends Property
+class CurrencyProperty extends Currency\Property
 {
 
 	/** @var string */
@@ -24,8 +24,7 @@ class CurrencyProperty extends Property
 	}
 
 	/**
-	 * Country in czech language
-	 *
+	 * Country in czech language.
 	 * @return string
 	 */
 	public function getCountry()
@@ -34,8 +33,7 @@ class CurrencyProperty extends Property
 	}
 
 	/**
-	 * Name in czech language
-	 *
+	 * Name in czech language.
 	 * @return string
 	 */
 	public function getName()

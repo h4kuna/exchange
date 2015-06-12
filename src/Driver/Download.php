@@ -4,22 +4,19 @@ namespace h4kuna\Exchange\Driver;
 
 use DateTime,
 	h4kuna\Exchange,
-	h4kuna\Exchange\Currency,
-	Nette\Object;
+	Nette;
 
 /**
  * Download currency from server.
- *
  * @author Milan Matějček
  */
-abstract class Download extends Object
+abstract class Download extends Nette\Object
 {
 
 	/**
-	 * Download data from remote source and save
-	 *
+	 * Download data from remote source and save.
 	 * @param DateTime $date
-	 * @return Currency\Property
+	 * @return Exchange\Currency\Property
 	 */
 	final public function loadCurrencies(DateTime $date = NULL)
 	{
@@ -48,7 +45,6 @@ abstract class Download extends Object
 	}
 
 	/**
-	 *
 	 * @param string $url
 	 * @param DateTime $date
 	 * @return string
@@ -62,21 +58,18 @@ abstract class Download extends Object
 	}
 
 	/**
-	 * Load data for iterator
-	 *
+	 * Load data for iterator.
 	 * @return array
 	 */
 	abstract protected function loadFromSource(DateTime $date = NULL);
 
 	/**
-	 * Modify data before save to cache
-	 *
-	 * @return Currency\Property|NULL
+	 * Modify data before save to cache.
+	 * @return Exchange\Currency\Property|NULL
 	 */
 	abstract protected function createProperty($row);
 
 	/**
-	 *
 	 * @param string $url
 	 * @param DateTime $date
 	 * @return string
