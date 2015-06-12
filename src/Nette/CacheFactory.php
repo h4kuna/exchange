@@ -2,43 +2,42 @@
 
 namespace h4kuna\Exchange\Nette;
 
-use h4kuna\Exchange\ExchangeException,
-    h4kuna\Exchange\Storage\IFactory,
-    h4kuna\Exchange\Storage\IStock,
-    Nette\Object;
+use h4kuna\Exchange\Storage,
+	Nette,
+	Nette\Caching;
 
 /**
  *
- * @author Milan Matejcek
+ * @author Milan Matějček
  */
-final class CacheFactory extends Object implements IFactory
+final class CacheFactory extends Nette\Object implements Storage\IFactory
 {
 
-    /** @var IStorage */
-    private $storage;
+	/** @var Caching\IStorage */
+	private $storage;
 
-    /** @var string */
-    private $storageClass;
+	/** @var string */
+	private $storageClass;
 
-    public function __construct(IStorage $storage, $storageClass)
-    {
-        $this->storage = $storage;
-        $this->storageClass = $storageClass;
-    }
+	function __construct(Caching\IStorage $storage, $storageClass)
+	{
+		$this->storage = $storage;
+		$this->storageClass = $storageClass;
+	}
 
-    /**
-     *
-     * @param string $name
-     * @return IStock
-     */
-    public function create($name)
-    {
-        $class = $this->storageClass;
-        $service = new $class($this->storage, $name);
-        if (!($service instanceof IStock)) {
-            throw new ExchangeException('Storage must be instance ' . __NAMESPACE__ . '\IStock.');
-        }
-        return $service;
-    }
+	/**
+	 *
+	 * @param string $name
+	 * @return Storage\IStock
+	 */
+	public function create($name)
+	{
+		$class = $this->storageClass;
+		$service = new $class($this->storage, $name);
+		if (!($service instanceof Storage\IStock)) {
+			throw new ExchangeException('Storage must be instance ' . __NAMESPACE__ . '\IStock.');
+		}
+		return $service;
+	}
 
 }

@@ -1,11 +1,14 @@
+php:
+    date.timezone: Europe/Prague
+
 extensions:
     exchangeExtension: h4kuna\Exchange\Nette\DI\ExchangeExtension
 
 exchangeExtension:
     currencies: {
-            czk: [decimal: 5, symbol: 'Kč', point: ',', thousand: ' ', mask: 'S 1', zeroClear: true]
+            czk: [decimal: 0, symbol: 'Kč', point: ',', thousand: ' ', mask: '1 S', flag: 10]
             usd: [symbol: '$']
-            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 0] }
-    vat: 20.5
+            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 2] }
+    vat: 21
     vatIn: false
     vatOut: false

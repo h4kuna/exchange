@@ -2,8 +2,8 @@
 
 namespace h4kuna\Exchange\Storage;
 
-use DateTime;
-use h4kuna\Exchange\Driver\Download;
+use DateTime,
+	h4kuna\Exchange\Driver;
 
 /**
  *
@@ -12,46 +12,42 @@ use h4kuna\Exchange\Driver\Download;
 interface IWarehouse
 {
 
-    public function __construct(IFactory $factory, Download $download);
+	public function __construct(IFactory $factory, Driver\Download $download);
 
-    /** @return ICurrency */
-    public function loadCurrency($code);
+	/** @return ICurrency */
+	public function loadCurrency($code);
 
-    /**
-     * Identification name
-     *
-     * @return string
-     */
-    public function getName();
+	/**
+	 * Identification name
+	 * @return string
+	 */
+	public function getName();
 
-    /**
-     * Change date for currency
-     *
-     * @param DateTime $date
-     */
-    public function setDate(DateTime $date);
+	/**
+	 * Change date for currency
+	 *
+	 * @param DateTime $date
+	 */
+	public function setDate(DateTime $date);
 
-    /**
-     * Change driver for currency
-     *
-     * @param Download $driver
-     */
-    public function setDriver(Download $driver);
+	/**
+	 * Change driver for currency
+	 * @param Driver\Download $driver
+	 */
+	public function setDriver(Driver\Download $driver);
 
-    /** @return array */
-    public function getListCurrencies();
+	/** @return array */
+	public function getListCurrencies();
 
-    /**
-     *
-     * @param Download $river
-     * @return string
-     */
-    public function loadNameByDriver(Download $river);
+	/**
+	 * @param Driver\Download $river
+	 * @return string
+	 */
+	public function loadNameByDriver(Driver\Download $river);
 
-    /**
-     *
-     * @param DateTime $date
-     * @retrun string
-     */
-    public function loadNameByDate(DateTime $date);
+	/**
+	 * @param DateTime $date
+	 * @retrun string
+	 */
+	public function loadNameByDate(DateTime $date);
 }

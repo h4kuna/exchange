@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Currency;
 
-use h4kuna\INumberFormat;
+use h4kuna\Number;
 
 /**
  *
@@ -11,53 +11,53 @@ use h4kuna\INumberFormat;
 interface IProperty
 {
 
-    /** @return int */
-    public function getHome();
+	/** @return int */
+	public function getHome();
 
-    /** @return string */
-    public function getCode();
+	/** @return string */
+	public function getCode();
 
-    /** @return float */
-    public function getForeing();
+	/** @return float */
+	public function getForeing();
 
-    /** @return float */
-    public function getRate();
+	/** @return float */
+	public function getRate();
 
-    /**
-     * Set how render currency
-     *
-     * @param INumberFormat $nf
-     * @return IProperty
-     */
-    public function setFormat(INumberFormat $nf);
+	/**
+	 * Set how render currency
+	 *
+	 * @param Number\INumberFormat $nf
+	 * @return IProperty
+	 */
+	public function setFormat(Number\INumberFormat $nf);
 
-    /** @return INumberFormat */
-    public function getFormat();
+	/** @return INumberFormat */
+	public function getFormat();
 
-    /**
-     * Set history rate
-     *
-     * @param float $number
-     * @return IProperty
-     */
-    public function pushRate($number);
+	/**
+	 * Set history rate
+	 *
+	 * @param float $number
+	 * @return IProperty
+	 */
+	public function pushRate($number);
 
-    /**
-     * @return IProperty
-     */
-    public function popRate();
+	/**
+	 * @return IProperty
+	 */
+	public function popRate();
 
-    /**
-     * Set last value in stack and clear stack
-     *
-     * @return IProperty
-     */
-    public function revertRate();
+	/**
+	 * Set last value in stack and clear stack
+	 *
+	 * @return IProperty
+	 */
+	public function revertRate();
 
-    /**
-     * Default currency for count rate
-     *
-     * @return IProperty
-     */
-    // public function setDefault($property);
+	/**
+	 * Default currency for count rate
+	 *
+	 * @return IProperty
+	 */
+	// public function setDefault($property);
 }

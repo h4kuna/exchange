@@ -2,49 +2,48 @@
 
 namespace h4kuna\Exchange\NoFramework;
 
-use h4kuna\Exchange\Storage\RequestManager AS hESR;
+use h4kuna\Exchange\Storage;
 
 /**
- *
- * @author Milan Matejcek
+ * @author Milan Matějček
  */
-class RequestManager extends hESR
+class RequestManager extends Storage\RequestManager
 {
 
-    public function loadParamCurrency($code)
-    {
-        if (!empty($_GET[$this->getParamCurrency()])) {
-            return $this->setSessionCurrency($_GET[$this->getParamCurrency()]);
-        }
+	public function loadParamCurrency($code)
+	{
+		if (!empty($_GET[$this->getParamCurrency()])) {
+			return $this->setSessionCurrency($_GET[$this->getParamCurrency()]);
+		}
 
-        if (!empty($_SESSION[$this->getParamCurrency()])) {
-            return $_SESSION[$this->getParamCurrency()];
-        }
+		if (!empty($_SESSION[$this->getParamCurrency()])) {
+			return $_SESSION[$this->getParamCurrency()];
+		}
 
-        return $this->setSessionCurrency($code);
-    }
+		return $this->setSessionCurrency($code);
+	}
 
-    public function loadParamVat($default)
-    {
-        if (isset($_GET[$this->getParamVat()])) {
-            return $this->setSessionVat($_GET[$this->getParamVat()]);
-        }
+	public function loadParamVat($default)
+	{
+		if (isset($_GET[$this->getParamVat()])) {
+			return $this->setSessionVat($_GET[$this->getParamVat()]);
+		}
 
-        if (isset($_SESSION[$this->getParamVat()])) {
-            return $_SESSION[$this->getParamVat()];
-        }
+		if (isset($_SESSION[$this->getParamVat()])) {
+			return $_SESSION[$this->getParamVat()];
+		}
 
-        return $this->setSessionCurrency($default);
-    }
+		return $this->setSessionCurrency($default);
+	}
 
-    public function setSessionCurrency($code)
-    {
-        return $_SESSION[$this->getParamCurrency()] = $code;
-    }
+	public function setSessionCurrency($code)
+	{
+		return $_SESSION[$this->getParamCurrency()] = $code;
+	}
 
-    public function setSessionVat($value)
-    {
-        return $_SESSION[$this->getParamVat()] = (bool) $value;
-    }
+	public function setSessionVat($value)
+	{
+		return $_SESSION[$this->getParamVat()] = (bool) $value;
+	}
 
 }

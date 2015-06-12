@@ -2,17 +2,9 @@
 
 namespace h4kuna\Exchange;
 
-use ArrayIterator,
-    DateTime,
-    h4kuna\Exchange\Currency\IProperty,
-    h4kuna\Exchange\Driver\Download,
-    h4kuna\Exchange\Storage\IRequestManager,
-    h4kuna\Exchange\Storage\IWarehouse,
-    h4kuna\INumberFormat,
-    h4kuna\NumberFormat,
-    h4kuna\Tax,
-    h4kuna\Vat,
-    Nette\Reflection\Property;
+use DateTime,
+    h4kuna\Number,
+	h4kuna\Exchange\Currency;
 
 /**
  *
@@ -21,7 +13,7 @@ use ArrayIterator,
  * @property string $default
  * @property string $web
  */
-class Exchange extends ArrayIterator
+class Exchange extends \ArrayIterator
 {
 
     /**
@@ -70,7 +62,7 @@ class Exchange extends ArrayIterator
 
 // </editor-fold>
 
-    public function __construct(IWarehouse $warehouse, IRequestManager $request)
+    public function __construct(Storage\IWarehouse $warehouse, Storage\IRequestManager $request)
     {
         parent::__construct();
         $this->warehouse = $warehouse;
@@ -83,8 +75,8 @@ class Exchange extends ArrayIterator
     /**
      * Set default "from" currency
      *
-     * @param string|Property $code
-     * @return Exchange
+     * @param string|Currency\Property $code
+     * @return self
      */
     public function setDefault($code)
     {
@@ -95,10 +87,10 @@ class Exchange extends ArrayIterator
     /**
      * Set default custom render number
      *
-     * @param NumberFormat $nf
-     * @return Exchange
+     * @param Number\NumberFormat $nf
+     * @return self
      */
-    public function setDefaulFormat(INumberFormat $nf)
+    public function setDefaulFormat(Number\INumberFormat $nf)
     {
         $this->number = $nf;
         return $this;
@@ -107,7 +99,7 @@ class Exchange extends ArrayIterator
     /**
      *
      * @param DateTime $date
-     * @return Exchange
+     * @return self
      */
     public function setDate(DateTime $date)
     {
@@ -122,9 +114,9 @@ class Exchange extends ArrayIterator
     /**
      *
      * @param Download $driver
-     * @return Exchange
+     * @return self
      */
-    public function setDriver(Download $driver)
+    public function setDriver(Driver\Download $driver)
     {
         $key = $this->warehouse->loadNameByDriver($driver);
         if (isset(self::$history[$key])) {
@@ -140,11 +132,11 @@ class Exchange extends ArrayIterator
      * @param type $v
      * @param bool $in
      * @param bool $out
-     * @return Exchange
+     * @return self
      */
     public function setVat($v, $in, $out)
     {
-        $this->tax = new Tax($v);
+        $this->tax = new Number\Tax($v);
         $this->tax->setVatIO($in, $this->request->loadParamVat($out));
         return $this;
     }
@@ -154,7 +146,7 @@ class Exchange extends ArrayIterator
      *
      * @param string $code
      * @param bool $session
-     * @return Exchange
+     * @return self
      */
     public function setWeb($code, $session = FALSE)
     {
@@ -169,21 +161,20 @@ class Exchange extends ArrayIterator
 // <editor-fold defaultstate="collapsed" desc="ArrayIterator API">
     /**
      * Load currency property
-     *
-     * @param string|IProperty $index
-     * @return IProperty
-     * @throws ExchangeException
+     * @param string|Currency\IProperty $index
+     * @return Currency\IProperty
+     * @throws UnknownCurrencyException
      */
     public function offsetGet($index)
     {
-        if ($index instanceof IProperty) {
+        if ($index instanceof Currency\IProperty) {
             return $index;
         }
         $index = strtoupper($index);
         if ($this->offsetExists($index)) {
             return parent::offsetGet($index);
         }
-        throw new ExchangeException('Undefined currency code: ' . $index . ', you must call loadCurrency before.');
+        throw new UnknownCurrencyException('Undefined currency code: ' . $index . ', you must call loadCurrency before.');
     }
 
 // </editor-fold>
@@ -273,8 +264,7 @@ class Exchange extends ArrayIterator
 
     /**
      * LoadAll currencies in storage
-     *
-     * @return Exchange
+     * @return self
      */
     public function loadAll()
     {
@@ -300,10 +290,10 @@ class Exchange extends ArrayIterator
             if (!$this->default) {
                 $this->setDefault($currency);
             }
-        } catch (ExchangeException $e) {
+        } catch (UnknownCurrencyException $e) {
             if (!$this->default) {
-                throw new ExchangeException('Let\'s define possible currency code. Not this: ' . $code);
-            }
+                throw $e;
+			}
             $currency = $this->default;
         }
 
@@ -324,7 +314,7 @@ class Exchange extends ArrayIterator
                 $profil = $property;
             }
 
-            if (!($profil instanceof INumberFormat)) {
+            if (!($profil instanceof Number\INumberFormat)) {
                 throw new ExchangeException('Property of currency must be array or instance of INumberFormat');
             }
 
@@ -365,7 +355,7 @@ class Exchange extends ArrayIterator
      *
      * @param string $code
      * @param float $rate
-     * @return Exchange
+     * @return self
      */
     public function addRate($code, $rate)
     {
@@ -377,7 +367,7 @@ class Exchange extends ArrayIterator
      * Remove history rating
      *
      * @param string $code
-     * @return Exchange
+     * @return self
      */
     public function removeRate($code)
     {
@@ -405,7 +395,7 @@ class Exchange extends ArrayIterator
     public function getDefaultFormat()
     {
         if (!$this->number) {
-            $this->number = new NumberFormat;
+            $this->number = new Number\NumberFormat;
         }
 
         return clone $this->number;
@@ -460,7 +450,7 @@ class Exchange extends ArrayIterator
     /**
      *
      * @param string $name
-     * @return Exchange
+     * @return self
      */
     public function getHistory($name)
     {
@@ -469,10 +459,10 @@ class Exchange extends ArrayIterator
 
     /**
      *
-     * @param IWarehouse $warehouse
-     * @return Exchange
+     * @param Storage\IWarehouse $warehouse
+     * @return self
      */
-    private function bindMe(IWarehouse $warehouse)
+    private function bindMe(Storage\IWarehouse $warehouse)
     {
         $exchange = new static($warehouse, $this->request);
         $exchange->setDefaulFormat($this->getDefaultFormat());

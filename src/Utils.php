@@ -2,11 +2,8 @@
 
 namespace h4kuna\Exchange;
 
-use Nette\StaticClassException;
-
 /**
  * Static helpers
- *
  * @author Milan Matějček
  */
 final class Utils
@@ -17,10 +14,7 @@ final class Utils
      */
     const CZK = 'CZK';
 
-    public function __construct()
-    {
-        throw new StaticClassException;
-    }
+    private function __construct() {}
 
     /**
      * Stroke replace by point

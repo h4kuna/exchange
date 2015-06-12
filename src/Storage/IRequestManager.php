@@ -3,8 +3,7 @@
 namespace h4kuna\Exchange\Storage;
 
 /**
- *
- * @author Milan Matejcek
+ * @author Milan Matějček
  */
 interface IRequestManager
 {

@@ -1,14 +1,13 @@
 <?php
 
-namespace h4kuna\Exchange\NoFramework;
+use h4kuna\Exchange\Currency\IProperty,
+	h4kuna\Exchange\Storage\IStock;
 
-use DateTime;
-use h4kuna\Exchange\Currency\IProperty;
-use h4kuna\Exchange\Storage\IStock;
+namespace h4kuna\Exchange\NoFramework;
 
 /**
  *
- * @author Milan Matejcek
+ * @author Milan Matějček
  */
 class Cache implements IStock
 {
