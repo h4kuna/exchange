@@ -25,7 +25,7 @@ class Day extends Exchange\Driver\Download
 	 */
 	protected function loadFromSource(DateTime $date = NULL)
 	{
-		$request = new Curl\Request(self::URL_DAY);
+		$request = new Curl\Request($this->createUrlDay(self::URL_DAY, $date));
 		$response = $request->get();
 		$data = $response->getResponse();
 
@@ -47,9 +47,12 @@ class Day extends Exchange\Driver\Download
 		return new Exchange\Currency\Property(1, $row['currency'], $row['rate']);
 	}
 
-	protected function createUrlDay($url, DateTime $date)
+	protected function createUrlDay($url, DateTime $date = NULL)
 	{
-		throw new Exchange\ExchangeException('This driver does not support history.');
+		if ($date) {
+			throw new Exchange\ExchangeException('This driver does not support history.');
+		}
+		return $url;
 	}
 
 }
