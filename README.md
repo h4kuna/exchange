@@ -50,7 +50,7 @@ class MyModel {
 
 Basic usage.
 ```php
-/* @var $exchange h4kuna\Exchange\Exchange */
+/** @var $exchange h4kuna\Exchange\Exchange */
 $exchange->setDate(new DateTime('2000-12-30'));
 $exchange->format(10, 'eur', 'czk'); // 351 Kč
 ```
