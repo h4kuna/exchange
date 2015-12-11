@@ -3,11 +3,11 @@
 DIR=`dirname $0`;
 
 cd $DIR/..
+rm composer.lock
 composer install --no-interaction --prefer-source
 cd -
 
 TEMP_DIR=$DIR/temp
-
 rm -rf $TEMP_DIR/*
 mkdir -p $TEMP_DIR/cache/latte
 
