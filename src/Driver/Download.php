@@ -20,7 +20,7 @@ abstract class Download extends Nette\Object
 	 */
 	final public function loadCurrencies(DateTime $date = NULL)
 	{
-		$currencies = array();
+		$currencies = [];
 		foreach ($this->loadFromSource($date) as $row) {
 			if (!$row) {
 				continue;

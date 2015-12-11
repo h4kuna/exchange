@@ -43,7 +43,7 @@ final class Cache extends Caching\Cache implements Storage\IStock
 		$refresh = $this->getRefresh();
 		$expire = NULL;
 		if ($refresh) {
-			$expire = array(self::EXPIRE => $refresh);
+			$expire = [self::EXPIRE => $refresh];
 		}
 
 		$this->save($currency->getCode(), $currency, $expire);

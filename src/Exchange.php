@@ -21,7 +21,7 @@ class Exchange extends \ArrayIterator
 	 *
 	 * @var array
 	 */
-	private static $history = array();
+	private static $history = [];
 
 	/**
 	 * Default currency "from" input
@@ -273,7 +273,7 @@ class Exchange extends \ArrayIterator
 	 * @return IProperty
 	 * @throws InvalidArgumentException
 	 */
-	public function loadCurrency($code, $property = array())
+	public function loadCurrency($code, $property = [])
 	{
 		try {
 			$currency = $this->warehouse->loadCurrency($code);

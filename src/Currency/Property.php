@@ -23,7 +23,7 @@ class Property implements IProperty
 	private $format;
 
 	/** @var array */
-	private $stack = array();
+	private $stack = [];
 
 	/**
 	 * Is need added by reference!
@@ -101,7 +101,7 @@ class Property implements IProperty
 	{
 		if ($this->stack) {
 			$this->home = end($this->stack);
-			$this->stack = array();
+			$this->stack = [];
 		}
 		return $this;
 	}
