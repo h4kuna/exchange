@@ -111,5 +111,4 @@ class ExchangeTest extends TestCase
 
 }
 
-$test = new ExchangeTest($container);
-$test->run();
+(new ExchangeTest($container))->run();

@@ -19,7 +19,7 @@ class DayTest extends \Tester\TestCase
 	}
 
 	/**
-	 * @throws \h4kuna\Exchange\ExchangeException
+	 * @throws \h4kuna\Exchange\DriverDoesNotSupport
 	 */
 	public function testDownloadHistory()
 	{

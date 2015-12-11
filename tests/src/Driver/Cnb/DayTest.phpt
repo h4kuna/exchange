@@ -29,5 +29,4 @@ class DayTest extends \Tester\TestCase
 
 }
 
-$test = new DayTest();
-$test->run();
+(new DayTest())->run();

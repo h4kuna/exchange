@@ -5,7 +5,6 @@ namespace h4kuna\Exchange\Currency;
 use h4kuna\Number;
 
 /**
- *
  * @author Milan Matějček
  */
 interface IProperty

@@ -40,30 +40,30 @@ final class ExchangeExtension extends CompilerExtension
 
 		// driver
 		$builder->addDefinition($this->prefix('driver'))
-				->setClass($config['driver']);
+			->setClass($config['driver']);
 
 		// request manager
 		$builder->addDefinition($this->prefix('requestManager'))
-				->setClass('h4kuna\Exchange\Nette\RequestManager')
-				->setArguments(array('@httpRequest', '@session'))
-				->setAutowired(FALSE);
+			->setClass('h4kuna\Exchange\Nette\RequestManager')
+			->setArguments(array('@httpRequest', '@session'))
+			->setAutowired(FALSE);
 
 		// storage factory
 		$builder->addDefinition($this->prefix('cacheFactory'))
-				->setClass('h4kuna\Exchange\Nette\CacheFactory')
-				->setArguments(array('@cacheStorage', $config['storage']))
-				->setAutowired(FALSE);
+			->setClass('h4kuna\Exchange\Nette\CacheFactory')
+			->setArguments(array('@cacheStorage', $config['storage']))
+			->setAutowired(FALSE);
 
 		// warehouse
 		$builder->addDefinition($this->prefix('warehouse'))
-				->setClass('h4kuna\Exchange\Storage\Warehouse')
-				->setArguments(array($this->prefix('@cacheFactory'), $this->prefix('@driver')))
-				->setAutowired(FALSE);
+			->setClass('h4kuna\Exchange\Storage\Warehouse')
+			->setArguments(array($this->prefix('@cacheFactory'), $this->prefix('@driver')))
+			->setAutowired(FALSE);
 
 		// main class Exchange
 		$exchange = $builder->addDefinition($this->prefix('exchange'))
-				->setClass('h4kuna\Exchange\Exchange')
-				->setArguments(array($this->prefix('@warehouse'), $this->prefix('@requestManager')));
+			->setClass('h4kuna\Exchange\Exchange')
+			->setArguments(array($this->prefix('@warehouse'), $this->prefix('@requestManager')));
 
 		if ($config['vat']['value']) {
 			$exchange->addSetup('setVat', array($config['vat']['value'], $config['vat']['in'], $config['vat']['out']));

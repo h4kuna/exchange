@@ -8,9 +8,9 @@ namespace h4kuna\Exchange\Storage;
 interface IFactory
 {
 
-    /**
-     * @param string $name
-     * @return IStock
-     */
-    public function create($name);
+	/**
+	 * @param string $name
+	 * @return IStock
+	 */
+	public function create($name);
 }

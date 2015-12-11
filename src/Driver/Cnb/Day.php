@@ -3,8 +3,8 @@
 namespace h4kuna\Exchange\Driver\Cnb;
 
 use DateTime,
+	GuzzleHttp,
 	h4kuna\Exchange,
-	Kdyby\Curl,
 	Nette\PhpGenerator\Property;
 
 class Day extends Exchange\Driver\Download
@@ -69,9 +69,8 @@ class Day extends Exchange\Driver\Download
 	 */
 	private function downloadList($url, DateTime $date = NULL)
 	{
-		$request = new Curl\Request($this->createUrl($url, $date));
-		$response = $request->get();
-		$data = $response->getResponse();
+		$request = new GuzzleHttp\Client();
+		$data = $request->request('GET', $this->createUrl($url, $date))->getBody();
 		return explode("\n", Exchange\Utils::stroke2point($data));
 	}
 

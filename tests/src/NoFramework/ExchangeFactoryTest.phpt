@@ -19,5 +19,4 @@ class ExchangeFactoryTest extends \Tester\TestCase
 
 }
 
-$test = new ExchangeFactoryTest();
-$test->run();
+(new ExchangeFactoryTest())->run();

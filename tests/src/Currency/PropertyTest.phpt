@@ -39,5 +39,4 @@ class PropertyTest extends \Tester\TestCase
 
 }
 
-$test = new PropertyTest();
-$test->run();
+(new PropertyTest())->run();

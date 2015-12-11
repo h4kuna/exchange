@@ -8,45 +8,45 @@ namespace h4kuna\Exchange\Storage;
 interface IRequestManager
 {
 
-    /**
-     * Currency param in url
-     *
-     * @return string
-     */
-    public function getParamCurrency();
+	/**
+	 * Currency param in url
+	 *
+	 * @return string
+	 */
+	public function getParamCurrency();
 
-    /**
-     * VAT param in url
-     *
-     * @return string
-     */
-    public function getParamVat();
+	/**
+	 * VAT param in url
+	 *
+	 * @return string
+	 */
+	public function getParamVat();
 
-    /**
-     *
-     * @param bool $value
-     * @return void
-     */
-    public function setSessionVat($value);
+	/**
+	 *
+	 * @param bool $value
+	 * @return void
+	 */
+	public function setSessionVat($value);
 
-    /**
-     *
-     * @param string $code
-     * @return void
-     */
-    public function setSessionCurrency($code);
+	/**
+	 *
+	 * @param string $code
+	 * @return void
+	 */
+	public function setSessionCurrency($code);
 
-    /**
-     *
-     * @param bool $default
-     * @return bool
-     */
-    public function loadParamVat($default);
+	/**
+	 *
+	 * @param bool $default
+	 * @return bool
+	 */
+	public function loadParamVat($default);
 
-    /**
-     *
-     * @param string $code
-     * @return bool
-     */
-    public function loadParamCurrency($code);
+	/**
+	 *
+	 * @param string $code
+	 * @return bool
+	 */
+	public function loadParamCurrency($code);
 }

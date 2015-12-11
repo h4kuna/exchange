@@ -2,7 +2,11 @@ Exchange
 -------
 [![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
 
-Exchange is PHP script works with currencies. This extension is primary for [Nette framework 2+](http://nette.org/), but you can use without Nette for another framework or [without framework](https://github.com/h4kuna/exchange/tree/master/Exchange/NoFramework).
+Is required guzzle/guzzle 6.1+ and php 5.5+. If you have php < 5.5 use older version [v4.1.0] it work but does not use guzzle.
+
+Exchange is PHP script works with currencies. This extension is primary for [Nette framework 2+](http://nette.org/), but you can use without Nette for another framework or [without framework](/h4kuna/exchange/tree/master/Exchange/NoFramework).
+
+Dependency on [NumberFormat](/h4kuna/number-format).
 
 Installation to project
 -----------------------
@@ -39,7 +43,7 @@ in model layer:
 class MyModel {
     /** @var \h4kuna\Exchange\Exchange */
     private $exchange;
-    
+
     public function __construct(\h4kuna\Exchange\Exchange $exchange)
     {
         $this->exchange = $exchange;
