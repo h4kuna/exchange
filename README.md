@@ -1,6 +1,7 @@
 Exchange
 -------
 [![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
+[![Latest stable](https://img.shields.io/packagist/v/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
 
 Is required guzzle/guzzle 6.1+ and php 5.5+. If you have php < 5.5 use older version [v4.1.0] it work but does not use guzzle.
 
