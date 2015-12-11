@@ -50,7 +50,7 @@ class Day extends Exchange\Driver\Download
 	 * @param string $url
 	 * @param DateTime $date
 	 * @return string
-	 * @throws Exchange\ExchangeException
+	 * @throws Exchange\DriverDoesNotSupport
 	 */
 	protected function createUrlDay($url, DateTime $date = NULL)
 	{

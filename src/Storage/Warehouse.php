@@ -41,7 +41,7 @@ class Warehouse extends Object implements IWarehouse
 		try {
 			$code = strtoupper($code);
 			return $this->checkCurrency($code);
-		} catch (Exchange\ExchangeException $e) {
+		} catch (Exchange\UnknownCurrencyException $e) {
 			$this->getStock()->saveCurrencies($this->download->loadCurrencies($this->date));
 			return $this->checkCurrency($code);
 		}

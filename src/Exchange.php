@@ -73,8 +73,7 @@ class Exchange extends \ArrayIterator
 // <editor-fold defaultstate="collapsed" desc="Setters">
 
 	/**
-	 * Set default "from" currency
-	 *
+	 * Set default "from" currency.
 	 * @param string|Currency\Property $code
 	 * @return self
 	 */
@@ -85,8 +84,7 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 * Set default custom render number
-	 *
+	 * Set default custom render number.
 	 * @param Number\NumberFormat $nf
 	 * @return self
 	 */
@@ -97,7 +95,6 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 *
 	 * @param DateTime|NULL $date NULL - mean reset to current
 	 * @return self
 	 */
@@ -112,7 +109,6 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 *
 	 * @param Download $driver
 	 * @return self
 	 */
@@ -127,8 +123,7 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 * Set global VAT
-	 *
+	 * Set global VAT.
 	 * @param type $v
 	 * @param bool $in
 	 * @param bool $out
@@ -142,8 +137,7 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 * Set currency "to"
-	 *
+	 * Set currency "to".
 	 * @param string $code
 	 * @param bool $session
 	 * @return self
@@ -160,7 +154,7 @@ class Exchange extends \ArrayIterator
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="ArrayIterator API">
 	/**
-	 * Load currency property
+	 * Load currency property.
 	 * @param string|Currency\IProperty $index
 	 * @return Currency\IProperty
 	 * @throws UnknownCurrencyException
@@ -180,8 +174,7 @@ class Exchange extends \ArrayIterator
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Main API">
 	/**
-	 * Transfer number by exchange rate
-	 *
+	 * Transfer number by exchange rate.
 	 * @param float|int|string $price number
 	 * @param string|FALSE $from default currency, FALSE no transfer
 	 * @param string $to output currency
@@ -217,8 +210,7 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 * Count, format price
-	 *
+	 * Count, format price.
 	 * @param number $number
 	 * @param string|bool $from FALSE currency doesn't counting, NULL set actual
 	 * @param string $to output currency, NULL set actual
@@ -234,7 +226,6 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 *
 	 * @param float $number
 	 * @param string|FALSE $to
 	 * @param int|float|Vat $vat
@@ -247,7 +238,6 @@ class Exchange extends \ArrayIterator
 
 	/**
 	 * Price with VAT every time
-	 *
 	 * @return string
 	 */
 	public function formatVat()
@@ -263,7 +253,7 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 * LoadAll currencies in storage
+	 * LoadAll currencies in storage.
 	 * @return self
 	 */
 	public function loadAll()
@@ -279,9 +269,9 @@ class Exchange extends \ArrayIterator
 
 	/**
 	 * Load currency by code
-	 *
 	 * @param string $code
 	 * @return IProperty
+	 * @throws InvalidArgumentException
 	 */
 	public function loadCurrency($code, $property = array())
 	{
@@ -315,7 +305,7 @@ class Exchange extends \ArrayIterator
 			}
 
 			if (!($profil instanceof Number\INumberFormat)) {
-				throw new ExchangeException('Property of currency must be array or instance of INumberFormat');
+				throw new InvalidArgumentException('Property of currency must be array or instance of INumberFormat');
 			}
 
 			$this[$code] = $currency->setFormat($profil);
@@ -329,25 +319,9 @@ class Exchange extends \ArrayIterator
 	public function isVatOn()
 	{
 		if ($this->tax === NULL) {
-			throw new ExchangeException('Let\'s define vat by setVat().');
+			throw new RuntimeException('Let\'s define vat by setVat().');
 		}
 		return $this->tax->isVatOn();
-	}
-
-	/** @deprecated */
-	public function addHistory($code, $rate)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use $this->addRate() instead.', E_USER_DEPRECATED);
-		$this->offsetGet($code)->pushRate($rate);
-		return $this;
-	}
-
-	/** @deprecated */
-	public function removeHistory($code)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use $this->removeRate() instead.', E_USER_DEPRECATED);
-		$this->offsetGet($code)->popRate();
-		return $this;
 	}
 
 	/**
@@ -382,14 +356,13 @@ class Exchange extends \ArrayIterator
 	public function getDefault()
 	{
 		if (!$this->default) {
-			throw new ExchangeException('Let\'s define currency by method loadCurrency() and first is default.');
+			throw new RuntimeException('Let\'s define currency by method loadCurrency() and first is default.');
 		}
 		return $this->default;
 	}
 
 	/**
-	 * Prototype INumberFormat
-	 *
+	 * Prototype INumberFormat.
 	 * @return INumberFormat
 	 */
 	public function getDefaultFormat()
@@ -448,7 +421,6 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 *
 	 * @param string $name
 	 * @return self
 	 */
@@ -458,7 +430,6 @@ class Exchange extends \ArrayIterator
 	}
 
 	/**
-	 *
 	 * @param Storage\IWarehouse $warehouse
 	 * @return self
 	 */
