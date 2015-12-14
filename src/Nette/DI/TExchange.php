@@ -4,22 +4,21 @@ namespace h4kuna\Exchange\Nette\DI;
 
 use stdClass;
 use Nette\Templating\FileTemplate;
-use h4kuna\Exchange\Exchange;
+use h4kuna\Exchange;
 
 /**
- * @todo move to DI
  * @author Milan Matějček
  */
 trait TExchange
 {
 
-	/** @var Exchange */
-	public $exchange;
+	/** @var Exchange\Exchange */
+	protected $exchange;
 
 	/**
-	 * @param Exchange $exchange
+	 * @param Exchange\Exchange $exchange
 	 */
-	public function injectExchange(Exchange $exchange)
+	public function injectExchange(Exchange\Exchange $exchange)
 	{
 		$this->exchange = $exchange;
 	}
