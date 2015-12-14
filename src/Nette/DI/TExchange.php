@@ -1,9 +1,10 @@
 <?php
 
-namespace h4kuna\Exchange;
+namespace h4kuna\Exchange\Nette\DI;
 
 use stdClass;
 use Nette\Templating\FileTemplate;
+use h4kuna\Exchange\Exchange;
 
 /**
  * @todo move to DI
@@ -13,14 +14,14 @@ trait TExchange
 {
 
 	/** @var Exchange */
-	public $_exchange;
+	public $exchange;
 
 	/**
 	 * @param Exchange $exchange
 	 */
 	public function injectExchange(Exchange $exchange)
 	{
-		$this->_exchange = $exchange;
+		$this->exchange = $exchange;
 	}
 
 	/**
@@ -31,7 +32,7 @@ trait TExchange
 	{
 		/* @var $template FileTemplate|stdClass */
 		$template = parent::createTemplate($class);
-		$template->_exchange = $exchange = $this->_exchange;
+		$template->exchange = $exchange = $this->exchange;
 		$template->registerHelper('formatVat', function () use ($exchange) {
 			return $exchange->formatVat();
 		});
