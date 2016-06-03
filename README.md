@@ -20,13 +20,14 @@ Example NEON config
 -------------------
 ```sh
 extensions:
-    exchangeExtension: h4kuna\Exchange\Nette\DI\ExchangeExtension
+	exchange: h4kuna\Exchange\Nette\DI\ExchangeExtension
 
-exchangeExtension:
-    currencies: {
-            czk: [decimal: 0, symbol: 'Kč', point: ',', thousand: ' ', mask: '1 S', flag: 10]
-            usd: [symbol: '$']
-            gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 2] }
+exchange:
+	currencies:
+		czk: [decimal: 0, symbol: 'Kč', point: ',', thousand: ' ', mask: '1 S', flag: 10]
+		usd: [symbol: '$']
+		gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 2] }
+		eur: [symbol: '€']
     vat: 21
     vatIn: false
     vatOut: false
@@ -70,3 +71,8 @@ $ecbDriver = $exchange->setDriver(new Driver\Ecb\Day); // Ecb does not support h
 $ecbDriverExchange->format(10);
 ```
 
+### Latte
+Filter currency is default, here is example how use. Parameters are optional.
+```
+{=10|currency:'eur':'czk'}
+```
