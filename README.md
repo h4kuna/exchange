@@ -30,28 +30,8 @@ exchangeExtension:
     vat: 21
     vatIn: false
     vatOut: false
+	filterName: currency # optional, new instaled macro whose prepared to use
 ```
-
-Create dependency on **h4kuna\Exchange\Exchange** in presenter
-```php
-class HomePresenter extends MyBasePresenter {
-    /** @var \h4kuna\Exchange\Exchange @inject */
-    public $exchange;
-}
-```
-in model layer:
-```php
-class MyModel {
-    /** @var \h4kuna\Exchange\Exchange */
-    private $exchange;
-
-    public function __construct(\h4kuna\Exchange\Exchange $exchange)
-    {
-        $this->exchange = $exchange;
-    }
-}
-```
-
 
 Basic usage.
 ```php

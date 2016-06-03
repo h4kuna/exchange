@@ -1,6 +1,10 @@
 php:
     date.timezone: Europe/Prague
 
+nette:
+	application:
+		scanDirs: false
+
 extensions:
     exchangeExtension: h4kuna\Exchange\Nette\DI\ExchangeExtension
 

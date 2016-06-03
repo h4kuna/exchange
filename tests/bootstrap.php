@@ -20,7 +20,7 @@ $tmp = __DIR__ . '/temp';
 $configurator->enableDebugger($tmp);
 $configurator->setTempDirectory($tmp);
 $configurator->setDebugMode(TRUE);
-$configurator->addConfig(__DIR__ . '/test.neon');
+$configurator->addConfig(__DIR__ . '/config/test.neon');
 $container = $configurator->createContainer();
 
 Tracy\Debugger::enable(FALSE);

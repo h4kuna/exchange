@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Nette\DI;
 
-use Nette\DI\CompilerExtension;
+use Nette\DI as NDI;
 
 /**
  * Do not forget set alias for nette < 2.1
@@ -11,7 +11,7 @@ use Nette\DI\CompilerExtension;
  * Nette\Config\Compiler, Nette\DI\Compiler
  * Nette\Utils\PhpGenerator\ClassType, Nette\PhpGenerator\ClassType
  */
-final class ExchangeExtension extends CompilerExtension
+final class ExchangeExtension extends NDI\CompilerExtension
 {
 
 	public $defaults = [
@@ -24,6 +24,7 @@ final class ExchangeExtension extends CompilerExtension
 			'czk' => ['decimal' => 0, 'symbol' => 'Kč'],
 			'eur'
 		],
+		'filterName' => 'currency',
 		'driver' => 'h4kuna\Exchange\Driver\Cnb\Day',
 		'storage' => 'h4kuna\Exchange\Nette\Cache'
 	];
@@ -76,6 +77,10 @@ final class ExchangeExtension extends CompilerExtension
 				$exchange->addSetup('loadCurrency', [$currency]);
 			}
 		}
+
+		$builder->getDefinition('latte.latteFactory')
+			->addSetup('addFilter', [$config['filterName'], new NDI\Statement('function ($number, $from = NULL, $to = NULL, $vat = NULL) { return ?->format($number, $from, $to, $vat);}', [$exchange])]);
+
 		return $builder;
 	}
 
