@@ -25,8 +25,7 @@ final class ExchangeExtension extends NDI\CompilerExtension
 			'eur'
 		],
 		'filterName' => 'currency',
-		'driver' => 'h4kuna\Exchange\Driver\Cnb\Day',
-		'storage' => 'h4kuna\Exchange\Nette\Cache'
+		'driver' => 'h4kuna\Exchange\Driver\Cnb\Day'
 	];
 
 	public function loadConfiguration()
@@ -52,7 +51,7 @@ final class ExchangeExtension extends NDI\CompilerExtension
 		// storage factory
 		$builder->addDefinition($this->prefix('cacheFactory'))
 			->setClass('h4kuna\Exchange\Nette\CacheFactory')
-			->setArguments(['@cacheStorage', $config['storage']])
+			->setArguments(['@cacheStorage'])
 			->setAutowired(FALSE);
 
 		// warehouse

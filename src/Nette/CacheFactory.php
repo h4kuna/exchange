@@ -16,13 +16,9 @@ final class CacheFactory extends Nette\Object implements Storage\IFactory
 	/** @var Caching\IStorage */
 	private $storage;
 
-	/** @var string */
-	private $storageClass;
-
-	function __construct(Caching\IStorage $storage, $storageClass)
+	public function __construct(Caching\IStorage $storage)
 	{
 		$this->storage = $storage;
-		$this->storageClass = $storageClass;
 	}
 
 	/**
@@ -31,8 +27,7 @@ final class CacheFactory extends Nette\Object implements Storage\IFactory
 	 */
 	public function create($name)
 	{
-		$class = $this->storageClass;
-		$service = new $class($this->storage, $name);
+		$service = new Cache($this->storage, $name);
 		if (!($service instanceof Storage\IStock)) {
 			throw new ExchangeException('Storage must be instance ' . __NAMESPACE__ . '\IStock.');
 		}
