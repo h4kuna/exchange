@@ -8,7 +8,7 @@ use h4kuna\Exchange\Currency\IProperty;
  *
  * @author Milan Matějček
  */
-interface IStock extends \ArrayAccess
+interface IStock
 {
 
 	const ALL_CURRENCIES = 'all';
