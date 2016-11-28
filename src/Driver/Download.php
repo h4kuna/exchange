@@ -16,7 +16,7 @@ abstract class Download extends Nette\Object
 	/**
 	 * Download data from remote source and save.
 	 * @param DateTime $date
-	 * @return Exchange\Currency\Property
+	 * @return Exchange\Currency\Property[]
 	 */
 	final public function loadCurrencies(DateTime $date = NULL)
 	{
