@@ -71,4 +71,26 @@ final class Cache extends Caching\Cache implements Storage\IStock
 		return $this->loadCurrency(self::ALL_CURRENCIES);
 	}
 
+	/** Nette 2.4 interface fix **/
+
+    public function offsetSet($key, $data)
+	{
+		$this->save($key, $data);
+	}
+
+	public function offsetGet($key)
+	{
+		return $this->load($key);
+	}
+
+	public function offsetExists($key)
+	{
+        return $this->load($key);
+	}
+
+    public function offsetUnset($key)
+	{
+        return $this->remove($key);
+    }
+
 }
