@@ -3,13 +3,14 @@ Exchange
 [![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
 [![Latest stable](https://img.shields.io/packagist/v/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
 [![Downloads this Month](https://img.shields.io/packagist/dm/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/h4kuna/exchange/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/h4kuna/exchange/?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/h4kuna/exchange/badge.svg?branch=master)](https://coveralls.io/github/h4kuna/exchange?branch=master)
 
 Exchange is PHP script works with currencies. You can convert price, format add VAT or only render exchange rates. 
 
 # Changelog
 ## v5.0
-Dependency on Nette framework was removed, If you want, follow [this extension](//github.com/h4kuna/exchange-nette). Minimal php is 5.6+. Api is changed, not compatible with older version.
+Dependency on Nette framework was removed, If you want, follow [this extension](//github.com/h4kuna/exchange-nette). Minimal php is 5.5+. Api is changed, not compatible with older version.
 
 ## v4.0
 Here is [older version](//github.com/h4kuna/exchange/tree/v4.2.2).
@@ -49,6 +50,38 @@ echo $exchange->change(100, 'usd', 'czk'); // USD -> CZK = 2000.0
 Download history exchange rates.
 ```php
 $exchange->setDriver(new Exchange\Driver\Cnb\Day, new \Datetime('2000-12-30'));
+```
+If we need read data from database, it is not problem write own Driver.
+```php
+class MyDatabaseDriver extend \h4kuna\Exchange\Driver\ADriver 
+{
+    /**
+     * Load data for iterator.
+     * @param DateTime|NULL $date
+     * @return array
+     */
+    protected function loadFromSource(DateTime $date = NULL)
+    {
+        // your implementation
+        $this->setDate('Y-m-d', (string) $database->selectDate());
+        return $database->fetchMyCurrencies();
+    }
+
+    /**
+     * Modify data before save to cache.
+     * @return Exchange\Currency\Property|NULL
+     */
+    protected function createProperty($row) 
+    {
+        return new \h4kuna\Exchange\Currency\Property([
+            'code' => $row['currency'],
+            'home' => $row['rate'],
+            'foreign' => 1
+        ]);
+    }
+}
+
+$exchange->setDriver(new \MyDatabaseDriver);
 ```
 
 ### Format output
