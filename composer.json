@@ -13,16 +13,13 @@
 	],
 	"require": {
 		"guzzlehttp/guzzle": "^6.1",
-		"h4kuna/number-format": "^1.3",
-		"latte/latte": "^2.0",
-		"nette/application": "^2.0",
-		"nette/bootstrap": "^2.0",
-		"nette/caching": "^2.0",
-		"nette/http": "^2.0"
+		"h4kuna/number-format": "^2.0",
+		"nette/http": "^2.0",
+		"nette/safe-stream": "^2.0",
+		"nette/utils": "^2.0"
 	},
 	"require-dev": {
-		"nette/tester": "^1.4",
-		"tracy/tracy": "^2.0"
+		"salamium/testinium": "^0.1"
 	},
 	"autoload": {
 		"psr-4": {

@@ -4,7 +4,7 @@ namespace h4kuna\Exchange\Driver\Ecb;
 
 use Tester\Assert;
 
-$container = require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 class DayTest extends \Tester\TestCase
 {
@@ -12,10 +12,9 @@ class DayTest extends \Tester\TestCase
 	public function testDownload()
 	{
 		$day = new Day();
-		Assert::same('Ecb\Day', $day->getName());
-		$list = $day->loadCurrencies();
+		$list = $day->download();
 		$currency = $list['EUR'];
-		Assert::same('EUR', $currency->getCode());
+		Assert::same('EUR', $currency->code);
 	}
 
 	/**
@@ -24,10 +23,9 @@ class DayTest extends \Tester\TestCase
 	public function testDownloadHistory()
 	{
 		$day = new Day();
-		$day->loadCurrencies(new \DateTime('2010-12-30'));
+		$day->download(new \DateTime('2010-12-30'));
 	}
 
 }
 
-$test = new DayTest();
-$test->run();
+(new DayTest())->run();

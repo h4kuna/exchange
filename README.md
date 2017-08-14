@@ -2,77 +2,142 @@ Exchange
 -------
 [![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
 [![Latest stable](https://img.shields.io/packagist/v/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
+[![Downloads this Month](https://img.shields.io/packagist/dm/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
+[![Coverage Status](https://coveralls.io/repos/github/h4kuna/exchange/badge.svg?branch=master)](https://coveralls.io/github/h4kuna/exchange?branch=master)
 
-Is required guzzle/guzzle 6.1+ and php 5.5+. If you have php < 5.5 use older version [v4.1.0] it work but does not use guzzle.
+Exchange is PHP script works with currencies. You can convert price, format add VAT or only render exchange rates. 
 
-Exchange is PHP script works with currencies. This extension is primary for [Nette framework 2+](http://nette.org/), but you can use without Nette for another framework or [without framework](src/NoFramework).
+# Changelog
+## v5.0
+Dependency on Nette framework was removed, If you want, follow [this extension](//github.com/h4kuna/exchange-nette). Minimal php is 5.6+. Api is changed, not compatible with older version.
 
-Dependency on [NumberFormat](//github.com/h4kuna/number-format).
+## v4.0
+Here is [older version](//github.com/h4kuna/exchange/tree/v4.2.2).
 
-Installation to project
+## Extension for framework
+- [Nette extension](//github.com/h4kuna/exchange-nette)
+
+Installation via composer
 -----------------------
-The best way to install h4kuna/exchange is using Composer:
 ```sh
 $ composer require h4kuna/exchange
 ```
 
-Example NEON config
--------------------
-```sh
-extensions:
-	exchange: h4kuna\Exchange\Nette\DI\ExchangeExtension
+## How to use
+Init object Exchange and Cache. Default Driver for read is [Cnb](src/Driver/Cnb/Day.php), [here are others](src/Driver).
 
-exchange:
-	currencies:
-		czk: [decimal: 0, symbol: 'Kč', point: ',', thousand: ' ', mask: '1 S', flag: 10]
-		usd: [symbol: '$']
-		gbp: [mask: 'S1', thousand: '.', symbol: '£', decimal: 2] }
-		eur: [symbol: '€']
-    vat: 21
-    vatIn: false
-    vatOut: false
-	filterName: currency # optional, new instaled macro whose prepared to use
-```
+For example define own exchange rates:
+- 25 CZK = 1 EUR
+- 20 CZK = 1 USD
 
-Basic usage.
 ```php
-/* @var $exchange h4kuna\Exchange\Exchange */
-$exchange->setDate(new DateTime('2000-12-30'));
-$exchange->format(10, 'eur', 'czk'); // 351 Kč
+use h4kuna\Exchange;
+
+$cache = new Caching\Cache('/temp/dir');
+$exchange = new Exchange\Exchange($cache);
+
+$exchange->setDefault('eur');
+$exchange->setOutput('usd');
+
+echo $exchange->change(100); // EUR -> USD = 125.0
+echo $exchange->change(100, 'czk'); // CZK -> USD = 5.0
+echo $exchange->change(100, NULL, 'czk'); // EUR -> CZK = 2500.0
+echo $exchange->change(100, 'usd', 'czk'); // USD -> CZK = 2000.0
 ```
 
-Method format has parameters:
-	- money (int/float)
-	- from, this can be global set by method setDefault()
-	- to, this can be global set by method setWeb()
-	- vat, this can be global set by method setVat()
-
-If you want all currencies. Default is load whose are in config.
+### Change driver
 ```php
-$exchange->loadAll(); // array of h4kuna\Exchange\Currency\IProperty
+$exchange->setDriver(new Exchange\Driver\Ecb\Day);
 ```
 
-Change default currency. Normaly default is first in config.
+### Change date
+Download history exchange rates.
 ```php
-$exchange->setDefault('czk');
-$this->exchange->format(10); // 10 Kč
-$exchange->setDefault('gbp');
-$exchange->format(10); // 564 Kč, there is czk output
-$exchange->format(10, NULL, 'gbp'); // £10.00
-// or
-$exchange->setWeb('gbp');
-$exchange->format(10); // £10.00
+$exchange->setDate(new \Datetime('2000-12-30'))->setDriver(...);
 ```
 
-Change driver on fly.
+### Format output
+Define output formats, for more information read this documentation [h4kuna/number-format](//github.com/h4kuna/number-format).
 ```php
-$exchange->setDate(); // reset history to current
-$ecbDriver = $exchange->setDriver(new Driver\Ecb\Day); // Ecb does not support history, yet
-$ecbDriverExchange->format(10);
+$formats = new Exchange\Currency\Formats(new \h4kuna\Number\NumberFormatFactory());
+
+$formats->addFormat('EUR', ['decimalPoint' => '.', 'unit' => '€']);
 ```
 
-### Latte
-Filter currency is default, here is example how use. Parameters are optional.
+Create [Filters for format API](src/Filters.php).
+```php
+$filters = new Exchange\Filters($exchange, $formats);
 ```
-{=10|currency:'eur':'czk'}
+You can define VAT
+```php
+// VAT 21%
+$filters->setVat(new \h4kuna\Number\Tax(21));
 ```
+Output
+```php
+
+// format 100 EUR like default to USD is set above
+$filters->format(100); // '125,00 USD'
+
+// count with VAT
+$filters->formatVat(100, 'usd', 'eur'); // '96.80 €'
+$filters->formatVatTo(100); // '151,25 USD'
+$filters->formatTo(100, 'CZK'); // '2 000,00 CZK'
+
+// Other options
+$filters->change(100, 'usd', 'eur'); // 80.0
+$filters->changeTo(100, 'usd'); // 125.0
+$filters->vat(100); // 121.0
+```
+
+### Temporary rate
+
+```php
+$exchange->addRate('usd', 23.0);
+$exchange->change(1, 'usd', 'czk'); // 23.0
+
+$exchange->removeRate('usd');
+$exchange->change(1, 'usd', 'czk'); // 20.0
+```
+
+### Access and iterator
+
+```php
+/* @var $property Exchange\Currenry\Property */
+$property = $exchange['eur'];
+var_dump($property);
+
+
+foreach ($exchange as $code => $property) {
+    /* @var $property Exchange\Currenry\Property */
+    var_dump($property);
+}
+```
+### Limit for currencies
+```php
+$cache = new Caching\Cache('/temp/dir');
+$cache->setAllowedCurrencies(['CZK', 'USD', 'EUR']);
+$exchange = new Exchange\Exchange($cache);
+
+// in cache are only this three currencies
+foreach ($exchange as $code => $property) {
+    /* @var $property Exchange\Currenry\Property */
+    var_dump($property);
+}
+```
+
+### Save state to cookie
+Here is [prepared object](src/Http/CookieManager.php) whose keep selected currency.
+
+Run on startup of you project.
+```php
+$cookieManager = Exchange\Http\CookieManager($exchange);
+```
+
+Set new option
+```php
+$cookieManager->setCurrency($_GET['currency']);
+```
+
+### Cache
+Default Cache save data on filesystem you can implement [ICache](src/Caching/ICache.php) interface and change it.

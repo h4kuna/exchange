@@ -2,449 +2,205 @@
 
 namespace h4kuna\Exchange;
 
-use DateTime,
-	h4kuna\Number,
-	h4kuna\Exchange\Currency;
+use DateTime;
 
 /**
- *
  * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
- * @property string $default
- * @property string $web
  */
-class Exchange extends \ArrayIterator
+class Exchange implements \ArrayAccess, \IteratorAggregate
 {
 
-	/**
-	 * History instances
-	 *
-	 * @var array
-	 */
-	private static $history = [];
+	/** @var Caching\ICache */
+	private $cache;
+
+	/** @var \DateTime */
+	private $date;
+
+	/** @var Currency\ListRates */
+	private $listRates;
 
 	/**
 	 * Default currency "from" input
-	 *
-	 * @var IProperty
+	 * @var Currency\Property
 	 */
 	private $default;
 
 	/**
 	 * Display currency "to" output
-	 *
-	 * @var IProperty
+	 * @var Currency\Property
 	 */
-	private $web;
+	private $output;
 
+	/** @var Currency\Property[] */
+	private $tempRates;
 
-
-// <editor-fold defaultstate="collapsed" desc="Private dependencies">
-
-	/** @var Tax */
-	protected $tax;
-
-	/**
-	 * Last changed value
-	 *
-	 * @var INumberFormat
-	 */
-	private $lastChange;
-
-	/** @var IWarehouse */
-	private $warehouse;
-
-	/** @var NumberFormat */
-	private $number;
-
-	/** @var IRequestManager */
-	private $request;
-
-// </editor-fold>
-
-	public function __construct(Storage\IWarehouse $warehouse, Storage\IRequestManager $request)
+	public function __construct(Caching\ICache $cache)
 	{
-		parent::__construct();
-		$this->warehouse = $warehouse;
-		$this->request = $request;
-		self::$history[$warehouse->getName()] = $this;
+		$this->cache = $cache;
 	}
 
-// <editor-fold defaultstate="collapsed" desc="Setters">
+	/** @return Currency\Property */
+	public function getDefault()
+	{
+		if ($this->default === NULL) {
+			$this->default = $this->getListRates()->getFirst();
+		}
+		return $this->default;
+	}
+
+	/** @return Currency\Property */
+	public function getOutput()
+	{
+		if ($this->output === NULL) {
+			$this->output = $this->getDefault();
+		}
+		return $this->output;
+	}
 
 	/**
 	 * Set default "from" currency.
-	 * @param string|Currency\Property $code
-	 * @return self
+	 * @param string $code
 	 */
 	public function setDefault($code)
 	{
 		$this->default = $this->offsetGet($code);
+	}
+
+	/**
+	 * @param DateTime $date
+	 * @return self
+	 */
+	public function setDate(DateTime $date)
+	{
+		$this->date = $date;
+		$this->listRates = NULL;
 		return $this;
 	}
 
 	/**
-	 * Set default custom render number.
-	 * @param Number\NumberFormat $nf
+	 * @param Driver\ADriver $driver
 	 * @return self
 	 */
-	public function setDefaulFormat(Number\INumberFormat $nf)
+	public function setDriver(Driver\ADriver $driver)
 	{
-		$this->number = $nf;
-		return $this;
-	}
-
-	/**
-	 * @param DateTime|NULL $date NULL - mean reset to current
-	 * @return self
-	 */
-	public function setDate(DateTime $date = NULL)
-	{
-		$key = $this->warehouse->loadNameByDate($date);
-		if (isset(self::$history[$key])) {
-			return self::$history[$key];
-		}
-		$warehouse = $this->warehouse->setDate($date);
-		return $this->bindMe($warehouse);
-	}
-
-	/**
-	 * @param Download $driver
-	 * @return self
-	 */
-	public function setDriver(Driver\Download $driver)
-	{
-		$key = $this->warehouse->loadNameByDriver($driver);
-		if (isset(self::$history[$key])) {
-			return self::$history[$key];
-		}
-		$warehouse = $this->warehouse->setDriver($driver);
-		return $this->bindMe($warehouse);
-	}
-
-	/**
-	 * Set global VAT.
-	 * @param type $v
-	 * @param bool $in
-	 * @param bool $out
-	 * @return self
-	 */
-	public function setVat($v, $in, $out)
-	{
-		$this->tax = new Number\Tax($v);
-		$this->tax->setVatIO($in, $this->request->loadParamVat($out));
+		$this->listRates = $this->cache->loadListRate($driver, $this->date);
 		return $this;
 	}
 
 	/**
 	 * Set currency "to".
 	 * @param string $code
-	 * @param bool $session
-	 * @return self
 	 */
-	public function setWeb($code, $session = FALSE)
+	public function setOutput($code)
 	{
-		$this->web = $this->offsetGet($code);
-		if ($session) {
-			$this->request->setSessionCurrency($this->web->getCode());
-		}
-		return $this;
+		return $this->output = $this->offsetGet($code);
 	}
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="ArrayIterator API">
-	/**
-	 * Load currency property.
-	 * @param string|Currency\IProperty $index
-	 * @return Currency\IProperty
-	 * @throws UnknownCurrencyException
-	 */
-	public function offsetGet($index)
-	{
-		if ($index instanceof Currency\IProperty) {
-			return $index;
-		}
-		$index = strtoupper($index);
-		if ($this->offsetExists($index)) {
-			return parent::offsetGet($index);
-		}
-		throw new UnknownCurrencyException('Undefined currency code: ' . $index . ', you must call loadCurrency before.');
-	}
-
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Main API">
 	/**
 	 * Transfer number by exchange rate.
 	 * @param float|int|string $price number
-	 * @param string|FALSE $from default currency, FALSE no transfer
-	 * @param string $to output currency
-	 * @param int $round
-	 * @param int|float|Vat $vat
-	 * @return float|NULL
+	 * @param string|NULL
+	 * @param string $to
+	 * @return float|int
 	 */
-	public function change($price, $from = NULL, $to = NULL, $round = NULL, $vat = NULL)
+	public function change($price, $from = NULL, $to = NULL)
 	{
-		if (!is_numeric($price)) {
-			return NULL;
-		}
-
-		$to = $this->offsetGet($to ? $to : $this->getWeb());
-
-		if ($from === NULL || $from) {
-			$from = $this->offsetGet($from ? $from : $this->getDefault());
-
-			if ($to !== $from) {
-				$price *= $to->getRate() / $from->getRate();
-			}
-		}
-
-		if ($this->tax) {
-			$price = $this->tax->taxation($price, $vat);
-		}
-
-		if ($round !== NULL) {
-			$price = round($price, $round);
-		}
-
-		return $price;
+		return $this->transfer($price, $from, $to)[0];
 	}
 
 	/**
-	 * Count, format price.
-	 * @param number $number
-	 * @param string|bool $from FALSE currency doesn't counting, NULL set actual
-	 * @param string $to output currency, NULL set actual
-	 * @param int|float|Vat $vat
-	 * @return string
+	 * @param int|float $price
+	 * @param string $from
+	 * @param string $to
+	 * @return array
 	 */
-	public function format($number, $from = NULL, $to = NULL, $vat = NULL)
+	public function transfer($price, $from, $to)
 	{
-		$to = $this->offsetGet($to ? $to : $this->getWeb());
-		$number = $this->change($number, $from, $to, NULL, $vat);
-		$this->lastChange = $to->getFormat();
-		return $this->lastChange->render($number);
-	}
-
-	/**
-	 * @param float $number
-	 * @param string|FALSE $to
-	 * @param int|float|Vat $vat
-	 * @return string
-	 */
-	public function formatTo($number, $to, $vat = NULL)
-	{
-		return $this->format($number, NULL, $to, $vat);
-	}
-
-	/**
-	 * Price with VAT every time
-	 * @return string
-	 */
-	public function formatVat()
-	{
-		$number = $this->lastChange->getNumber();
-		if ($this->tax->isVatOn()) {
-			return $this->lastChange->render($number);
-		}
-		$this->tax->vatOn();
-		$number = $this->lastChange->render($this->tax->taxation($number));
-		$this->tax->vatOff();
-		return $number;
-	}
-
-	/**
-	 * LoadAll currencies in storage.
-	 * @return self
-	 */
-	public function loadAll()
-	{
-		foreach ($this->warehouse->getListCurrencies() as $code) {
-			if (!$this->offsetExists($code)) {
-				$this->loadCurrency($code);
-			}
+		$to = $to === NULL ? $this->getOutput() : $this->offsetGet($to);
+		if (((float) $price) === 0.0) {
+			return [0, $to];
 		}
 
-		return $this;
-	}
+		$from = $from === NULL ? $this->getDefault() : $this->offsetGet($from);
 
-	/**
-	 * Load currency by code
-	 * @param string $code
-	 * @return IProperty
-	 * @throws InvalidArgumentException
-	 */
-	public function loadCurrency($code, $property = [])
-	{
-		try {
-			$currency = $this->warehouse->loadCurrency($code);
-			if (!$this->default) {
-				$this->setDefault($currency);
-			}
-		} catch (UnknownCurrencyException $e) {
-			if (!$this->default) {
-				throw $e;
-			}
-			$currency = $this->default;
+		if ($to !== $from) {
+			$toRate = isset($this->tempRates[$to->code]) ? $this->tempRates[$to->code] : $to->rate;
+			$fromRate = isset($this->tempRates[$from->code]) ? $this->tempRates[$from->code] : $from->rate;
+			$price *= $fromRate / $toRate;
 		}
 
-		$code = $currency->getCode();
-
-		if ($property || !isset($this[$code])) {
-			if (!$property) {
-				$profil = $this->getDefaultFormat();
-				$profil->setSymbol($code);
-			} elseif (is_array($property)) {
-				$profil = $this->getDefaultFormat();
-				$profil->setSymbol($code);
-				foreach ($property as $k => $v) {
-					$k = 'set' . ucfirst($k);
-					$profil->$k($v);
-				}
-			} else {
-				$profil = $property;
-			}
-
-			if (!($profil instanceof Number\INumberFormat)) {
-				throw new InvalidArgumentException('Property of currency must be array or instance of INumberFormat');
-			}
-
-			$this[$code] = $currency->setFormat($profil);
-			$currency->default = &$this->default;
-		}
-
-		return $currency;
-	}
-
-	/** @return bool */
-	public function isVatOn()
-	{
-		if ($this->tax === NULL) {
-			throw new RuntimeException('Let\'s define vat by setVat().');
-		}
-		return $this->tax->isVatOn();
+		return [$price, $to];
 	}
 
 	/**
 	 * Add history rate for rating
-	 *
 	 * @param string $code
 	 * @param float $rate
 	 * @return self
 	 */
 	public function addRate($code, $rate)
 	{
-		$this->offsetGet($code)->pushRate($rate);
+		$property = $this->offsetGet($code);
+		$this->tempRates[$property->code] = $rate;
 		return $this;
 	}
 
 	/**
 	 * Remove history rating
-	 *
 	 * @param string $code
 	 * @return self
 	 */
 	public function removeRate($code)
 	{
-		$this->offsetGet($code)->popRate();
+		$property = $this->offsetGet($code);
+		unset($this->tempRates[$property->code]);
 		return $this;
 	}
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Getters">
-
-	/** @var IProperty */
-	public function getDefault()
+	/**
+	 * Load currency property.
+	 * @param string|Currency\Property $index
+	 * @return Currency\Property
+	 */
+	public function offsetGet($index)
 	{
-		if (!$this->default) {
-			throw new RuntimeException('Let\'s define currency by method loadCurrency() and first is default.');
+		$index = strtoupper($index);
+		if ($this->getListRates()->offsetExists($index)) {
+			return $this->getListRates()->offsetGet($index);
 		}
-		return $this->default;
+		throw new UnknownCurrencyException('Undefined currency code: "' . $index . '".');
+	}
+
+	public function offsetExists($offset)
+	{
+		return $this->getListRates()->offsetExists(strtoupper($offset));
+	}
+
+	public function offsetSet($offset, $value)
+	{
+		return $this->getListRates()->offsetSet($offset, $value);
+	}
+
+	public function offsetUnset($offset)
+	{
+		return $this->getListRates()->offsetUnset($offset);
+	}
+
+	public function getIterator()
+	{
+		return $this->getListRates();
 	}
 
 	/**
-	 * Prototype INumberFormat.
-	 * @return INumberFormat
+	 * @return Currency\ListRates
 	 */
-	public function getDefaultFormat()
+	protected function getListRates()
 	{
-		if (!$this->number) {
-			$this->number = new Number\NumberFormat;
+		if ($this->listRates === NULL) {
+			$this->listRates = $this->cache->loadListRate(new Driver\Cnb\Day(), $this->date);
 		}
-
-		return clone $this->number;
+		return $this->listRates;
 	}
 
-	/** @return INumberFormat */
-	public function getLastChange()
-	{
-		return $this->getLastChange;
-	}
-
-	/** @return Tax */
-	public function getVat()
-	{
-		if (!$this->tax) {
-			return NULL;
-		}
-		return $this->tax->getVat()->getPercent();
-	}
-
-	/** @return IProperty */
-	public function getWeb()
-	{
-		if (!$this->web) {
-			$code = $this->request->loadParamCurrency($this->getDefault()->getCode());
-			$this->web = $this->offsetGet($code);
-		}
-		return $this->web;
-	}
-
-	/** @var IWarehouse */
-	public function getWarehouse()
-	{
-		return $this->warehouse;
-	}
-
-	/** @return IRequestManager */
-	public function getRequestManager()
-	{
-		return $this->request;
-	}
-
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Session setup">
-
-	/** @return string */
-	public function getName()
-	{
-		return $this->warehouse->getName();
-	}
-
-	/**
-	 * @param string $name
-	 * @return self
-	 */
-	public function getHistory($name)
-	{
-		return isset(self::$history[$name]) ? self::$history[$name] : NULL;
-	}
-
-	/**
-	 * @param Storage\IWarehouse $warehouse
-	 * @return self
-	 */
-	private function bindMe(Storage\IWarehouse $warehouse)
-	{
-		$exchange = new static($warehouse, $this->request);
-		$exchange->setDefaulFormat($this->getDefaultFormat());
-		foreach ($this as $key => $v) {
-			$exchange->loadCurrency($key, $v->getFormat());
-		}
-
-		$exchange->tax = $this->tax;
-
-		return self::$history[$key] = $exchange;
-	}
-
-// </editor-fold>
 }

@@ -9,8 +9,9 @@ use DateTime,
 /**
  * @author Petr Poupě <pupe.dupe@gmail.com>
  */
-class Day extends Exchange\Driver\Download
+class Day extends Exchange\Driver\ADriver
 {
+	private $source;
 
 	/**
 	 * Url where download rating
@@ -34,7 +35,9 @@ class Day extends Exchange\Driver\Download
 		$eur = $xml->Cube->Cube->addChild("Cube");
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
+		$this->setDate('Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
 		return $xml->Cube->Cube->Cube;
+
 	}
 
 	/**
@@ -43,7 +46,11 @@ class Day extends Exchange\Driver\Download
 	 */
 	protected function createProperty($row)
 	{
-		return new Exchange\Currency\Property(1, $row['currency'], $row['rate']);
+		return new Exchange\Currency\Property([
+			'code' => $row['currency'],
+			'home' => $row['rate'],
+			'foreign' => 1
+		]);
 	}
 
 	/**
@@ -52,7 +59,7 @@ class Day extends Exchange\Driver\Download
 	 * @return string
 	 * @throws Exchange\DriverDoesNotSupport
 	 */
-	protected function createUrlDay($url, DateTime $date = NULL)
+	private function createUrlDay($url, DateTime $date = NULL)
 	{
 		if ($date) {
 			throw new Exchange\DriverDoesNotSupport('Driver does not support history.');

@@ -12,19 +12,22 @@ class DayTest extends \Tester\TestCase
 	public function testDownload()
 	{
 		$day = new Day();
-		Assert::same('Cnb\Day', $day->getName());
-		$list = $day->loadCurrencies();
+		$list = $day->download();
 		$currency = $list['EUR'];
-		Assert::same('EUR', $currency->getCode());
+		Assert::same('EUR', $currency->code);
 	}
 
 	public function testDownloadHistory()
 	{
 		$day = new Day();
-		Assert::same('Cnb\Day', $day->getName());
-		$list = $day->loadCurrencies(new \DateTime('2010-12-30'));
+		$allowed = ['CZK', 'EUR', 'USD'];
+		$list = $day->download(new \DateTime('2017-08-10'), $allowed);
+		Assert::same('2017-08-10', $list->getDate()->format('Y-m-d'));
 		$currency = $list['EUR'];
-		Assert::same(25.225, $currency->getHome());
+		Assert::same(1, $currency->foreign);
+		Assert::same(26.16, $currency->home);
+		Assert::same(26.16, $currency->rate);
+		Assert::equal($allowed, array_keys($list->getCurrencies()));
 	}
 
 }

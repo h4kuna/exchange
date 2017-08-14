@@ -1,31 +1,16 @@
 <?php
 
-include __DIR__ . "/../vendor/autoload.php";
+ini_set( 'date.timezone', 'Europe/Prague' );
 
-function dd($var /* ... */)
-{
-	foreach (func_get_args() as $arg) {
-		Tracy\Debugger::dump($arg);
-	}
-	exit;
-}
+include __DIR__ . '/../vendor/autoload.php';
+
+include __DIR__ . '/lib/Driver.php';
+
+define('TEMP_DIR', __DIR__ . '/temp/' . getmypid());
 
 Tester\Environment::setup();
 
-
-// 2# Create Nette Configurator
-$configurator = new Nette\Configurator;
-
-$tmp = __DIR__ . '/temp';
-$configurator->enableDebugger($tmp);
-$configurator->setTempDirectory($tmp);
-$configurator->setDebugMode(TRUE);
-$configurator->addConfig(__DIR__ . '/config/test.neon');
-$container = $configurator->createContainer();
-
 Tracy\Debugger::enable(FALSE);
-
-return $container;
 
 
 
