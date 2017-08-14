@@ -38,9 +38,7 @@ abstract class ADriver
 			}
 			$currencies->addProperty($property);
 		}
-		if ($currencies->getCurrencies() === []) {
-			throw new EmptyExchangeRateException('No currencies.');
-		}
+		$currencies->getFirst(); // check if is not empty
 		return $currencies;
 	}
 

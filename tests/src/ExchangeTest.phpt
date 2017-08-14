@@ -45,3 +45,16 @@ Assert::exception(function () use ($exchange) {
 foreach ($exchange as $code => $property) {
 	Assert::type(Exchange\Currency\Property::class, $property);
 }
+
+Assert::type(Exchange\Currency\Property::class, $exchange->offsetGet('czk'));
+
+Assert::exception(function () use ($exchange) {
+	$exchange['czk'] = 5;
+}, FrozenMethodException::class);
+
+Assert::exception(function () use ($exchange) {
+	unset($exchange['czk']);
+}, FrozenMethodException::class);
+
+$exchange->setDriver(NULL, new \DateTime('yesterday'));
+Assert::same(2223.2, $exchange->change(100));

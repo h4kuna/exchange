@@ -15,6 +15,7 @@ class DayTest extends \Tester\TestCase
 		$list = $day->download();
 		$currency = $list['EUR'];
 		Assert::same('EUR', $currency->code);
+		Assert::same('EUR', (string) $currency);
 	}
 
 	/**

@@ -14,9 +14,6 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	/** @var Caching\ICache */
 	private $cache;
 
-	/** @var \DateTime */
-	private $date;
-
 	/** @var Currency\ListRates */
 	private $listRates;
 
@@ -68,29 +65,29 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 	/**
-	 * @param DateTime $date
-	 * @return self
+	 * @param Driver\ADriver|NULL $driver
+	 * @param DateTime|NULL $date
+	 * @return static
 	 */
-	public function setDate(DateTime $date)
+	public function setDriver(Driver\ADriver $driver = NULL, DateTime $date = NULL)
 	{
-		$this->date = $date;
-		$this->listRates = NULL;
-		return $this;
-	}
-
-	/**
-	 * @param Driver\ADriver $driver
-	 * @return self
-	 */
-	public function setDriver(Driver\ADriver $driver)
-	{
-		$this->listRates = $this->cache->loadListRate($driver, $this->date);
+		if ($driver === NULL) {
+			$driver = new Driver\Cnb\Day();
+		}
+		$this->listRates = $this->cache->loadListRate($driver, $date);
+		if ($this->default) {
+			$this->setDefault($this->default->code);
+		}
+		if ($this->output) {
+			$this->setOutput($this->output->code);
+		}
 		return $this;
 	}
 
 	/**
 	 * Set currency "to".
 	 * @param string $code
+	 * @return Currency\Property
 	 */
 	public function setOutput($code)
 	{
@@ -198,7 +195,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	protected function getListRates()
 	{
 		if ($this->listRates === NULL) {
-			$this->listRates = $this->cache->loadListRate(new Driver\Cnb\Day(), $this->date);
+			$this->setDriver();
 		}
 		return $this->listRates;
 	}

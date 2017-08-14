@@ -45,15 +45,10 @@ echo $exchange->change(100, NULL, 'czk'); // EUR -> CZK = 2500.0
 echo $exchange->change(100, 'usd', 'czk'); // USD -> CZK = 2000.0
 ```
 
-### Change driver
-```php
-$exchange->setDriver(new Exchange\Driver\Ecb\Day);
-```
-
-### Change date
+### Change driver and date
 Download history exchange rates.
 ```php
-$exchange->setDate(new \Datetime('2000-12-30'))->setDriver(...);
+$exchange->setDriver(new Exchange\Driver\Cnb\Day, new \Datetime('2000-12-30'));
 ```
 
 ### Format output

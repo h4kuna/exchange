@@ -2,8 +2,7 @@
 
 namespace h4kuna\Exchange\Caching;
 
-use h4kuna\Number,
-	Tester\Assert;
+use	Tester\Assert;
 
 require_once __DIR__ . '/../../bootstrap.php';
 
@@ -14,6 +13,7 @@ class CacheTest extends \Tester\TestCase
 		$driver = new \h4kuna\Exchange\Test\Driver();
 		$tempDir = TEMP_DIR . '/cache/test';
 		$cache = new Cache($tempDir);
+		$cache->setRefresh('00:00');
 		$cache->flushCache($driver);
 
 		$allowed = ['EUR', 'CZK'];
