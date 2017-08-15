@@ -19,6 +19,10 @@ class Cache implements ICache
 	/** @var array */
 	private $allowedCurrencies = [];
 
+	/**
+	 * int - unix time
+	 * @var string|int
+	 */
 	private $refresh = '15:00';
 
 	public function __construct($temp)
@@ -42,16 +46,30 @@ class Cache implements ICache
 	}
 
 	/**
+	 * Invalid by cron.
+	 * @param Driver\ADriver $driver
+	 * @param \DateTime|NULL $date
+	 */
+	public function invalidForce(Driver\ADriver $driver, \DateTime $date = NULL)
+	{
+		$this->refresh = time() + Utils\DateTime::DAY;
+		$file = $this->createFileInfo($driver, $date);
+		$this->saveCurrencies($driver, $file, $date);
+	}
+
+	/**
 	 * @param array $allowedCurrencies
+	 * @return static
 	 */
 	public function setAllowedCurrencies(array $allowedCurrencies)
 	{
 		$this->allowedCurrencies = $allowedCurrencies;
+		return $this;
 	}
 
 	/**
 	 * @param string $hour
-	 * @return Storage
+	 * @return static
 	 */
 	public function setRefresh($hour)
 	{
@@ -61,27 +79,40 @@ class Cache implements ICache
 
 	private function saveCurrencies(Driver\ADriver $driver, \SplFileInfo $file, \DateTime $date = NULL)
 	{
-		Utils\FileSystem::createDir($file->getPath(), 0755);
-
-		$handle = fopen(Utils\SafeStream::PROTOCOL . '://' . $this->temp . DIRECTORY_SEPARATOR . 'lock', 'w');
 		$listRates = $driver->download($date, $this->allowedCurrencies);
 
-		if (self::isFileCurrent($file) || !$file->isFile()) {
-			file_put_contents($file->getPathname(), serialize($listRates));
+		file_put_contents(Utils\SafeStream::PROTOCOL . '://' . $file->getPathname(), serialize($listRates));
+		if (self::isFileCurrent($file)) {
 			touch($file->getPathname(), $this->getRefresh());
 		}
-
-		fclose($handle);
 
 		return $listRates;
 	}
 
 	private function createListRate(Driver\ADriver $driver, \SplFileInfo $file, \DateTime $date = NULL)
 	{
-		return !$file->isFile() || (self::isFileCurrent($file) && $file->getMTime() < time()) ?
-			$this->saveCurrencies($driver, $file, $date) :
-			$listRate = unserialize(file_get_contents($file->getPathname()));
+		if ($this->isFileValid($file)) {
+			Utils\FileSystem::createDir($file->getPath(), 0755);
+			$handle = fopen(Utils\SafeStream::PROTOCOL . '://' . $this->temp . DIRECTORY_SEPARATOR . 'lock', 'w');
 
+			if ($this->isFileValid($file)) {
+				$listRate = $this->saveCurrencies($driver, $file, $date);
+				fclose($handle);
+				return $listRate;
+			}
+			fclose($handle);
+		}
+
+		return unserialize(file_get_contents($file->getPathname()));
+	}
+
+	/**
+	 * @param \SplFileInfo $file
+	 * @return bool
+	 */
+	private function isFileValid(\SplFileInfo $file)
+	{
+		return !$file->isFile() || (self::isFileCurrent($file) && $file->getMTime() < time());
 	}
 
 	/** @return int */

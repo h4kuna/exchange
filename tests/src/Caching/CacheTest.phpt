@@ -25,7 +25,13 @@ class CacheTest extends \Tester\TestCase
 
 		$cache2 = new Cache($tempDir);
 		Assert::equal($rateList, $cache2->loadListRate($driver)); // from file
+
+		$cache2->invalidForce($driver, new \DateTime('2015-12-30'));
+		Assert::true(is_file($tempDir . '/h4kuna.exchange.test.driver/2015-12-30'));
+		$cache2->flushCache($driver, new \DateTime('2015-12-30'));
+		Assert::false(is_file($tempDir . '/h4kuna.exchange.test.driver/2015-12-30'));
 	}
+
 }
 
 (new CacheTest())->run();
