@@ -56,5 +56,5 @@ Assert::exception(function () use ($exchange) {
 	unset($exchange['czk']);
 }, FrozenMethodException::class);
 
-$exchange->setDriver(NULL, new \DateTime('yesterday'));
+$exchange->setDriver(NULL, new \DateTime('2017-08-11'));
 Assert::same(2223.2, $exchange->change(100));
