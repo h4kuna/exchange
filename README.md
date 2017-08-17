@@ -25,7 +25,7 @@ $ composer require h4kuna/exchange
 ```
 
 ## How to use
-Init object Exchange and Cache. Default Driver for read is [Cnb](src/Driver/Cnb/Day.php), [here are others](src/Driver).
+Init object [Exchange](src/Exchange.php) and [Cache](src/Caching/Cache.php). Default Driver for read is [Cnb](src/Driver/Cnb/Day.php), [here are others](src/Driver).
 
 For example define own exchange rates:
 - 25 CZK = 1 EUR
@@ -85,14 +85,14 @@ $exchange->setDriver(new \MyDatabaseDriver);
 ```
 
 ### Format output
-Define output formats, for more information read this documentation [h4kuna/number-format](//github.com/h4kuna/number-format).
+Define output formats, for more information read this documentation [h4kuna/number-format](//github.com/h4kuna/number-format#numberformatstate).
 ```php
 $formats = new Exchange\Currency\Formats(new \h4kuna\Number\NumberFormatFactory());
 
 $formats->addFormat('EUR', ['decimalPoint' => '.', 'unit' => '€']);
 ```
 
-Create [Filters for format API](src/Filters.php).
+Create [Filters](src/Filters.php) for format API.
 ```php
 $filters = new Exchange\Filters($exchange, $formats);
 ```
