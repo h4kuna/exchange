@@ -9,6 +9,11 @@ require_once __DIR__ . '/../bootstrap.php';
 
 $cache = new Exchange\Caching\Cache(TEMP_DIR);
 $exchange = new Exchange\Exchange($cache);
+
+// download from Cnb
+Assert::true(isset($exchange['eur']));
+
+// change driver
 $exchange->setDriver(new Exchange\Test\Driver());
 
 Assert::same('EUR', $exchange->getDefault()->code);

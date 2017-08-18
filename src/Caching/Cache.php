@@ -73,7 +73,7 @@ class Cache implements ICache
 	 */
 	public function setRefresh($hour)
 	{
-		$this->refresh = $hour;
+		$this->refresh = (string) $hour;
 		return $this;
 	}
 
@@ -119,7 +119,7 @@ class Cache implements ICache
 	private function getRefresh()
 	{
 		if (!is_int($this->refresh)) {
-			$this->refresh = (new \DateTime('today ' . $this->refresh))->format('U');
+			$this->refresh = (int) (new \DateTime('today ' . $this->refresh))->format('U');
 			if (time() >= $this->refresh) {
 				$this->refresh += Utils\DateTime::DAY;
 			}
