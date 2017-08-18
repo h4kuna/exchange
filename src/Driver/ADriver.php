@@ -22,9 +22,7 @@ abstract class ADriver
 	 */
 	public function download(DateTime $date = NULL, array $allowedCurrencies = [])
 	{
-		if ($allowedCurrencies) {
-			$allowedCurrencies = array_flip($allowedCurrencies);
-		}
+		$allowedCurrencies = array_flip($allowedCurrencies);
 		$source = $this->loadFromSource($date);
 		$currencies = new Exchange\Currency\ListRates($this->getDate());
 		foreach ($source as $row) {
