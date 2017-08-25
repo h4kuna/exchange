@@ -29,7 +29,7 @@ class Formats
 		if (is_array($setup)) {
 			$setup = $this->numberFormatFactory->createUnit($setup);
 		} elseif (!$setup instanceof Number\UnitFormatState) {
-			throw new Exchange\InvalidArgumentException('$setup must be array or ' . Number\UnitPersistentFormatState::class);
+			throw new Exchange\InvalidArgumentException('$setup must be array or ' . Number\UnitFormatState::class);
 		}
 
 		$this->default = $setup;
