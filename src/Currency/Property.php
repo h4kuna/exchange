@@ -8,7 +8,7 @@ namespace h4kuna\Exchange\Currency;
  * @property-read float $rate
  * @property-read string $code
  */
-class Property extends \h4kuna\Number\Utils\Crate
+class Property extends \h4kuna\DataType\Immutable\Messenger
 {
 
 	public function __construct(array $data)

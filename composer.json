@@ -13,6 +13,7 @@
 	],
 	"require": {
 		"guzzlehttp/guzzle": "^6.1",
+		"h4kuna/data-type": "^2.1",
 		"h4kuna/number-format": "^2.0",
 		"nette/http": "^2.0",
 		"nette/safe-stream": "^2.0",
