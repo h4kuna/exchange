@@ -13,15 +13,18 @@ class ListRates implements \ArrayAccess, \Iterator
 	/** @var Property[] */
 	private $currencies = [];
 
+
 	public function __construct(\DateTime $date)
 	{
 		$this->date = $date;
 	}
 
+
 	public function addProperty(Property $property)
 	{
 		$this->currencies[$property->code] = $property;
 	}
+
 
 	/**
 	 * @return Property[]
@@ -30,6 +33,7 @@ class ListRates implements \ArrayAccess, \Iterator
 	{
 		return $this->currencies;
 	}
+
 
 	public function getFirst()
 	{
@@ -40,6 +44,7 @@ class ListRates implements \ArrayAccess, \Iterator
 		return current($this->currencies);
 	}
 
+
 	/**
 	 * @return \DateTime
 	 */
@@ -48,45 +53,54 @@ class ListRates implements \ArrayAccess, \Iterator
 		return $this->date;
 	}
 
+
 	public function offsetExists($offset)
 	{
 		return isset($this->currencies[$offset]);
 	}
+
 
 	public function offsetGet($offset)
 	{
 		return $this->currencies[$offset];
 	}
 
+
 	public function offsetSet($offset, $value)
 	{
 		throw new Exchange\FrozenMethodException;
 	}
+
 
 	public function offsetUnset($offset)
 	{
 		throw new Exchange\FrozenMethodException;
 	}
 
+
 	public function current()
 	{
 		return current($this->currencies);
 	}
+
 
 	public function next()
 	{
 		next($this->currencies);
 	}
 
+
 	public function key()
 	{
 		return key($this->currencies);
 	}
 
+
 	public function valid()
 	{
 		return isset($this->currencies[$this->key()]);
 	}
+
 
 	public function rewind()
 	{

@@ -7,6 +7,7 @@ final class Utils
 
 	private function __construct() { }
 
+
 	/**
 	 * Stroke replace by point
 	 * @param string $str

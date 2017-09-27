@@ -18,6 +18,7 @@ class DayTest extends \Tester\TestCase
 		Assert::same('EUR', (string) $currency);
 	}
 
+
 	/**
 	 * @throws \h4kuna\Exchange\DriverDoesNotSupport
 	 */

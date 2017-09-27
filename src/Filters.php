@@ -16,11 +16,13 @@ class Filters
 	/** @var Number\Tax */
 	private $vat;
 
+
 	public function __construct(Exchange $exchange, Currency\Formats $formats)
 	{
 		$this->exchange = $exchange;
 		$this->formats = $formats;
 	}
+
 
 	/**
 	 * @param Number\Tax $vat
@@ -30,15 +32,18 @@ class Filters
 		$this->vat = $vat;
 	}
 
-	public function change($number, $from = NULL, $to = NULL)
+
+	public function change($number, $from = null, $to = null)
 	{
 		return $this->exchange->change($number, $from, $to);
 	}
 
-	public function changeTo($number, $to = NULL)
+
+	public function changeTo($number, $to = null)
 	{
-		return $this->change($number, NULL, $to);
+		return $this->change($number, null, $to);
 	}
+
 
 	/**
 	 * Count and format number.
@@ -47,11 +52,12 @@ class Filters
 	 * @param string $to output currency, NULL set actual
 	 * @return string
 	 */
-	public function format($number, $from = NULL, $to = NULL)
+	public function format($number, $from = null, $to = null)
 	{
 		$data = $this->exchange->transfer($number, $from, $to);
 		return $this->formats->getFormat($data[1]->code)->format($data[0], $data[1]->code);
 	}
+
 
 	/**
 	 * @param float $number
@@ -60,8 +66,9 @@ class Filters
 	 */
 	public function formatTo($number, $to)
 	{
-		return $this->format($number, NULL, $to);
+		return $this->format($number, null, $to);
 	}
+
 
 	/**
 	 * @param float|int $number
@@ -72,16 +79,18 @@ class Filters
 		return $this->vat->add($number);
 	}
 
+
 	/**
 	 * @param float|int $number
 	 * @param string|NULL $from
 	 * @param string|NULL $to
 	 * @return string
 	 */
-	public function formatVat($number, $from = NULL, $to = NULL)
+	public function formatVat($number, $from = null, $to = null)
 	{
 		return $this->format($this->vat($number), $from, $to);
 	}
+
 
 	/**
 	 * @param float|int $number
@@ -90,6 +99,6 @@ class Filters
 	 */
 	public function formatVatTo($number, $to)
 	{
-		return $this->formatVat($number, NULL, $to);
+		return $this->formatVat($number, null, $to);
 	}
 }

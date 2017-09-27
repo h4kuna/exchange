@@ -1,6 +1,6 @@
 <?php
 
-ini_set( 'date.timezone', 'Europe/Prague' );
+ini_set('date.timezone', 'Europe/Prague');
 
 include __DIR__ . '/../vendor/autoload.php';
 
@@ -10,7 +10,7 @@ define('TEMP_DIR', __DIR__ . '/temp/' . getmypid());
 
 Tester\Environment::setup();
 
-Tracy\Debugger::enable(FALSE);
+Tracy\Debugger::enable(false);
 
 
 

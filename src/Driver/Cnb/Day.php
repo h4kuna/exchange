@@ -16,12 +16,13 @@ class Day extends Exchange\Driver\ADriver
 		URL_DAY = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt',
 		URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
+
 	/**
 	 * Load data from remote source.
 	 * @param DateTime $date
 	 * @return array
 	 */
-	protected function loadFromSource(DateTime $date = NULL)
+	protected function loadFromSource(DateTime $date = null)
 	{
 		$request = new GuzzleHttp\Client();
 		$data = $request->request('GET', $this->createUrl(self::URL_DAY, $date))->getBody();
@@ -33,6 +34,7 @@ class Day extends Exchange\Driver\ADriver
 
 		return $list;
 	}
+
 
 	/**
 	 * @param string $row
@@ -50,9 +52,10 @@ class Day extends Exchange\Driver\ADriver
 		]);
 	}
 
-	private function createUrl($url, DateTime $date = NULL)
+
+	private function createUrl($url, DateTime $date = null)
 	{
-		if ($date === NULL) {
+		if ($date === null) {
 			return $url;
 		}
 		return $url . '?date=' . urlencode($date->format('d.m.Y'));

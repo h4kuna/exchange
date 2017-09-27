@@ -26,11 +26,11 @@ Assert::same(100, $exchange->change(100));
 Assert::same(25.0, $exchange->change(1, 'eur', 'czk'));
 Assert::same(80.0, $exchange->change(100, 'usd', 'eur'));
 
-Assert::same(125.0, $exchange->change(100, NULL, 'usd'));
+Assert::same(125.0, $exchange->change(100, null, 'usd'));
 Assert::same(80.0, $exchange->change(100, 'usd'));
 
 $exchange->setDefault('usd');
-Assert::same(80.0, $exchange->change(100, NULL, 'eur'));
+Assert::same(80.0, $exchange->change(100, null, 'eur'));
 
 $exchange->setOutput('czk');
 Assert::same(2000.0, $exchange->change(100));
@@ -61,5 +61,5 @@ Assert::exception(function () use ($exchange) {
 	unset($exchange['czk']);
 }, FrozenMethodException::class);
 
-$exchange->setDriver(NULL, new \DateTime('2017-08-11'));
+$exchange->setDriver(null, new \DateTime('2017-08-11'));
 Assert::same(2223.2, $exchange->change(100));

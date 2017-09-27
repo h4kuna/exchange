@@ -7,6 +7,7 @@ use h4kuna\Exchange,
 
 class CookieManager
 {
+
 	/** @var Exchange\Exchange */
 	private $exchange;
 
@@ -14,7 +15,8 @@ class CookieManager
 	private $response;
 
 	/** @var string */
-	private $cookie = ['currency', NULL, '+14 days'];
+	private $cookie = ['currency', null, '+14 days'];
+
 
 	public function __construct(Exchange\Exchange $exchange)
 	{
@@ -23,14 +25,15 @@ class CookieManager
 		$this->initCurrency();
 	}
 
+
 	/**
 	 * @see Http\Response::setCookie()
 	 */
-	public function setCookie($name, $time = '+14 days', $path = NULL, $domain = NULL, $secure = NULL, $httpOnly = NULL)
+	public function setCookie($name, $time = '+14 days', $path = null, $domain = null, $secure = null, $httpOnly = null)
 	{
 		$this->cookie = [
 			$name,
-			NULL,
+			null,
 			$time,
 			$path,
 			$domain,
@@ -39,10 +42,11 @@ class CookieManager
 		];
 	}
 
+
 	public function setCurrency($code)
 	{
 		$property = $this->checkCode($code);
-		if ($property === NULL) {
+		if ($property === null) {
 			return;
 		}
 		$this->exchange->setOutput($property->code);
@@ -50,30 +54,32 @@ class CookieManager
 		$this->response->setCookie(...$this->cookie);
 	}
 
+
 	private function initCurrency()
 	{
 		if (!isset($_COOKIE[$this->cookie[0]])) {
-			return NULL;
+			return null;
 		}
 
 		$property = $this->checkCode($_COOKIE[$this->cookie]);
-		if ($property === NULL) {
+		if ($property === null) {
 			$cookie = $this->cookie;
-			$cookie[1] = FALSE;
+			$cookie[1] = false;
 			$cookie[2] = 0;
 			$this->response->setCookie(...$cookie);
-			return NULL;
+			return null;
 		}
 
 		$this->exchange->setOutput($property->code);
 	}
+
 
 	private function checkCode($code)
 	{
 		try {
 			return $this->exchange->offsetGet($code);
 		} catch (Exchange\UnknownCurrencyException $e) {
-			return NULL;
+			return null;
 		}
 	}
 

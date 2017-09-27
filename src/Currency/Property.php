@@ -20,6 +20,7 @@ class Property extends \h4kuna\DataType\Immutable\Messenger
 		parent::__construct($data);
 	}
 
+
 	public function __toString()
 	{
 		return (string) $this->code;

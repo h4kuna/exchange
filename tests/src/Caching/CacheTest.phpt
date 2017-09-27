@@ -2,12 +2,13 @@
 
 namespace h4kuna\Exchange\Caching;
 
-use	Tester\Assert;
+use    Tester\Assert;
 
 require_once __DIR__ . '/../../bootstrap.php';
 
 class CacheTest extends \Tester\TestCase
 {
+
 	public function testBasic()
 	{
 		$driver = new \h4kuna\Exchange\Test\Driver();

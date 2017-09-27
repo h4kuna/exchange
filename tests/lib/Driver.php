@@ -5,10 +5,10 @@ namespace h4kuna\Exchange\Test;
 class Driver extends \h4kuna\Exchange\Driver\ADriver
 {
 
-	protected function loadFromSource(\DateTime $date = NULL)
+	protected function loadFromSource(\DateTime $date = null)
 	{
 		$myDate = $date;
-		if ($myDate === NULL) {
+		if ($myDate === null) {
 			$myDate = new \DateTime;
 		}
 		$this->setDate('Y-m-d', $myDate->format('Y-m-d'));
@@ -31,6 +31,7 @@ class Driver extends \h4kuna\Exchange\Driver\ADriver
 			],
 		];
 	}
+
 
 	protected function createProperty($row)
 	{

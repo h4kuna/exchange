@@ -2,14 +2,32 @@
 
 namespace h4kuna\Exchange;
 
-abstract class ExchangeException extends \Exception {}
+abstract class ExchangeException extends \Exception
+{
 
-class DriverDoesNotSupport extends ExchangeException {}
+}
 
-class InvalidArgumentException extends \InvalidArgumentException {}
+class DriverDoesNotSupport extends ExchangeException
+{
 
-class UnknownCurrencyException extends InvalidArgumentException {}
+}
 
-class FrozenMethodException extends InvalidArgumentException {}
+class InvalidArgumentException extends \InvalidArgumentException
+{
 
-class EmptyExchangeRateException extends \LogicException {}
+}
+
+class UnknownCurrencyException extends InvalidArgumentException
+{
+
+}
+
+class FrozenMethodException extends InvalidArgumentException
+{
+
+}
+
+class EmptyExchangeRateException extends \LogicException
+{
+
+}

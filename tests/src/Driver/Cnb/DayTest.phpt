@@ -17,6 +17,7 @@ class DayTest extends \Tester\TestCase
 		Assert::same('EUR', $currency->code);
 	}
 
+
 	public function testDownloadHistory()
 	{
 		$day = new Day();

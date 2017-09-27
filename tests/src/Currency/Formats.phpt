@@ -11,12 +11,12 @@ $numberFormatFactory = new Number\NumberFormatFactory();
 
 $formats = new \h4kuna\Exchange\Currency\Formats($numberFormatFactory);
 
-$formats->addFormat('CZK', ['decimals' => 3, 'nbsp' => FALSE]);
-$formats->addFormat('USD', ['decimals' => 2, 'unit' => '$', 'nbsp' => FALSE]);
+$formats->addFormat('CZK', ['decimals' => 3, 'nbsp' => false]);
+$formats->addFormat('USD', ['decimals' => 2, 'unit' => '$', 'nbsp' => false]);
 $formats->setDefaultFormat(['decimals' => 1]);
-$formats->setDefaultFormat($numberFormatFactory->createUnit(['decimals' => 0, 'nbsp' => FALSE]));
+$formats->setDefaultFormat($numberFormatFactory->createUnit(['decimals' => 0, 'nbsp' => false]));
 
-Assert::exception(function() use ($formats) {
+Assert::exception(function () use ($formats) {
 	$formats->setDefaultFormat(new \ArrayObject([]));
 }, \h4kuna\Exchange\InvalidArgumentException::class);
 

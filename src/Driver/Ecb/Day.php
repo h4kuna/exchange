@@ -11,6 +11,7 @@ use DateTime,
  */
 class Day extends Exchange\Driver\ADriver
 {
+
 	private $source;
 
 	/**
@@ -19,12 +20,13 @@ class Day extends Exchange\Driver\ADriver
 	 */
 	const URL_DAY = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
+
 	/**
 	 * Load data from remote source
 	 * @param DateTime $date
 	 * @return array
 	 */
-	protected function loadFromSource(DateTime $date = NULL)
+	protected function loadFromSource(DateTime $date = null)
 	{
 		$request = new GuzzleHttp\Client;
 		$data = $request->request('GET', $this->createUrlDay(self::URL_DAY, $date))->getBody();
@@ -37,8 +39,8 @@ class Day extends Exchange\Driver\ADriver
 		$eur->addAttribute('rate', '1');
 		$this->setDate('Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
 		return $xml->Cube->Cube->Cube;
-
 	}
+
 
 	/**
 	 * @param string $row
@@ -53,13 +55,14 @@ class Day extends Exchange\Driver\ADriver
 		]);
 	}
 
+
 	/**
 	 * @param string $url
 	 * @param DateTime $date
 	 * @return string
 	 * @throws Exchange\DriverDoesNotSupport
 	 */
-	private function createUrlDay($url, DateTime $date = NULL)
+	private function createUrlDay($url, DateTime $date = null)
 	{
 		if ($date) {
 			throw new Exchange\DriverDoesNotSupport('Driver does not support history.');

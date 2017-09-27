@@ -7,6 +7,7 @@ use h4kuna\Exchange,
 
 class Formats
 {
+
 	/** @var Number\NumberFormatFactory */
 	private $numberFormatFactory;
 
@@ -19,10 +20,12 @@ class Formats
 	/** @var Number\UnitFormatState */
 	private $default;
 
+
 	public function __construct(Number\NumberFormatFactory $numberFormatFactory)
 	{
 		$this->numberFormatFactory = $numberFormatFactory;
 	}
+
 
 	public function setDefaultFormat($setup)
 	{
@@ -35,6 +38,7 @@ class Formats
 		$this->default = $setup;
 	}
 
+
 	public function addFormat($code, array $setup)
 	{
 		$code = strtoupper($code);
@@ -42,13 +46,14 @@ class Formats
 		unset($this->formats[$code]);
 	}
 
+
 	public function getFormat($code)
 	{
 		if (isset($this->formats[$code])) {
 			return $this->formats[$code];
 		} elseif (isset($this->rawFormats[$code])) {
 			if (isset($this->rawFormats[$code]['unit'])) {
-				$format = $this->numberFormatFactory->createUnitPersistent(NULL, $this->rawFormats[$code]);
+				$format = $this->numberFormatFactory->createUnitPersistent(null, $this->rawFormats[$code]);
 			} else {
 				$format = $this->numberFormatFactory->createUnit($this->rawFormats[$code]);
 			}
@@ -60,9 +65,10 @@ class Formats
 		return $this->formats[$code];
 	}
 
+
 	private function getDefaultFormat()
 	{
-		if ($this->default === NULL) {
+		if ($this->default === null) {
 			$this->default = $this->numberFormatFactory->createUnit();
 		}
 		return $this->default;
