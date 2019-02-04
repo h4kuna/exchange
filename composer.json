@@ -12,20 +12,32 @@
 		}
 	],
 	"require": {
+		"php": ">=7.1",
 		"guzzlehttp/guzzle": "^6.1",
 		"h4kuna/data-type": "^2.1",
-		"h4kuna/number-format": "^2.0",
-		"nette/http": "^2.0",
+		"h4kuna/number-format": "^3.0",
+		"h4kuna/serialize-polyfill": "^0.0",
 		"nette/safe-stream": "^2.0",
-		"nette/utils": "^2.0"
+		"nette/utils": "^2.0 || ^3.0",
+		"nette/http": "^2.4"
 	},
 	"require-dev": {
-		"salamium/testinium": "^0.1"
+		"nette/tester": "^2.0",
+		"phpstan/phpstan": "^0.11",
+		"tracy/tracy": "^2.0"
 	},
 	"autoload": {
 		"psr-4": {
 			"h4kuna\\Exchange\\": "src\\"
+		}
+	},
+	"suggest": {
+		"nette/http": "If you want to use h4kuna\\Exchange\\Http\\CookieManager"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"h4kuna\\Exchange\\": "tests\\src\\"
 		},
-		"files": ["src/exceptions.php"]
+		"files": ["tests/lib/Driver.php"]
 	}
 }

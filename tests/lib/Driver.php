@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Test;
 
-class Driver extends \h4kuna\Exchange\Driver\ADriver
+class Driver extends \h4kuna\Exchange\Driver\Driver
 {
 
-	protected function loadFromSource(\DateTime $date = null)
+	protected function loadFromSource(?\DateTimeInterface $date): iterable
 	{
 		$myDate = $date;
 		if ($myDate === null) {

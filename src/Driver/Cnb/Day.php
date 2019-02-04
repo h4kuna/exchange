@@ -1,20 +1,19 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
-use DateTime,
-	GuzzleHttp,
-	h4kuna\Exchange;
+use DateTime;
+use GuzzleHttp;
+use h4kuna\Exchange;
 
-class Day extends Exchange\Driver\ADriver
+class Day extends Exchange\Driver\Driver
 {
 
 	/**
 	 * Url where download rating
 	 */
-	const
-		URL_DAY = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt',
-		URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
+	private const URL_DAY = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
 
 	/**
@@ -22,10 +21,9 @@ class Day extends Exchange\Driver\ADriver
 	 * @param DateTime $date
 	 * @return array
 	 */
-	protected function loadFromSource(DateTime $date = null)
+	protected function loadFromSource(?\DateTimeInterface $date): iterable
 	{
-		$request = new GuzzleHttp\Client();
-		$data = $request->request('GET', $this->createUrl(self::URL_DAY, $date))->getBody();
+		$data = $this->downloadContent($date);
 		$list = explode("\n", Exchange\Utils::stroke2point($data));
 		$list[1] = 'Česká Republika|koruna|1|CZK|1';
 
@@ -36,11 +34,7 @@ class Day extends Exchange\Driver\ADriver
 	}
 
 
-	/**
-	 * @param string $row
-	 * @return Property|NULL
-	 */
-	protected function createProperty($row)
+	protected function createProperty($row): Property
 	{
 		$currency = explode('|', $row);
 		return new Property([
@@ -53,12 +47,20 @@ class Day extends Exchange\Driver\ADriver
 	}
 
 
-	private function createUrl($url, DateTime $date = null)
+	private function createUrl($url, ?\DateTimeInterface $date): string
 	{
 		if ($date === null) {
 			return $url;
 		}
 		return $url . '?date=' . urlencode($date->format('d.m.Y'));
+	}
+
+
+	protected function downloadContent(?\DateTimeInterface $date): string
+	{
+		$request = new GuzzleHttp\Client();
+		$data = $request->request('GET', $this->createUrl(self::URL_DAY, $date))->getBody()->getContents();
+		return $data;
 	}
 
 }

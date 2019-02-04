@@ -1,27 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Driver;
 
-use DateTime,
-	h4kuna\Exchange;
+use DateTime;
+use h4kuna\Exchange;
 
 /**
  * Download currency from server.
  */
-abstract class ADriver
+abstract class Driver
 {
 
-	/** @var \DateTime */
+	/** @var \DateTimeInterface */
 	private $date;
 
 
 	/**
 	 * Download data from remote source and save.
-	 * @param DateTime $date
-	 * @param array $allowedCurrencies
-	 * @return Exchange\Currency\ListRates
 	 */
-	public function download(DateTime $date = null, array $allowedCurrencies = [])
+	public function download(?\DateTimeInterface $date = null, array $allowedCurrencies = []): Exchange\Currency\ListRates
 	{
 		$allowedCurrencies = array_flip($allowedCurrencies);
 		$source = $this->loadFromSource($date);
@@ -42,23 +39,24 @@ abstract class ADriver
 	}
 
 
-	protected function setDate($format, $value)
+	protected function setDate(string $format, $value): void
 	{
-		$this->date = DateTime::createFromFormat($format, $value);
+		$date = DateTime::createFromFormat($format, $value);
+		if ($date === false) {
+			throw new Exchange\Exceptions\InvalidState(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
+		}
+		$this->date = $date;
 		$this->date->setTime(0, 0, 0);
 	}
 
 
-	public function getName()
+	public function getName(): string
 	{
 		return strtolower(str_replace('\\', '.', static::class));
 	}
 
 
-	/**
-	 * @return DateTime
-	 */
-	public function getDate()
+	public function getDate(): \DateTimeInterface
 	{
 		return $this->date;
 	}
@@ -66,10 +64,8 @@ abstract class ADriver
 
 	/**
 	 * Load data for iterator.
-	 * @param DateTime|NULL $date
-	 * @return array
 	 */
-	abstract protected function loadFromSource(DateTime $date = null);
+	abstract protected function loadFromSource(?\DateTimeInterface $date): iterable;
 
 
 	/**

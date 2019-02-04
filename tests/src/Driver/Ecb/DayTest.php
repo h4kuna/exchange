@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Driver\Ecb;
 
@@ -20,7 +20,7 @@ class DayTest extends \Tester\TestCase
 
 
 	/**
-	 * @throws \h4kuna\Exchange\DriverDoesNotSupport
+	 * @throws \h4kuna\Exchange\Exceptions\DriverDoesNotSupport
 	 */
 	public function testDownloadHistory()
 	{

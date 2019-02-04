@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
 use Tester\Assert;
 
-$container = require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 class DayTest extends \Tester\TestCase
 {

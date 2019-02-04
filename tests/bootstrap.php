@@ -1,16 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
 ini_set('date.timezone', 'Europe/Prague');
 
-include __DIR__ . '/../vendor/autoload.php';
-
-include __DIR__ . '/lib/Driver.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 define('TEMP_DIR', __DIR__ . '/temp/' . getmypid());
 
+\Nette\Utils\FileSystem::createDir(TEMP_DIR);
+
 Tester\Environment::setup();
 
-Tracy\Debugger::enable(false);
-
-
-
+Tracy\Debugger::enable(false, TEMP_DIR);

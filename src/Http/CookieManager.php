@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Http;
 
-use h4kuna\Exchange,
-	Nette\Http;
+use h4kuna\Exchange;
+use Nette\Http;
 
 class CookieManager
 {
@@ -14,7 +14,7 @@ class CookieManager
 	/** @var Http\Response */
 	private $response;
 
-	/** @var string */
+	/** @var array */
 	private $cookie = ['currency', null, '+14 days'];
 
 
@@ -61,7 +61,7 @@ class CookieManager
 			return null;
 		}
 
-		$property = $this->checkCode($_COOKIE[$this->cookie]);
+		$property = $this->checkCode($_COOKIE[$this->cookie[0]]);
 		if ($property === null) {
 			$cookie = $this->cookie;
 			$cookie[1] = false;
@@ -78,7 +78,7 @@ class CookieManager
 	{
 		try {
 			return $this->exchange->offsetGet($code);
-		} catch (Exchange\UnknownCurrencyException $e) {
+		} catch (Exchange\Exceptions\UnknownCurrency $e) {
 			return null;
 		}
 	}

@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Caching;
 
-use    Tester\Assert;
+use Tester\Assert;
 
 require_once __DIR__ . '/../../bootstrap.php';
 

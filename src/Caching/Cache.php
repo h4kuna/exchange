@@ -1,15 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Caching;
 
-use h4kuna\Exchange\Currency,
-	h4kuna\Exchange\Driver,
-	Nette\Utils;
+use h4kuna\Exchange\Currency;
+use h4kuna\Exchange\Driver;
+use h4kuna\Exchange\Exceptions\InvalidState;
+use Nette\Utils;
 
 class Cache implements ICache
 {
 
-	const FILE_CURRENT = 'current';
+	private const FILE_SCHEME = Utils\SafeStream::PROTOCOL . '://';
+	private const FILE_CURRENT = 'current';
 
 	/** @var string */
 	private $temp;
@@ -33,7 +35,7 @@ class Cache implements ICache
 	}
 
 
-	public function loadListRate(Driver\ADriver $driver, \DateTime $date = null)
+	public function loadListRate(Driver\Driver $driver, \DateTimeInterface $date = null): Currency\ListRates
 	{
 		$file = $this->createFileInfo($driver, $date);
 		if (isset($this->listRates[$file->getPathname()])) {
@@ -43,7 +45,7 @@ class Cache implements ICache
 	}
 
 
-	public function flushCache(Driver\ADriver $driver, \DateTime $date = null)
+	public function flushCache(Driver\Driver $driver, \DateTimeInterface $date = null): void
 	{
 		$file = $this->createFileInfo($driver, $date);
 		$file->isFile() && unlink($file->getPathname());
@@ -52,10 +54,8 @@ class Cache implements ICache
 
 	/**
 	 * Invalid by cron.
-	 * @param Driver\ADriver $driver
-	 * @param \DateTime|NULL $date
 	 */
-	public function invalidForce(Driver\ADriver $driver, \DateTime $date = null)
+	public function invalidForce(Driver\Driver $driver, ?\DateTimeInterface $date = null): void
 	{
 		$this->refresh = time() + Utils\DateTime::DAY;
 		$file = $this->createFileInfo($driver, $date);
@@ -64,7 +64,6 @@ class Cache implements ICache
 
 
 	/**
-	 * @param array $allowedCurrencies
 	 * @return static
 	 */
 	public function setAllowedCurrencies(array $allowedCurrencies)
@@ -75,21 +74,20 @@ class Cache implements ICache
 
 
 	/**
-	 * @param string $hour
 	 * @return static
 	 */
-	public function setRefresh($hour)
+	public function setRefresh(string $hour)
 	{
-		$this->refresh = (string) $hour;
+		$this->refresh = $hour;
 		return $this;
 	}
 
 
-	private function saveCurrencies(Driver\ADriver $driver, \SplFileInfo $file, \DateTime $date = null)
+	private function saveCurrencies(Driver\Driver $driver, \SplFileInfo $file, ?\DateTimeInterface $date): Currency\ListRates
 	{
 		$listRates = $driver->download($date, $this->allowedCurrencies);
 
-		file_put_contents(Utils\SafeStream::PROTOCOL . '://' . $file->getPathname(), serialize($listRates));
+		file_put_contents(self::FILE_SCHEME . $file->getPathname(), serialization($listRates));
 		if (self::isFileCurrent($file)) {
 			touch($file->getPathname(), $this->getRefresh());
 		}
@@ -98,11 +96,16 @@ class Cache implements ICache
 	}
 
 
-	private function createListRate(Driver\ADriver $driver, \SplFileInfo $file, \DateTime $date = null)
+	private function createListRate(Driver\Driver $driver, \SplFileInfo $file, ?\DateTimeInterface $date): Currency\ListRates
 	{
 		if ($this->isFileValid($file)) {
 			Utils\FileSystem::createDir($file->getPath(), 0755);
-			$handle = fopen(Utils\SafeStream::PROTOCOL . '://' . $this->temp . DIRECTORY_SEPARATOR . 'lock', 'w');
+			$lockFile = $this->temp . DIRECTORY_SEPARATOR . 'lock';
+			$handle = fopen(self::FILE_SCHEME . $lockFile, 'w');
+
+			if ($handle === false) {
+				throw new InvalidState('Could not write to lock file. ' . $lockFile);
+			}
 
 			if ($this->isFileValid($file)) {
 				$listRate = $this->saveCurrencies($driver, $file, $date);
@@ -112,22 +115,21 @@ class Cache implements ICache
 			fclose($handle);
 		}
 
-		return unserialize(file_get_contents($file->getPathname()));
+		$content = file_get_contents($file->getPathname());
+		if ($content === false) {
+			throw new InvalidState(sprintf('Read from file "%s" failed.', $file->getPathname()));
+		}
+		return deserialization($content);
 	}
 
 
-	/**
-	 * @param \SplFileInfo $file
-	 * @return bool
-	 */
-	private function isFileValid(\SplFileInfo $file)
+	private function isFileValid(\SplFileInfo $file): bool
 	{
 		return !$file->isFile() || (self::isFileCurrent($file) && $file->getMTime() < time());
 	}
 
 
-	/** @return int */
-	private function getRefresh()
+	private function getRefresh(): int
 	{
 		if (!is_int($this->refresh)) {
 			$this->refresh = (int) (new \DateTime('today ' . $this->refresh))->format('U');
@@ -139,14 +141,14 @@ class Cache implements ICache
 	}
 
 
-	private function createFileInfo(Driver\ADriver $driver, \DateTime $date = null)
+	private function createFileInfo(Driver\Driver $driver, ?\DateTimeInterface $date): \SplFileInfo
 	{
 		$filename = $date === null ? self::FILE_CURRENT : $date->format('Y-m-d');
 		return new \SplFileInfo($this->temp . DIRECTORY_SEPARATOR . $driver->getName() . DIRECTORY_SEPARATOR . $filename);
 	}
 
 
-	private static function isFileCurrent(\SplFileInfo $file)
+	private static function isFileCurrent(\SplFileInfo $file): bool
 	{
 		return $file->getFilename() === self::FILE_CURRENT;
 	}

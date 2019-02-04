@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Currency;
 
@@ -10,12 +10,12 @@ $listRates = new ListRates(new \DateTime());;
 
 Assert::exception(function () use ($listRates) {
 	$listRates->getFirst();
-}, \h4kuna\Exchange\EmptyExchangeRateException::class);
+}, \h4kuna\Exchange\Exceptions\EmptyExchangeRate::class);
 
 Assert::exception(function () use ($listRates) {
 	$listRates->offsetSet('xxx', 'value');
-}, \h4kuna\Exchange\FrozenMethodException::class);
+}, \h4kuna\Exchange\Exceptions\FrozenMethod::class);
 
 Assert::exception(function () use ($listRates) {
 	$listRates->offsetUnset('xxx');
-}, \h4kuna\Exchange\FrozenMethodException::class);
+}, \h4kuna\Exchange\Exceptions\FrozenMethod::class);

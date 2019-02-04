@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange;
 
-use DateTime;
+use h4kuna\Exchange\Exceptions\UnknownCurrency;
 
 /**
  * @author Milan Matějček
@@ -29,7 +29,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	 */
 	private $output;
 
-	/** @var Currency\Property[] */
+	/** @var array<string, float> */
 	private $tempRates;
 
 
@@ -39,8 +39,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 
-	/** @return Currency\Property */
-	public function getDefault()
+	public function getDefault(): Currency\Property
 	{
 		if ($this->default === null) {
 			$this->default = $this->getListRates()->getFirst();
@@ -49,8 +48,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 
-	/** @return Currency\Property */
-	public function getOutput()
+	public function getOutput(): Currency\Property
 	{
 		if ($this->output === null) {
 			$this->output = $this->getDefault();
@@ -61,29 +59,26 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 	/**
 	 * Set default "from" currency.
-	 * @param string $code
 	 */
-	public function setDefault($code)
+	public function setDefault(string $code): void
 	{
 		$this->default = $this->offsetGet($code);
 	}
 
 
 	/**
-	 * @param Driver\ADriver|NULL $driver
-	 * @param DateTime|NULL $date
 	 * @return static
 	 */
-	public function setDriver(Driver\ADriver $driver = null, DateTime $date = null)
+	public function setDriver(?Driver\Driver $driver = null, ?\DateTimeInterface $date = null)
 	{
 		if ($driver === null) {
 			$driver = new Driver\Cnb\Day();
 		}
 		$this->listRates = $this->cache->loadListRate($driver, $date);
-		if ($this->default) {
+		if ($this->default !== null) {
 			$this->setDefault($this->default->code);
 		}
-		if ($this->output) {
+		if ($this->output !== null) {
 			$this->setOutput($this->output->code);
 		}
 		return $this;
@@ -92,10 +87,8 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 	/**
 	 * Set currency "to".
-	 * @param string $code
-	 * @return Currency\Property
 	 */
-	public function setOutput($code)
+	public function setOutput(string $code): Currency\Property
 	{
 		return $this->output = $this->offsetGet($code);
 	}
@@ -103,35 +96,28 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 	/**
 	 * Transfer number by exchange rate.
-	 * @param float|int|string $price number
-	 * @param string|NULL
-	 * @param string $to
-	 * @return float|int
 	 */
-	public function change($price, $from = null, $to = null)
+	public function change(float $price, ?string $from = null, ?string $to = null): float
 	{
 		return $this->transfer($price, $from, $to)[0];
 	}
 
 
 	/**
-	 * @param int|float $price
-	 * @param string $from
-	 * @param string $to
 	 * @return array
 	 */
-	public function transfer($price, $from, $to)
+	public function transfer(float $price, ?string $from, ?string $to): array
 	{
 		$to = $to === null ? $this->getOutput() : $this->offsetGet($to);
-		if (((float) $price) === 0.0) {
+		if ($price === 0.0) {
 			return [0, $to];
 		}
 
 		$from = $from === null ? $this->getDefault() : $this->offsetGet($from);
 
 		if ($to !== $from) {
-			$toRate = isset($this->tempRates[$to->code]) ? $this->tempRates[$to->code] : $to->rate;
-			$fromRate = isset($this->tempRates[$from->code]) ? $this->tempRates[$from->code] : $from->rate;
+			$toRate = $this->tempRates[$to->code] ?? $to->rate;
+			$fromRate = $this->tempRates[$from->code] ?? $from->rate;
 			$price *= $fromRate / $toRate;
 		}
 
@@ -141,11 +127,9 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 	/**
 	 * Add history rate for rating
-	 * @param string $code
-	 * @param float $rate
-	 * @return self
+	 * @return static
 	 */
-	public function addRate($code, $rate)
+	public function addRate(string $code, float $rate)
 	{
 		$property = $this->offsetGet($code);
 		$this->tempRates[$property->code] = $rate;
@@ -155,10 +139,9 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 	/**
 	 * Remove history rating
-	 * @param string $code
-	 * @return self
+	 * @return static
 	 */
-	public function removeRate($code)
+	public function removeRate(string $code)
 	{
 		$property = $this->offsetGet($code);
 		unset($this->tempRates[$property->code]);
@@ -169,15 +152,14 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	/**
 	 * Load currency property.
 	 * @param string|Currency\Property $index
-	 * @return Currency\Property
 	 */
-	public function offsetGet($index)
+	public function offsetGet($index): Currency\Property
 	{
-		$index = strtoupper($index);
+		$index = strtoupper((string) $index);
 		if ($this->getListRates()->offsetExists($index)) {
 			return $this->getListRates()->offsetGet($index);
 		}
-		throw new UnknownCurrencyException('Undefined currency code: "' . $index . '".');
+		throw new UnknownCurrency(sprintf('Undefined currency code: "%s".', $index));
 	}
 
 
@@ -205,10 +187,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 
-	/**
-	 * @return Currency\ListRates
-	 */
-	protected function getListRates()
+	protected function getListRates(): Currency\ListRates
 	{
 		if ($this->listRates === null) {
 			$this->setDriver();

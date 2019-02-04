@@ -1,37 +1,38 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Driver\Ecb;
 
-use DateTime,
-	GuzzleHttp,
-	h4kuna\Exchange;
+use GuzzleHttp;
+use h4kuna\Exchange;
+use h4kuna\Exchange\Exceptions\DriverDoesNotSupport;
 
 /**
  * @author Petr Poupě <pupe.dupe@gmail.com>
  */
-class Day extends Exchange\Driver\ADriver
+class Day extends Exchange\Driver\Driver
 {
-
-	private $source;
 
 	/**
 	 * Url where download rating
-	 * @var const
+	 * @var string
 	 */
-	const URL_DAY = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+	private const URL_DAY = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 
 	/**
 	 * Load data from remote source
-	 * @param DateTime $date
+	 * @param \DateTimeInterface $date
 	 * @return array
 	 */
-	protected function loadFromSource(DateTime $date = null)
+	protected function loadFromSource(?\DateTimeInterface $date): iterable
 	{
-		$request = new GuzzleHttp\Client;
-		$data = $request->request('GET', $this->createUrlDay(self::URL_DAY, $date))->getBody();
+		$data = $this->downloadContent($date);
 
 		$xml = simplexml_load_string($data);
+
+		if ($xml === false) {
+			throw new Exchange\Exceptions\InvalidState('Invalid source xml.');
+		}
 
 		// including EUR
 		$eur = $xml->Cube->Cube->addChild("Cube");
@@ -42,11 +43,7 @@ class Day extends Exchange\Driver\ADriver
 	}
 
 
-	/**
-	 * @param string $row
-	 * @return Property|NULL
-	 */
-	protected function createProperty($row)
+	protected function createProperty($row): Exchange\Currency\Property
 	{
 		return new Exchange\Currency\Property([
 			'code' => $row['currency'],
@@ -56,18 +53,20 @@ class Day extends Exchange\Driver\ADriver
 	}
 
 
-	/**
-	 * @param string $url
-	 * @param DateTime $date
-	 * @return string
-	 * @throws Exchange\DriverDoesNotSupport
-	 */
-	private function createUrlDay($url, DateTime $date = null)
+	private function createUrlDay(string $url, ?\DateTimeInterface $date): string
 	{
 		if ($date) {
-			throw new Exchange\DriverDoesNotSupport('Driver does not support history.');
+			throw new DriverDoesNotSupport('Driver does not support history.');
 		}
 		return $url;
+	}
+
+
+	protected function downloadContent(?\DateTimeInterface $date): string
+	{
+		$request = new GuzzleHttp\Client;
+		$data = $request->request('GET', $this->createUrlDay(self::URL_DAY, $date))->getBody()->getContents();
+		return $data;
 	}
 
 }

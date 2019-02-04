@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange;
 
@@ -24,16 +24,13 @@ class Filters
 	}
 
 
-	/**
-	 * @param Number\Tax $vat
-	 */
-	public function setVat(Number\Tax $vat)
+	public function setVat(Number\Tax $vat): void
 	{
 		$this->vat = $vat;
 	}
 
 
-	public function change($number, $from = null, $to = null)
+	public function change(float $number, ?string $from = null, ?string $to = null)
 	{
 		return $this->exchange->change($number, $from, $to);
 	}
@@ -47,57 +44,33 @@ class Filters
 
 	/**
 	 * Count and format number.
-	 * @param number $number
-	 * @param string|NULL
-	 * @param string $to output currency, NULL set actual
-	 * @return string
 	 */
-	public function format($number, $from = null, $to = null)
+	public function format(float $number, ?string $from = null, ?string $to = null): string
 	{
 		$data = $this->exchange->transfer($number, $from, $to);
 		return $this->formats->getFormat($data[1]->code)->format($data[0], $data[1]->code);
 	}
 
 
-	/**
-	 * @param float $number
-	 * @param string $to
-	 * @return string
-	 */
-	public function formatTo($number, $to)
+	public function formatTo(float $number, ?string $to): string
 	{
 		return $this->format($number, null, $to);
 	}
 
 
-	/**
-	 * @param float|int $number
-	 * @return float
-	 */
-	public function vat($number)
+	public function vat(float $number): float
 	{
 		return $this->vat->add($number);
 	}
 
 
-	/**
-	 * @param float|int $number
-	 * @param string|NULL $from
-	 * @param string|NULL $to
-	 * @return string
-	 */
-	public function formatVat($number, $from = null, $to = null)
+	public function formatVat(float $number, ?string $from = null, ?string $to = null): string
 	{
 		return $this->format($this->vat($number), $from, $to);
 	}
 
 
-	/**
-	 * @param float|int $number
-	 * @param string|NULL $to
-	 * @return string
-	 */
-	public function formatVatTo($number, $to)
+	public function formatVatTo(float $number, ?string $to)
 	{
 		return $this->formatVat($number, null, $to);
 	}

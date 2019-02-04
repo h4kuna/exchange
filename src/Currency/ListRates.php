@@ -1,26 +1,27 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace h4kuna\Exchange\Currency;
 
 use h4kuna\Exchange;
+use h4kuna\Exchange\Exceptions\FrozenMethod;
 
 class ListRates implements \ArrayAccess, \Iterator
 {
 
-	/** @var \DateTime */
+	/** @var \DateTimeInterface */
 	private $date;
 
 	/** @var Property[] */
 	private $currencies = [];
 
 
-	public function __construct(\DateTime $date)
+	public function __construct(\DateTimeInterface $date)
 	{
 		$this->date = $date;
 	}
 
 
-	public function addProperty(Property $property)
+	public function addProperty(Property $property): void
 	{
 		$this->currencies[$property->code] = $property;
 	}
@@ -29,26 +30,22 @@ class ListRates implements \ArrayAccess, \Iterator
 	/**
 	 * @return Property[]
 	 */
-	public function getCurrencies()
+	public function getCurrencies(): array
 	{
 		return $this->currencies;
 	}
 
 
-	public function getFirst()
+	public function getFirst(): Property
 	{
 		if ($this->currencies === []) {
-			throw new Exchange\EmptyExchangeRateException();
+			throw new Exchange\Exceptions\EmptyExchangeRate();
 		}
-		reset($this->currencies);
-		return current($this->currencies);
+		return reset($this->currencies);
 	}
 
 
-	/**
-	 * @return \DateTime
-	 */
-	public function getDate()
+	public function getDate(): \DateTimeInterface
 	{
 		return $this->date;
 	}
@@ -68,13 +65,13 @@ class ListRates implements \ArrayAccess, \Iterator
 
 	public function offsetSet($offset, $value)
 	{
-		throw new Exchange\FrozenMethodException;
+		throw new FrozenMethod(__METHOD__);
 	}
 
 
 	public function offsetUnset($offset)
 	{
-		throw new Exchange\FrozenMethodException;
+		throw new FrozenMethod(__METHOD__);
 	}
 
 
