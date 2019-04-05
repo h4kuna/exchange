@@ -18,17 +18,17 @@
 		"h4kuna/number-format": "^3.0",
 		"h4kuna/serialize-polyfill": "^0.0",
 		"nette/safe-stream": "^2.0",
-		"nette/utils": "^2.0 || ^3.0",
-		"nette/http": "^2.4 || ^3.0"
+		"nette/utils": "^3.0"
 	},
 	"require-dev": {
+		"nette/http": "^3.0",
 		"nette/tester": "^2.0",
 		"phpstan/phpstan": "^0.11",
 		"tracy/tracy": "^2.0"
 	},
 	"autoload": {
 		"psr-4": {
-			"h4kuna\\Exchange\\": "src\\"
+			"h4kuna\\Exchange\\": "src"
 		}
 	},
 	"suggest": {
@@ -36,7 +36,7 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"h4kuna\\Exchange\\": "tests\\src\\"
+			"h4kuna\\Exchange\\": "tests/src"
 		},
 		"files": ["tests/lib/Driver.php"]
 	}
