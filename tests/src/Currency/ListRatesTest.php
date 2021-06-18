@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange\Currency;
 
+use h4kuna\Exchange\Exceptions;
 use Tester\Assert;
 
 require_once __DIR__ . '/../../bootstrap.php';
@@ -13,9 +14,14 @@ Assert::exception(function () use ($listRates) {
 }, \h4kuna\Exchange\Exceptions\EmptyExchangeRate::class);
 
 Assert::exception(function () use ($listRates) {
-	$listRates->offsetSet('xxx', 'value');
-}, \h4kuna\Exchange\Exceptions\FrozenMethod::class);
+	$listRates->offsetSet('xxx', new Property([
+		'foreign' => 1,
+		'home' => 1,
+		'code' => 'XXX',
+		'rate' => 1.0,
+	]));
+}, Exceptions\FrozenMethod::class);
 
 Assert::exception(function () use ($listRates) {
 	$listRates->offsetUnset('xxx');
-}, \h4kuna\Exchange\Exceptions\FrozenMethod::class);
+}, Exceptions\FrozenMethod::class);

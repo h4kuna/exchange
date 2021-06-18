@@ -5,13 +5,17 @@ namespace h4kuna\Exchange\Currency;
 use h4kuna\Exchange;
 use h4kuna\Exchange\Exceptions\FrozenMethod;
 
+/**
+ * @implements \ArrayAccess<string, Property>
+ * @implements \Iterator<string, Property>
+ */
 class ListRates implements \ArrayAccess, \Iterator
 {
 
 	/** @var \DateTimeInterface */
 	private $date;
 
-	/** @var Property[] */
+	/** @var array<string, Property> */
 	private $currencies = [];
 
 
@@ -53,12 +57,14 @@ class ListRates implements \ArrayAccess, \Iterator
 
 	public function offsetExists($offset)
 	{
+		assert($this->currencies !== []);
 		return isset($this->currencies[$offset]);
 	}
 
 
 	public function offsetGet($offset)
 	{
+		assert($this->currencies !== []);
 		return $this->currencies[$offset];
 	}
 
@@ -77,18 +83,21 @@ class ListRates implements \ArrayAccess, \Iterator
 
 	public function current()
 	{
+		assert($this->currencies !== []);
 		return current($this->currencies);
 	}
 
 
 	public function next()
 	{
+		assert($this->currencies !== []);
 		next($this->currencies);
 	}
 
 
 	public function key()
 	{
+		assert($this->currencies !== []);
 		return key($this->currencies);
 	}
 

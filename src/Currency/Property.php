@@ -2,15 +2,20 @@
 
 namespace h4kuna\Exchange\Currency;
 
+use h4kuna\DataType\Immutable;
+
 /**
  * @property-read float $home
  * @property-read int $foreign
  * @property-read float $rate
  * @property-read string $code
  */
-class Property extends \h4kuna\DataType\Immutable\Messenger
+class Property extends Immutable\Messenger
 {
 
+	/**
+	 * @param array<string, int|float|string> $data
+	 */
 	public function __construct(array $data)
 	{
 		$data['foreign'] = (int) $data['foreign'];
@@ -23,7 +28,7 @@ class Property extends \h4kuna\DataType\Immutable\Messenger
 
 	public function __toString()
 	{
-		return (string) $this->code;
+		return $this->code;
 	}
 
 }

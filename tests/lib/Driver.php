@@ -2,6 +2,8 @@
 
 namespace h4kuna\Exchange\Test;
 
+use h4kuna\Exchange\Currency;
+
 class Driver extends \h4kuna\Exchange\Driver\Driver
 {
 
@@ -33,9 +35,9 @@ class Driver extends \h4kuna\Exchange\Driver\Driver
 	}
 
 
-	protected function createProperty($row)
+	protected function createProperty($row): Currency\Property
 	{
-		return new \h4kuna\Exchange\Currency\Property($row);
+		return new Currency\Property($row);
 	}
 
 }

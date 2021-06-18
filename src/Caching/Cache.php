@@ -19,7 +19,7 @@ class Cache implements ICache
 	/** @var Currency\ListRates[] */
 	private $listRates;
 
-	/** @var array */
+	/** @var array<string> */
 	private $allowedCurrencies = [];
 
 	/**
@@ -29,7 +29,7 @@ class Cache implements ICache
 	private $refresh = '15:00';
 
 
-	public function __construct($temp)
+	public function __construct(string $temp)
 	{
 		$this->temp = $temp;
 	}
@@ -64,6 +64,7 @@ class Cache implements ICache
 
 
 	/**
+	 * @param array<string> $allowedCurrencies
 	 * @return static
 	 */
 	public function setAllowedCurrencies(array $allowedCurrencies)

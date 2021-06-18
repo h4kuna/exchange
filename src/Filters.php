@@ -30,13 +30,13 @@ class Filters
 	}
 
 
-	public function change(float $number, ?string $from = null, ?string $to = null)
+	public function change(float $number, ?string $from = null, ?string $to = null): float
 	{
 		return $this->exchange->change($number, $from, $to);
 	}
 
 
-	public function changeTo($number, $to = null)
+	public function changeTo(float $number, ?string $to = null): float
 	{
 		return $this->change($number, null, $to);
 	}
@@ -70,7 +70,7 @@ class Filters
 	}
 
 
-	public function formatVatTo(float $number, ?string $to)
+	public function formatVatTo(float $number, ?string $to): string
 	{
 		return $this->formatVat($number, null, $to);
 	}

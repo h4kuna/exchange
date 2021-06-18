@@ -15,6 +15,7 @@ interface ICache
 
 
 	/**
+	 * @param array<string> $allowed
 	 * @return static
 	 */
 	function setAllowedCurrencies(array $allowed);

@@ -17,6 +17,7 @@ abstract class Driver
 
 	/**
 	 * Download data from remote source and save.
+	 * @param array<string> $allowedCurrencies
 	 */
 	public function download(?\DateTimeInterface $date = null, array $allowedCurrencies = []): Exchange\Currency\ListRates
 	{
@@ -29,7 +30,7 @@ abstract class Driver
 			}
 			$property = $this->createProperty($row);
 
-			if (!$property || !$property->rate || ($allowedCurrencies !== [] && !isset($allowedCurrencies[$property->code]))) {
+			if ($property->rate === 0.0 || ($allowedCurrencies !== [] && !isset($allowedCurrencies[$property->code]))) {
 				continue;
 			}
 			$currencies->addProperty($property);
@@ -39,7 +40,7 @@ abstract class Driver
 	}
 
 
-	protected function setDate(string $format, $value): void
+	protected function setDate(string $format, string $value): void
 	{
 		$date = DateTime::createFromFormat($format, $value);
 		if ($date === false) {
@@ -70,7 +71,8 @@ abstract class Driver
 
 	/**
 	 * Modify data before save to cache.
-	 * @return Exchange\Currency\Property|NULL
+	 * @param mixed $row
+	 * @return Exchange\Currency\Property
 	 */
 	abstract protected function createProperty($row);
 

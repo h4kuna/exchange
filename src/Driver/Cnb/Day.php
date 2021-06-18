@@ -19,7 +19,7 @@ class Day extends Exchange\Driver\Driver
 	/**
 	 * Load data from remote source.
 	 * @param DateTime $date
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function loadFromSource(?\DateTimeInterface $date): iterable
 	{
@@ -34,6 +34,9 @@ class Day extends Exchange\Driver\Driver
 	}
 
 
+	/**
+	 * @param string $row
+	 */
 	protected function createProperty($row): Property
 	{
 		$currency = explode('|', $row);
@@ -47,7 +50,7 @@ class Day extends Exchange\Driver\Driver
 	}
 
 
-	private function createUrl($url, ?\DateTimeInterface $date): string
+	private function createUrl(string $url, ?\DateTimeInterface $date): string
 	{
 		if ($date === null) {
 			return $url;

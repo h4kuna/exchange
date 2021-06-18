@@ -15,11 +15,11 @@ class Formats
 	/** @var NumberFormat[] */
 	private $formats = [];
 
-	/** @var array */
+	/** @var array<string, array<string, string|bool|int|null>> */
 	private $rawFormats = [];
 
 	/** @var NumberFormat */
-	private $default;
+	private $default = null;
 
 
 	public function __construct(Number\NumberFormatFactory $numberFormatFactory)
@@ -29,10 +29,14 @@ class Formats
 
 
 	/**
-	 * @param array|NumberFormat $setup
+	 * @param array<string, string|bool|int|null>|NumberFormat $setup
 	 */
 	public function setDefaultFormat($setup): void
 	{
+		if ($this->default !== null) {
+			throw new Exchange\Exceptions\InvalidState('Default format could be setup only onetime.');
+		}
+
 		if (is_array($setup)) {
 			$setup = $this->numberFormatFactory->createUnit($setup);
 		} elseif (!$setup instanceof NumberFormat) {
@@ -43,6 +47,9 @@ class Formats
 	}
 
 
+	/**
+	 * @param array<string, string|bool|int|null> $setup
+	 */
 	public function addFormat(string $code, array $setup): void
 	{
 		$code = strtoupper($code);

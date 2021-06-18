@@ -7,6 +7,8 @@ use h4kuna\Exchange\Exceptions\UnknownCurrency;
 /**
  * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
+ * @implements \ArrayAccess<string, Currency\Property>
+ * @implements \IteratorAggregate<string, Currency\Property>
  */
 class Exchange implements \ArrayAccess, \IteratorAggregate
 {
@@ -104,7 +106,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 
 
 	/**
-	 * @return array
+	 * @return array{float, Currency\Property}
 	 */
 	public function transfer(float $price, ?string $from, ?string $to): array
 	{
@@ -157,7 +159,9 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	{
 		$index = strtoupper((string) $index);
 		if ($this->getListRates()->offsetExists($index)) {
-			return $this->getListRates()->offsetGet($index);
+			$property = $this->getListRates()->offsetGet($index);
+			assert($property !== null);
+			return $property;
 		}
 		throw new UnknownCurrency(sprintf('Undefined currency code: "%s".', $index));
 	}
@@ -169,15 +173,15 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 
-	public function offsetSet($offset, $value)
+	public function offsetSet($offset, $value): void
 	{
-		return $this->getListRates()->offsetSet($offset, $value);
+		$this->getListRates()->offsetSet($offset, $value);
 	}
 
 
-	public function offsetUnset($offset)
+	public function offsetUnset($offset): void
 	{
-		return $this->getListRates()->offsetUnset($offset);
+		$this->getListRates()->offsetUnset($offset);
 	}
 
 
