@@ -1,6 +1,6 @@
 Exchange
 -------
-[![Build Status](https://travis-ci.org/h4kuna/exchange.svg?branch=master)](https://travis-ci.org/h4kuna/exchange)
+[![Build Status](https://travis-ci.com/h4kuna/exchange.svg?branch=master)](https://travis-ci.com/h4kuna/exchange)
 [![Latest stable](https://img.shields.io/packagist/v/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
 [![Downloads this Month](https://img.shields.io/packagist/dm/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/h4kuna/exchange/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/h4kuna/exchange/?branch=master)
