@@ -1,43 +1,52 @@
 {
-	"name": "h4kuna/exchange",
-	"type": "library",
-	"description": "Exchange between currencies.",
-	"homepage": "https://github.com/h4kuna/exchange",
-	"license": "MIT",
-	"authors": [
-		{
-			"name": "Milan Matějček",
-			"email": "milan.matejcek@gmail.com",
-			"role": "Developer"
-		}
-	],
-	"require": {
-		"php": ">=7.1",
-		"guzzlehttp/guzzle": "^6.1",
-		"h4kuna/data-type": "^2.1",
-		"h4kuna/number-format": "^3.0",
-		"h4kuna/serialize-polyfill": "^0.0",
-		"nette/safe-stream": "^2.0",
-		"nette/utils": "^3.0"
-	},
-	"require-dev": {
-		"nette/http": "^3.0",
-		"nette/tester": "^2.0",
-		"phpstan/phpstan": "^0.11",
-		"tracy/tracy": "^2.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"h4kuna\\Exchange\\": "src"
-		}
-	},
-	"suggest": {
-		"nette/http": "If you want to use h4kuna\\Exchange\\Http\\CookieManager"
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"h4kuna\\Exchange\\": "tests/src"
-		},
-		"files": ["tests/lib/Driver.php"]
-	}
+  "name": "h4kuna/exchange",
+  "type": "library",
+  "description": "Exchange between currencies.",
+  "homepage": "https://github.com/h4kuna/exchange",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Milan Matějček",
+      "email": "milan.matejcek@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "guzzlehttp/guzzle": ">=6.1",
+    "h4kuna/data-type": "^2.1",
+    "h4kuna/number-format": "^3.0",
+    "h4kuna/serialize-polyfill": "^0.0",
+    "nette/safe-stream": "^2.0",
+    "nette/utils": "^3.0"
+  },
+  "require-dev": {
+    "nette/http": "^3.0",
+    "nette/tester": "^2.0",
+    "phpstan/phpstan": "^0.12",
+    "tracy/tracy": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "h4kuna\\Exchange\\": "src"
+    }
+  },
+  "suggest": {
+    "nette/http": "If you want to use h4kuna\\Exchange\\Http\\CookieManager.",
+    "ext-simplexml": "If you want to use h4kuna\\Exchange\\Driver\\Ecb."
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "h4kuna\\Exchange\\": "tests/src"
+    },
+    "files": [
+      "tests/lib/Driver.php"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse --level max -c tests/config/phpstan.neon src tests"
+  }
 }

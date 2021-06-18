@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-class DriverDoesNotSupport extends InvalidState
+final class DriverDoesNotSupport extends \RuntimeException
 {
 
 }

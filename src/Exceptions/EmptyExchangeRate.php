@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-class EmptyExchangeRate extends \InvalidArgumentException
+final class EmptyExchangeRate extends \InvalidArgumentException
 {
 
 }

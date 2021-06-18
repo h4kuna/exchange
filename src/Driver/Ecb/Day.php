@@ -22,7 +22,7 @@ class Day extends Exchange\Driver\Driver
 	/**
 	 * Load data from remote source
 	 * @param \DateTimeInterface $date
-	 * @return array
+	 * @return array<array{rate: float, currency: string}>
 	 */
 	protected function loadFromSource(?\DateTimeInterface $date): iterable
 	{
@@ -38,17 +38,21 @@ class Day extends Exchange\Driver\Driver
 		$eur = $xml->Cube->Cube->addChild("Cube");
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
+		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
 		$this->setDate('Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
 		return $xml->Cube->Cube->Cube;
 	}
 
 
+	/**
+	 * @param array{rate: float, currency: string} $row
+	 */
 	protected function createProperty($row): Exchange\Currency\Property
 	{
 		return new Exchange\Currency\Property([
 			'code' => $row['currency'],
 			'home' => $row['rate'],
-			'foreign' => 1
+			'foreign' => 1,
 		]);
 	}
 

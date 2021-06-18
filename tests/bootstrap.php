@@ -6,7 +6,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 define('TEMP_DIR', __DIR__ . '/temp');
 
-\Nette\Utils\FileSystem::createDir(TEMP_DIR);
+if (defined('__PHPSTAN_RUNNING__')) {
+	return;
+}
+
+Nette\Utils\FileSystem::createDir(TEMP_DIR);
 
 Tester\Environment::setup();
 

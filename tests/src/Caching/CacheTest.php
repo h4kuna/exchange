@@ -2,19 +2,21 @@
 
 namespace h4kuna\Exchange\Caching;
 
+use h4kuna\Exchange;
 use Tester\Assert;
+use Tester\TestCase;
 
 require_once __DIR__ . '/../../bootstrap.php';
 
 /**
  * @testCase
  */
-class CacheTest extends \Tester\TestCase
+final class CacheTest extends TestCase
 {
 
-	public function testBasic()
+	public function testBasic(): void
 	{
-		$driver = new \h4kuna\Exchange\Test\Driver();
+		$driver = new Exchange\Test\Driver();
 		$tempDir = TEMP_DIR . '/cache/test';
 		$cache = new Cache($tempDir);
 		$cache->setRefresh('00:00');

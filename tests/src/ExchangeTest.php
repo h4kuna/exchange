@@ -54,7 +54,12 @@ foreach ($exchange as $code => $property) {
 Assert::type(Exchange\Currency\Property::class, $exchange->offsetGet('czk'));
 
 Assert::exception(function () use ($exchange) {
-	$exchange['czk'] = 5;
+	$exchange['czk'] = new Exchange\Currency\Property([
+		'foreign' => 1,
+		'home' => 1,
+		'code' => 'XXX',
+		'rate' => 1.0,
+	]);
 }, Exceptions\FrozenMethod::class);
 
 Assert::exception(function () use ($exchange) {

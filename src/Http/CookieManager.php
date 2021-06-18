@@ -27,9 +27,10 @@ class CookieManager
 
 
 	/**
+	 * @param  string|int|\DateTimeInterface $time
 	 * @see Http\Response::setCookie()
 	 */
-	public function setCookie($name, $time = '+14 days', $path = null, $domain = null, $secure = null, $httpOnly = null)
+	public function setCookie(string $name, $time = '+14 days', string $path = null, string $domain = null, bool $secure = null, string $httpOnly = null): void
 	{
 		$this->cookie = [
 			$name,
@@ -43,7 +44,7 @@ class CookieManager
 	}
 
 
-	public function setCurrency($code)
+	public function setCurrency(string $code): void
 	{
 		$property = $this->checkCode($code);
 		if ($property === null) {
@@ -55,10 +56,10 @@ class CookieManager
 	}
 
 
-	private function initCurrency()
+	private function initCurrency(): void
 	{
 		if (!isset($_COOKIE[$this->cookie[0]])) {
-			return null;
+			return;
 		}
 
 		$property = $this->checkCode($_COOKIE[$this->cookie[0]]);
@@ -67,14 +68,14 @@ class CookieManager
 			$cookie[1] = false;
 			$cookie[2] = 0;
 			$this->response->setCookie(...$cookie);
-			return null;
+			return;
 		}
 
 		$this->exchange->setOutput($property->code);
 	}
 
 
-	private function checkCode($code)
+	private function checkCode(string $code): ?Exchange\Currency\Property
 	{
 		try {
 			return $this->exchange->offsetGet($code);
