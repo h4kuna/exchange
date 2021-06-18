@@ -13,7 +13,7 @@
 	],
 	"require": {
 		"php": ">=7.1",
-		"guzzlehttp/guzzle": "^6.1",
+		"guzzlehttp/guzzle": ">=6.1",
 		"h4kuna/data-type": "^2.1",
 		"h4kuna/number-format": "^3.0",
 		"h4kuna/serialize-polyfill": "^0.0",
