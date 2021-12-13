@@ -12,7 +12,7 @@ class Day extends Exchange\Driver\Driver
 	/**
 	 * Url where download rating
 	 */
-	private const URL_DAY = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+	private const URL_DAY = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
 	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
 
