@@ -55,6 +55,7 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		assert($this->currencies !== []);
@@ -62,6 +63,7 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		assert($this->currencies !== []);
@@ -69,18 +71,20 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		throw new FrozenMethod(__METHOD__);
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		throw new FrozenMethod(__METHOD__);
 	}
 
-
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		assert($this->currencies !== []);
@@ -88,6 +92,7 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function next()
 	{
 		assert($this->currencies !== []);
@@ -95,6 +100,7 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		assert($this->currencies !== []);
@@ -102,12 +108,14 @@ class ListRates implements \ArrayAccess, \Iterator
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function valid()
 	{
 		return isset($this->currencies[$this->key()]);
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function rewind()
 	{
 		reset($this->currencies);

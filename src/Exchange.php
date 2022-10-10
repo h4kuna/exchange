@@ -155,6 +155,7 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	 * Load currency property.
 	 * @param string|Currency\Property $index
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($index): Currency\Property
 	{
 		$index = strtoupper((string) $index);
@@ -167,24 +168,28 @@ class Exchange implements \ArrayAccess, \IteratorAggregate
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return $this->getListRates()->offsetExists(strtoupper($offset));
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value): void
 	{
 		$this->getListRates()->offsetSet($offset, $value);
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset): void
 	{
 		$this->getListRates()->offsetUnset($offset);
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return $this->getListRates();
