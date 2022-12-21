@@ -4,76 +4,109 @@ namespace h4kuna\Exchange\Driver;
 
 use DateTime;
 use h4kuna\Exchange;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Download currency from server.
+ * @phpstan-type Source object|string
+ * @template T of Exchange\Currency\Property
  */
 abstract class Driver
 {
 
-	/** @var \DateTimeInterface */
-	private $date;
+	private \DateTimeImmutable $date;
+
+	protected string $refresh = 'tomorrow midnight';
+
+	/**
+	 * @var iterable<Source>
+	 */
+	private iterable $list;
+
+
+	public function __construct(
+		private ClientInterface $client,
+		protected RequestFactoryInterface $requestFactory,
+	)
+	{
+	}
 
 
 	/**
-	 * Download data from remote source and save.
-	 * @param array<string> $allowedCurrencies
+	 * @throws ClientExceptionInterface
 	 */
-	public function download(?\DateTimeInterface $date = null, array $allowedCurrencies = []): Exchange\Currency\ListRates
+	public function initRequest(?\DateTimeInterface $date): void
 	{
-		$allowedCurrencies = array_flip($allowedCurrencies);
-		$source = $this->loadFromSource($date);
-		$currencies = new Exchange\Currency\ListRates($this->getDate());
-		foreach ($source as $row) {
-			if (!$row) {
-				continue;
-			}
-			$property = $this->createProperty($row);
-
-			if ($property->rate === 0.0 || ($allowedCurrencies !== [] && !isset($allowedCurrencies[$property->code]))) {
-				continue;
-			}
-			$currencies->addProperty($property);
-		}
-		$currencies->getFirst(); // check if is not empty
-		return $currencies;
+		$content = $this->client->sendRequest($this->createRequest($date));
+		$this->list = $this->createList($content);
 	}
 
 
-	protected function setDate(string $format, string $value): void
-	{
-		$date = DateTime::createFromFormat($format, $value);
-		if ($date === false) {
-			throw new Exchange\Exceptions\InvalidState(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
-		}
-		$this->date = $date;
-		$this->date->setTime(0, 0, 0);
-	}
-
-
-	public function getName(): string
-	{
-		return strtolower(str_replace('\\', '.', static::class));
-	}
-
-
-	public function getDate(): \DateTimeInterface
+	public function getDate(): \DateTimeImmutable
 	{
 		return $this->date;
 	}
 
 
 	/**
-	 * Load data for iterator.
+	 * @param array<string, int> $allowedCurrencies
+	 * @return \Generator<T>
 	 */
-	abstract protected function loadFromSource(?\DateTimeInterface $date): iterable;
+	public function properties(array $allowedCurrencies): \Generator
+	{
+		foreach ($this->list as $data) {
+			$property = $this->createProperty($data);
+
+			if ($property->rate === 0.0 || ($allowedCurrencies !== [] && !isset($allowedCurrencies[$property->code]))) {
+				continue;
+			}
+
+			yield $property;
+		}
+
+		return [];
+	}
+
+
+	public function getRefresh(): string
+	{
+		return $this->refresh;
+	}
+
+
+	protected function setDate(string $format, string $value): void
+	{
+		$date = \DateTime::createFromFormat($format, $value);
+		if ($date === false) {
+			throw new Exchange\Exceptions\InvalidStateException(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
+		}
+		$this->date = \DateTimeImmutable::createFromMutable($date->setTime(0, 0));
+	}
 
 
 	/**
-	 * Modify data before save to cache.
-	 * @param mixed $row
-	 * @return Exchange\Currency\Property
+	 * @return iterable<Source>
 	 */
-	abstract protected function createProperty($row);
+	abstract protected function createList(ResponseInterface $response): iterable;
+
+
+	/**
+	 * @param Source $data
+	 * @return T
+	 */
+	abstract protected function createProperty($data);
+
+
+	abstract protected function prepareUrl(?\DateTimeInterface $date): string;
+
+
+	protected function createRequest(?\DateTimeInterface $date): RequestInterface
+	{
+		return $this->requestFactory->createRequest('GET', $this->prepareUrl($date));
+	}
 
 }

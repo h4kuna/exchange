@@ -1,0 +1,4 @@
+01.12.2022 #246
+země|měna|množství|kód|kurz
+EMU|euro|1|EUR|24,000
+USA|dolar|1|USD|19,000

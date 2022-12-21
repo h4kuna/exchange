@@ -2,28 +2,23 @@
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
-use DateTime;
-use GuzzleHttp;
 use h4kuna\Exchange;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @extends Exchange\Driver\Driver<Property>
+ */
 class Day extends Exchange\Driver\Driver
 {
-
-	/**
-	 * Url where download rating
-	 */
-	private const URL_DAY = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
 	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
+	protected string $refresh = 'today 15:30';
 
-	/**
-	 * Load data from remote source.
-	 * @param DateTime $date
-	 * @return array<int, string>
-	 */
-	protected function loadFromSource(?\DateTimeInterface $date): iterable
+
+	protected function createList(ResponseInterface $response): iterable
 	{
-		$data = $this->downloadContent($date);
+		$data = $response->getBody()->getContents();
 		$list = explode("\n", Exchange\Utils::stroke2point($data));
 		$list[1] = 'Česká Republika|koruna|1|CZK|1';
 
@@ -35,35 +30,32 @@ class Day extends Exchange\Driver\Driver
 
 
 	/**
-	 * @param string $row
+	 * @return Property
 	 */
 	protected function createProperty($row): Property
 	{
+		assert(is_string($row));
 		$currency = explode('|', $row);
-		return new Property([
-			'country' => $currency[0],
-			'currency' => $currency[1],
-			'foreign' => $currency[2],
-			'code' => $currency[3],
-			'home' => $currency[4],
-		]);
+
+		return new Property(
+			intval($currency[2]),
+			floatval($currency[4]),
+			$currency[3],
+			$currency[0],
+			$currency[1],
+		);
 	}
 
 
-	private function createUrl(string $url, ?\DateTimeInterface $date): string
+	protected function prepareUrl(?\DateTimeInterface $date): string
 	{
+		$url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+
 		if ($date === null) {
 			return $url;
 		}
-		return $url . '?date=' . urlencode($date->format('d.m.Y'));
-	}
 
-
-	protected function downloadContent(?\DateTimeInterface $date): string
-	{
-		$request = new GuzzleHttp\Client();
-		$data = $request->request('GET', $this->createUrl(self::URL_DAY, $date))->getBody()->getContents();
-		return $data;
+		return "$url?date=" . urlencode($date->format('d.m.Y'));
 	}
 
 }

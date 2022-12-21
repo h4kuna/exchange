@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-final class EmptyExchangeRate extends \InvalidArgumentException
+final class FrozenMethodException extends \RuntimeException
 {
 
 }

@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace h4kuna\Exchange\Caching;
+namespace h4kuna\Exchange\Tests\Caching;
 
 use h4kuna\Exchange;
+use h4kuna\Exchange\RatingList\RatingListCache;
 use Tester\Assert;
+use Tester\Environment;
 use Tester\TestCase;
 
 require_once __DIR__ . '/../../bootstrap.php';
@@ -16,26 +18,38 @@ final class CacheTest extends TestCase
 
 	public function testBasic(): void
 	{
-		$driver = new Exchange\Test\Driver();
-		$tempDir = TEMP_DIR . '/cache/test';
-		$cache = new Cache($tempDir);
-		$cache->setRefresh('00:00');
-		$cache->flushCache($driver);
+		$exchangeFactory = createExchangeFactory();
+		$cache = $exchangeFactory->getRatingListCache();
 
-		$allowed = ['EUR', 'CZK'];
-		$cache->setAllowedCurrencies($allowed);
-		$rateList = $cache->loadListRate($driver); // from source
-		Assert::same($allowed, array_keys($rateList->getCurrencies()));
+		$cacheFile = __DIR__ . '/../../temp/exchange/0ea1c449373f12be227083321205c307';
 
-		Assert::same($rateList, $cache->loadListRate($driver)); // from property
+		$cache->create($exchangeFactory->getDriver());
+		Assert::true(is_file($cacheFile));
 
-		$cache2 = new Cache($tempDir);
-		Assert::equal($rateList, $cache2->loadListRate($driver)); // from file
+		$cache->flush($exchangeFactory->getDriver());
+		Assert::false(is_file($cacheFile));
 
-		$cache2->invalidForce($driver, new \DateTime('2015-12-30'));
-		Assert::true(is_file($tempDir . '/h4kuna.exchange.test.driver/2015-12-30'));
-		$cache2->flushCache($driver, new \DateTime('2015-12-30'));
-		Assert::false(is_file($tempDir . '/h4kuna.exchange.test.driver/2015-12-30'));
+		$cache->create($exchangeFactory->getDriver());
+		Assert::true(is_file($cacheFile));
+	}
+
+
+	public function testHistory(): void
+	{
+		$exchangeFactory = createExchangeFactory();
+		$cache = $exchangeFactory->getRatingListCache();
+
+		$cacheFile = __DIR__ . '/../../temp/exchange/ab0a31063d28b5d1970a3db6b58e8188';
+		$date = new \DateTime('2022-12-01');
+
+		$cache->create($exchangeFactory->getDriver(), $date);
+		Assert::true(is_file($cacheFile));
+
+		$cache->flush($exchangeFactory->getDriver(), $date);
+		Assert::false(is_file($cacheFile));
+
+		$cache->create($exchangeFactory->getDriver(), $date);
+		Assert::true(is_file($cacheFile));
 	}
 
 }

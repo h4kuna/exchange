@@ -2,36 +2,26 @@
 
 namespace h4kuna\Exchange\Driver\Ecb;
 
-use GuzzleHttp;
 use h4kuna\Exchange;
-use h4kuna\Exchange\Exceptions\DriverDoesNotSupport;
+use Psr\Http\Message\ResponseInterface;
 
 /**
- * @author Petr Poupě <pupe.dupe@gmail.com>
+ * @extends Exchange\Driver\Driver<Exchange\Currency\Property>
  */
 class Day extends Exchange\Driver\Driver
 {
 
 	/**
-	 * Url where download rating
-	 * @var string
+	 * @return iterable<\SimpleXMLElement>
 	 */
-	private const URL_DAY = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
-
-
-	/**
-	 * Load data from remote source
-	 * @param \DateTimeInterface $date
-	 * @return array<array{rate: float, currency: string}>
-	 */
-	protected function loadFromSource(?\DateTimeInterface $date): iterable
+	protected function createList(ResponseInterface $response): iterable
 	{
-		$data = $this->downloadContent($date);
+		$data = $response->getBody()->getContents();
 
 		$xml = simplexml_load_string($data);
 
 		if ($xml === false) {
-			throw new Exchange\Exceptions\InvalidState('Invalid source xml.');
+			throw new Exchange\Exceptions\InvalidStateException('Invalid source xml.');
 		}
 
 		// including EUR
@@ -40,37 +30,30 @@ class Day extends Exchange\Driver\Driver
 		$eur->addAttribute('rate', '1');
 		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
 		$this->setDate('Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
+
 		return $xml->Cube->Cube->Cube;
 	}
 
 
-	/**
-	 * @param array{rate: float, currency: string} $row
-	 */
 	protected function createProperty($row): Exchange\Currency\Property
 	{
-		return new Exchange\Currency\Property([
-			'code' => $row['currency'],
-			'home' => $row['rate'],
-			'foreign' => 1,
-		]);
+		assert($row instanceof \SimpleXMLElement);
+
+		return new Exchange\Currency\Property(
+			1,
+			floatval($row->xpath('@rate')[0]),
+			(string) $row->xpath('@currency')[0],
+		);
 	}
 
 
-	private function createUrlDay(string $url, ?\DateTimeInterface $date): string
+	protected function prepareUrl(?\DateTimeInterface $date): string
 	{
-		if ($date) {
-			throw new DriverDoesNotSupport('Driver does not support history.');
+		if ($date !== null) {
+			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
 		}
-		return $url;
-	}
 
-
-	protected function downloadContent(?\DateTimeInterface $date): string
-	{
-		$request = new GuzzleHttp\Client;
-		$data = $request->request('GET', $this->createUrlDay(self::URL_DAY, $date))->getBody()->getContents();
-		return $data;
+		return 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 	}
 
 }

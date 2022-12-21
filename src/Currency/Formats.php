@@ -8,39 +8,31 @@ use h4kuna\Number\NumberFormat;
 
 class Formats
 {
+	/** @var array<NumberFormat> */
+	private array $formats = [];
 
-	/** @var Number\NumberFormatFactory */
-	private $numberFormatFactory;
+	/** @var array<string, array<string, bool|int|string|null>> */
+	private array $rawFormats = [];
 
-	/** @var NumberFormat[] */
-	private $formats = [];
-
-	/** @var array<string, array<string, string|bool|int|null>> */
-	private $rawFormats = [];
-
-	/** @var NumberFormat */
-	private $default = null;
+	private ?NumberFormat $default = null;
 
 
-	public function __construct(Number\NumberFormatFactory $numberFormatFactory)
+	public function __construct(private Number\NumberFormatFactory $numberFormatFactory)
 	{
-		$this->numberFormatFactory = $numberFormatFactory;
 	}
 
 
 	/**
-	 * @param array<string, string|bool|int|null>|NumberFormat $setup
+	 * @param array<string, bool|int|string|null>|NumberFormat $setup
 	 */
-	public function setDefaultFormat($setup): void
+	public function setDefaultFormat(array|NumberFormat $setup): void
 	{
 		if ($this->default !== null) {
-			throw new Exchange\Exceptions\InvalidState('Default format could be setup only onetime.');
+			throw new Exchange\Exceptions\InvalidStateException('Default format could be setup only onetime.');
 		}
 
 		if (is_array($setup)) {
 			$setup = $this->numberFormatFactory->createUnit($setup);
-		} elseif (!$setup instanceof NumberFormat) {
-			throw new Exchange\Exceptions\InvalidState(sprintf('$setup must be array or "%s"', Number\NumberFormat::class));
 		}
 
 		$this->default = $setup;
@@ -73,6 +65,7 @@ class Formats
 		} else {
 			$this->formats[$code] = $this->getDefaultFormat();
 		}
+
 		return $this->formats[$code];
 	}
 
@@ -82,6 +75,7 @@ class Formats
 		if ($this->default === null) {
 			$this->default = $this->numberFormatFactory->createUnit();
 		}
+
 		return $this->default;
 	}
 

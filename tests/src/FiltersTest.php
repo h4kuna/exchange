@@ -2,20 +2,19 @@
 
 namespace h4kuna\Exchange;
 
+use h4kuna;
 use h4kuna\Exchange;
 use Tester\Assert;
 
 require __DIR__ . '/../bootstrap.php';
 
-$exchange = new Exchange\Exchange(new Exchange\Caching\Cache(TEMP_DIR));
-$exchange->setDriver(new Exchange\Test\Driver());
+$exchange = createExchangeFactory()->create();
 
-$formats = new Exchange\Currency\Formats(new \h4kuna\Number\NumberFormatFactory());
+$formats = new Exchange\Currency\Formats(new h4kuna\Number\NumberFormatFactory());
 
 $formats->addFormat('EUR', ['decimalPoint' => '.', 'unit' => '€']);
 
-$filters = new Filters($exchange, $formats);
-$filters->setVat(new \h4kuna\Number\Tax(21));
+$filters = new Filters($exchange, $formats, new h4kuna\Number\Tax(21));
 
 Assert::same('EUR', $exchange->getDefault()->code);
 

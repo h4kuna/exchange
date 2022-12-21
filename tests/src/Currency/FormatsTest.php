@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace h4kuna\Exchange\Currency;
+namespace h4kuna\Exchange\Tests\Currency;
 
 use h4kuna\Exchange;
 use h4kuna\Number;
@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../bootstrap.php';
 
 $numberFormatFactory = new Number\NumberFormatFactory();
 
-$formats = new Formats($numberFormatFactory);
+$formats = new Exchange\Currency\Formats($numberFormatFactory);
 
 $formats->addFormat('CZK', ['decimals' => 3, 'nbsp' => false]);
 $formats->addFormat('USD', ['decimals' => 2, 'unit' => '$', 'nbsp' => false]);
@@ -18,7 +18,7 @@ $formats->setDefaultFormat($numberFormatFactory->createUnit(['decimals' => 0, 'n
 
 Assert::exception(function () use ($formats) {
 	$formats->setDefaultFormat([]);
-}, Exchange\Exceptions\InvalidState::class);
+}, Exchange\Exceptions\InvalidStateException::class);
 
 Assert::same('100 EUR', $formats->getFormat('EUR')->format('100', 'EUR'));
 Assert::same($formats->getFormat('EUR'), $formats->getFormat('EUR'));

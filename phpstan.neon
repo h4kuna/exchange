@@ -1,0 +1,84 @@
+parameters:
+	level: max
+	paths:
+		- src
+		- tests/src
+	bootstrapFiles:
+		- tests/bootstrap.php
+	ignoreErrors:
+		-
+			message: "#^Variable property access on \\$this\\(h4kuna\\\\Exchange\\\\Currency\\\\Property\\)\\.$#"
+			count: 1
+			path: src/Currency/Property.php
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\ExchangeFactory\\:\\:getDriver\\(\\) return type with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver does not specify its types\\: T$#"
+			count: 1
+			path: src/ExchangeFactory.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\ExchangeFactory\\:\\:setDriver\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/ExchangeFactory.php
+
+		-
+			message: "#^Property h4kuna\\\\Exchange\\\\ExchangeFactory\\:\\:\\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver does not specify its types\\: T$#"
+			count: 1
+			path: src/ExchangeFactory.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\Builder\\:\\:create\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/Builder.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListBuilder\\:\\:countTTL\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListBuilder.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListBuilder\\:\\:create\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListBuilder.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:create\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:createKey\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:criticalSection\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:driverName\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:flush\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListCache\\:\\:tryCreateCriticalSection\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListCache.php
+
+		-
+			message: "#^Method h4kuna\\\\Exchange\\\\RatingList\\\\RatingListLongProcess\\:\\:__construct\\(\\) has parameter \\$driver with generic class h4kuna\\\\Exchange\\\\Driver\\\\Driver but does not specify its types\\: T$#"
+			count: 1
+			path: src/RatingList/RatingListLongProcess.php
+
+		-
+			message: "#^Expression \"\\$ratingList\\['qwe'\\]\" on a separate line does not do anything\\.$#"
+			count: 1
+			path: tests/src/RatingList/RatingListTest.php
+
+includes:
+	- vendor/phpstan/phpstan-strict-rules/rules.neon

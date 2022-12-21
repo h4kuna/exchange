@@ -2,33 +2,47 @@
 
 namespace h4kuna\Exchange\Currency;
 
-use h4kuna\DataType\Immutable;
-
-/**
- * @property-read float $home
- * @property-read int $foreign
- * @property-read float $rate
- * @property-read string $code
- */
-class Property extends Immutable\Messenger
+class Property
 {
+	public float $rate;
 
-	/**
-	 * @param array<string, int|float|string> $data
-	 */
-	public function __construct(array $data)
+
+	public function __construct(
+		public int $foreign,
+		public float $home,
+		public string $code,
+	)
 	{
-		$data['foreign'] = (int) $data['foreign'];
-		$data['home'] = (float) $data['home'];
-		$data['code'] = (string) $data['code'];
-		$data['rate'] = $data['foreign'] ? ($data['home'] / $data['foreign']) : 0;
-		parent::__construct($data);
+		$this->rate = $this->foreign === 0 ? 0.0 : $this->home / $this->foreign;
 	}
 
 
 	public function __toString()
 	{
 		return $this->code;
+	}
+
+
+	/**
+	 * @return array<string, bool|float|int|string>
+	 */
+	public function __serialize(): array
+	{
+		/** @var array<string, bool|float|int|string> $data */
+		$data = get_object_vars($this);
+
+		return $data;
+	}
+
+
+	/**
+	 * @param array<string, bool|float|int|string> $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		foreach ($data as $name => $value) {
+			$this->{$name} = $value;
+		}
 	}
 
 }

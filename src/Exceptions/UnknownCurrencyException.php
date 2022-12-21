@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-final class FrozenMethod extends \RuntimeException
+final class UnknownCurrencyException extends \InvalidArgumentException
 {
 
 }

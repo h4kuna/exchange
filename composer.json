@@ -12,18 +12,18 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
-    "guzzlehttp/guzzle": ">=6.1",
-    "h4kuna/data-type": "^2.1",
+    "php": ">=8.0",
+    "arvenil/ninja-mutex": "^0.6",
     "h4kuna/number-format": "^3.0",
-    "h4kuna/serialize-polyfill": "^0.0",
-    "nette/safe-stream": "^2.0",
-    "nette/utils": "^3.0"
+    "h4kuna/serialize-polyfill": "^0.2",
+    "psr/http-factory": "^1.0",
+    "psr/simple-cache": "^3.0"
   },
   "require-dev": {
-    "nette/http": "^3.0",
+    "guzzlehttp/guzzle": "^7.0",
     "nette/tester": "^2.0",
-    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan": "^1.0",
+    "phpstan/phpstan-strict-rules": "^1.4",
     "tracy/tracy": "^2.0"
   },
   "autoload": {
@@ -32,21 +32,21 @@
     }
   },
   "suggest": {
-    "nette/http": "If you want to use h4kuna\\Exchange\\Http\\CookieManager.",
+    "guzzlehttp/guzzle": "As default implementation for PSR standards.",
     "ext-simplexml": "If you want to use h4kuna\\Exchange\\Driver\\Ecb."
   },
   "autoload-dev": {
     "psr-4": {
-      "h4kuna\\Exchange\\": "tests/src"
-    },
-    "files": [
-      "tests/lib/Driver.php"
-    ]
+      "h4kuna\\Exchange\\Tests\\": "tests/src",
+      "h4kuna\\Exchange\\Fixtures\\": "tests/Fixtures"
+    }
   },
   "config": {
     "sort-packages": true
   },
   "scripts": {
-    "phpstan": "vendor/bin/phpstan analyse --level max -c tests/config/phpstan.neon src tests"
+    "phpstan": "vendor/bin/phpstan analyse",
+    "tests": "vendor/bin/tester -s -j 4 -C --colors 1 tests/src",
+    "coverage": "vendor/bin/tester -s -C -p xphp --coverage tests/temp/coverage.html --coverage-src=src --colors 1 tests/src"
   }
 }

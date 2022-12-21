@@ -1,9 +1,0 @@
-parameters:
-	checkMissingIterableValueType: false
-	bootstrapFiles:
-		- %rootDir%/../../../tests/bootstrap.php
-	ignoreErrors:
-		-
-			message: "#^Expression \"\\$exchange\\['qwe'\\]\" on a separate line does not do anything\\.$#"
-			count: 1
-			path: %rootDir%/../../../tests/src/ExchangeTest.php

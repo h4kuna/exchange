@@ -7,26 +7,12 @@ use h4kuna\Number;
 class Filters
 {
 
-	/** @var Exchange */
-	private $exchange;
-
-	/** @var Currency\Formats */
-	private $formats;
-
-	/** @var Number\Tax */
-	private $vat;
-
-
-	public function __construct(Exchange $exchange, Currency\Formats $formats)
+	public function __construct(
+		private Exchange $exchange,
+		private Currency\Formats $formats,
+		private Number\Tax $vat,
+	)
 	{
-		$this->exchange = $exchange;
-		$this->formats = $formats;
-	}
-
-
-	public function setVat(Number\Tax $vat): void
-	{
-		$this->vat = $vat;
 	}
 
 
@@ -48,6 +34,7 @@ class Filters
 	public function format(float $number, ?string $from = null, ?string $to = null): string
 	{
 		$data = $this->exchange->transfer($number, $from, $to);
+
 		return $this->formats->getFormat($data[1]->code)->format($data[0], $data[1]->code);
 	}
 
@@ -74,4 +61,5 @@ class Filters
 	{
 		return $this->formatVat($number, null, $to);
 	}
+
 }

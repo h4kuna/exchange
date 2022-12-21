@@ -2,156 +2,87 @@
 
 namespace h4kuna\Exchange\Caching;
 
-use h4kuna\Exchange\Currency;
-use h4kuna\Exchange\Driver;
-use h4kuna\Exchange\Exceptions\InvalidState;
-use Nette\Utils;
+use Psr\SimpleCache\CacheInterface;
 
-class Cache implements ICache
+final class Cache implements CacheInterface
 {
-
-	private const FILE_SCHEME = Utils\SafeStream::PROTOCOL . '://';
-	private const FILE_CURRENT = 'current';
-
-	/** @var string */
-	private $temp;
-
-	/** @var Currency\ListRates[] */
-	private $listRates;
-
-	/** @var array<string> */
-	private $allowedCurrencies = [];
-
 	/**
-	 * int - unix time
-	 * @var string|int
+	 * @var array<string, string>
 	 */
-	private $refresh = '15:00';
+	private array $keys = [];
 
 
-	public function __construct(string $temp)
+	public function __construct(private string $tempDir)
 	{
-		$this->temp = $temp;
 	}
 
 
-	public function loadListRate(Driver\Driver $driver, \DateTimeInterface $date = null): Currency\ListRates
+	public function get(string $key, mixed $default = null): mixed
 	{
-		$file = $this->createFileInfo($driver, $date);
-		if (isset($this->listRates[$file->getPathname()])) {
-			return $this->listRates[$file->getPathname()];
+		if ($this->has($key) === false) {
+			return $default;
 		}
-		return $this->listRates[$file->getPathname()] = $this->createListRate($driver, $file, $date);
+
+		return file_get_contents($this->file($key));
 	}
 
 
-	public function flushCache(Driver\Driver $driver, \DateTimeInterface $date = null): void
+	public function set(string $key, mixed $value, \DateInterval|int|null $ttl = null): bool
 	{
-		$file = $this->createFileInfo($driver, $date);
-		$file->isFile() && unlink($file->getPathname());
+		return (bool) file_put_contents($this->file($key), $value);
 	}
 
 
-	/**
-	 * Invalid by cron.
-	 */
-	public function invalidForce(Driver\Driver $driver, ?\DateTimeInterface $date = null): void
+	public function delete(string $key): bool
 	{
-		$this->refresh = time() + Utils\DateTime::DAY;
-		$file = $this->createFileInfo($driver, $date);
-		$this->saveCurrencies($driver, $file, $date);
+		if ($this->has($key)) {
+			unlink($this->file($key));
+		}
+
+		return true;
+	}
+
+
+	public function clear(): bool
+	{
+		throw new \RuntimeException('not implemented');
+	}
+
+
+	public function getMultiple(iterable $keys, mixed $default = null): iterable
+	{
+		throw new \RuntimeException('not implemented');
 	}
 
 
 	/**
-	 * @param array<string> $allowedCurrencies
-	 * @return static
+	 * @param iterable<mixed> $values
 	 */
-	public function setAllowedCurrencies(array $allowedCurrencies)
+	public function setMultiple(iterable $values, \DateInterval|int|null $ttl = null): bool
 	{
-		$this->allowedCurrencies = $allowedCurrencies;
-		return $this;
+		throw new \RuntimeException('not implemented');
 	}
 
 
-	/**
-	 * @return static
-	 */
-	public function setRefresh(string $hour)
+	public function deleteMultiple(iterable $keys): bool
 	{
-		$this->refresh = $hour;
-		return $this;
+		throw new \RuntimeException('not implemented');
 	}
 
 
-	private function saveCurrencies(Driver\Driver $driver, \SplFileInfo $file, ?\DateTimeInterface $date): Currency\ListRates
+	public function has(string $key): bool
 	{
-		$listRates = $driver->download($date, $this->allowedCurrencies);
+		return is_file($this->file($key));
+	}
 
-		file_put_contents(self::FILE_SCHEME . $file->getPathname(), serialization($listRates));
-		if (self::isFileCurrent($file)) {
-			touch($file->getPathname(), $this->getRefresh());
+
+	private function file(string $key): string
+	{
+		if (!isset($this->keys[$key])) {
+			$this->keys[$key] = $this->tempDir . '/' . md5($key);
 		}
 
-		return $listRates;
-	}
-
-
-	private function createListRate(Driver\Driver $driver, \SplFileInfo $file, ?\DateTimeInterface $date): Currency\ListRates
-	{
-		if ($this->isFileValid($file)) {
-			Utils\FileSystem::createDir($file->getPath(), 0755);
-			$lockFile = $this->temp . DIRECTORY_SEPARATOR . 'lock';
-			$handle = fopen(self::FILE_SCHEME . $lockFile, 'w');
-
-			if ($handle === false) {
-				throw new InvalidState('Could not write to lock file. ' . $lockFile);
-			}
-
-			if ($this->isFileValid($file)) {
-				$listRate = $this->saveCurrencies($driver, $file, $date);
-				fclose($handle);
-				return $listRate;
-			}
-			fclose($handle);
-		}
-
-		$content = file_get_contents($file->getPathname());
-		if ($content === false) {
-			throw new InvalidState(sprintf('Read from file "%s" failed.', $file->getPathname()));
-		}
-		return deserialization($content);
-	}
-
-
-	private function isFileValid(\SplFileInfo $file): bool
-	{
-		return !$file->isFile() || (self::isFileCurrent($file) && $file->getMTime() < time());
-	}
-
-
-	private function getRefresh(): int
-	{
-		if (!is_int($this->refresh)) {
-			$this->refresh = (int) (new \DateTime('today ' . $this->refresh))->format('U');
-			if (time() >= $this->refresh) {
-				$this->refresh += Utils\DateTime::DAY;
-			}
-		}
-		return $this->refresh;
-	}
-
-
-	private function createFileInfo(Driver\Driver $driver, ?\DateTimeInterface $date): \SplFileInfo
-	{
-		$filename = $date === null ? self::FILE_CURRENT : $date->format('Y-m-d');
-		return new \SplFileInfo($this->temp . DIRECTORY_SEPARATOR . $driver->getName() . DIRECTORY_SEPARATOR . $filename);
-	}
-
-
-	private static function isFileCurrent(\SplFileInfo $file): bool
-	{
-		return $file->getFilename() === self::FILE_CURRENT;
+		return $this->keys[$key];
 	}
 
 }
