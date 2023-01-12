@@ -49,7 +49,6 @@ class Exchange implements \IteratorAggregate
 		}
 
 		$from = $this->ratingList->get()->offsetGet($from ?? $this->configuration->from);
-
 		if ($to !== $from) {
 			$price *= $from->rate / $to->rate;
 		}

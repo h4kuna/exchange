@@ -1,5 +1,10 @@
 # Changelog
 
+## v7.1
+
+- remove dependency on h4kuna/number-format
+- Formats.php and Filters.php moved [this extension](//github.com/h4kuna/exchange-nette)
+
 ## v7.0
 
 - your temporary rate implement by own RatingList

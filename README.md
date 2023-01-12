@@ -46,44 +46,10 @@ echo $exchange->change(100, 'usd', 'czk'); // USD -> CZK = 2000.0
 
 ### Change driver and date
 
-Download history exchange rates.
+Download history exchange rates. Make new instance of Exchange with history rate.
 
 ```php
 $exchange = $exchangeFactory->create(new \Datetime('2000-12-30'));
-```
-
-### Format output
-
-Define output formats, for more information read this documentation [h4kuna/number-format](//github.com/h4kuna/number-format#numberformatstate).
-
-```php
-$formats = new Exchange\Currency\Formats(new \h4kuna\Number\NumberFormatFactory());
-
-$formats->addFormat('EUR', ['decimalPoint' => '.', 'unit' => '€']);
-```
-
-Create [Filters](src/Filters.php) for format API.
-
-```php
-$filters = new Exchange\Filters($exchange, $formats, new h4kuna\Number\Tax(21));
-```
-
-Output
-
-```php
-
-// format 100 EUR like default to USD is set above
-$filters->format(100); // '125,00 USD'
-
-// count with VAT
-$filters->formatVat(100, 'usd', 'eur'); // '96.80 €'
-$filters->formatVatTo(100); // '151,25 USD'
-$filters->formatTo(100, 'CZK'); // '2 000,00 CZK'
-
-// Other options
-$filters->change(100, 'usd', 'eur'); // 80.0
-$filters->changeTo(100, 'usd'); // 125.0
-$filters->vat(100); // 121.0
 ```
 
 ### Access and iterator
