@@ -76,7 +76,7 @@ parameters:
 			path: src/RatingList/RatingListLongProcess.php
 
 		-
-			message: "#^Expression \"\\$ratingList\\['qwe'\\]\" on a separate line does not do anything\\.$#"
+			message: "#^Expression \"\\$ratingList\\['QWE'\\]\" on a separate line does not do anything\\.$#"
 			count: 1
 			path: tests/src/RatingList/RatingListTest.php
 

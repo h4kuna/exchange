@@ -16,10 +16,10 @@ function createExchangeFactory(string $driver = 'cnb'): Exchange\ExchangeFactory
 {
 	$httpFactory = new Exchange\Fixtures\HttpFactory($driver);
 
-	$exchangeFactory = new Exchange\ExchangeFactory('eur', null, __DIR__ . '/temp/exchange', [
-		'czk',
-		'usd',
-		'eur',
+	$exchangeFactory = new Exchange\ExchangeFactory('EUR', null, __DIR__ . '/temp/exchange', [
+		'CZK',
+		'USD',
+		'EUR',
 	]);
 	$exchangeFactory->setClient($httpFactory);
 	$exchangeFactory->setRequestFactory($httpFactory);

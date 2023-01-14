@@ -44,7 +44,7 @@ class RatingList implements \ArrayAccess, \Iterator
 
 	public function addProperty(Property $property): void
 	{
-		$this->currencies[self::normalizeKey($property->code)] = $property;
+		$this->currencies[$property->code] = $property;
 	}
 
 
@@ -67,20 +67,19 @@ class RatingList implements \ArrayAccess, \Iterator
 	{
 		assert($this->currencies !== []);
 
-		return isset($this->currencies[self::normalizeKey($offset)]);
+		return isset($this->currencies[$offset]);
 	}
 
 
 	public function offsetGet($offset): Property
 	{
 		assert($this->currencies !== []);
-		$key = self::normalizeKey($offset);
 
-		if (!isset($this->currencies[$key])) {
-			throw new UnknownCurrencyException($key);
+		if (!isset($this->currencies[$offset])) {
+			throw new UnknownCurrencyException($offset);
 		}
 
-		return $this->currencies[$key];
+		return $this->currencies[$offset];
 	}
 
 
@@ -128,12 +127,6 @@ class RatingList implements \ArrayAccess, \Iterator
 	public function rewind(): void
 	{
 		reset($this->currencies);
-	}
-
-
-	private static function normalizeKey(string $key): string
-	{
-		return strtolower($key);
 	}
 
 }

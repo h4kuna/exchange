@@ -15,13 +15,13 @@ Assert::same('EUR', $exchange->getDefault()->code);
 Assert::same($exchange->getOutput(), $exchange->getDefault());
 
 Assert::same(100.0, $exchange->change(100));
-Assert::same(25.0, $exchange->change(1, 'eur', 'czk'));
-Assert::same(80.0, $exchange->change(100, 'usd', 'eur'));
+Assert::same(25.0, $exchange->change(1, 'EUR', 'CZK'));
+Assert::same(80.0, $exchange->change(100, 'USD', 'EUR'));
 
-Assert::same(125.0, $exchange->change(100, null, 'usd'));
-Assert::same(80.0, $exchange->change(100, 'usd'));
+Assert::same(125.0, $exchange->change(100, null, 'USD'));
+Assert::same(80.0, $exchange->change(100, 'USD'));
 
-$result = $exchange->transfer(100, 'usd');
+$result = $exchange->transfer(100, 'USD');
 Assert::same(80.0, $result[0]);
 Assert::type(Exchange\Driver\Cnb\Property::class, $result[1]);
 Assert::same('EUR', $result[1]->code);
