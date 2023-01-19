@@ -5,8 +5,7 @@ namespace h4kuna\Exchange;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use h4kuna\Exchange\Caching\Cache;
-use h4kuna\Exchange\Driver\Cnb\Day;
-use h4kuna\Exchange\Driver\Driver;
+use h4kuna\Exchange\Driver;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
 use h4kuna\Exchange\RatingList\RatingListBuilder;
 use h4kuna\Exchange\RatingList\RatingListRequest;
@@ -22,14 +21,6 @@ final class ExchangeFactory
 
 	private ?CacheInterface $cache = null;
 
-	private ?RatingList\RatingListBuilder $ratingListFactory = null;
-
-	private ?Configuration $configuration = null;
-
-	private ?RatingList\RatingListCache $ratingListCache = null;
-
-	private ?Driver $driver = null;
-
 	private ?RequestFactoryInterface $requestFactory = null;
 
 	private ?ClientInterface $client = null;
@@ -39,15 +30,22 @@ final class ExchangeFactory
 	 */
 	private array $allowedCurrencies;
 
+	/**
+	 * @var array<class-string, \Closure>
+	 */
+	private array $drivers = [];
+
 
 	/**
 	 * @param array<string> $allowedCurrencies
+	 * @param class-string $driver
 	 */
 	public function __construct(
 		private string $from,
 		private ?string $to = null,
 		private ?string $tempDir = null,
 		array $allowedCurrencies = [],
+		private string $driver = Driver\Cnb\Day::class,
 	)
 	{
 		if ($this->tempDir === null) {
@@ -58,21 +56,35 @@ final class ExchangeFactory
 	}
 
 
-	public function create(\DateTimeInterface $date = null): Exchange
+	/**
+	 * @param class-string $name
+	 */
+	public function addDriver(string $name, \Closure $factory): void
 	{
+		$this->drivers[$name] = $factory;
+	}
+
+
+	/**
+	 * @param class-string $driver
+	 */
+	public function create(\DateTimeInterface $date = null, ?string $driver = null): Exchange
+	{
+		$config = $this->createConfiguration();
+
 		return new Exchange(
 			new RatingListRequest(
-				$this->getRatingListCache()->create(
-					$this->getDriver(),
+				$this->createRatingListCache()->create(
+					$driver ?? $this->driver,
 					$date,
 				)
 			),
-			$this->getConfiguration()
+			$config
 		);
 	}
 
 
-	public function getLock(): LockInterface
+	protected function getLock(): LockInterface
 	{
 		assert($this->tempDir !== null);
 
@@ -86,27 +98,15 @@ final class ExchangeFactory
 	}
 
 
-	public function getRatingListFactory(): RatingList\RatingListBuilder
+	public function createRatingListFactory(): RatingList\RatingListBuilder
 	{
-		return $this->ratingListFactory ??= new RatingListBuilder($this->allowedCurrencies);
+		return new RatingListBuilder($this->allowedCurrencies);
 	}
 
 
-	public function getConfiguration(): Configuration
+	public function createConfiguration(): Configuration
 	{
-		return $this->configuration ??= new Configuration($this->from, $this->to ?? $this->from);
-	}
-
-
-	public function setConfiguration(Configuration $configuration): void
-	{
-		$this->configuration = $configuration;
-	}
-
-
-	public function setRatingListFactory(RatingList\RatingListBuilder $ratingListFactory): void
-	{
-		$this->ratingListFactory = $ratingListFactory;
+		return new Configuration($this->from, $this->to ?? $this->from);
 	}
 
 
@@ -124,38 +124,28 @@ final class ExchangeFactory
 	}
 
 
-	public function getRatingListCache(): RatingList\RatingListCache
+	public function createRatingListCache(): RatingList\RatingListCache
 	{
-		return $this->ratingListCache ??= new RatingList\RatingListCache($this->getCache(), $this->getLock(), $this->getRatingListFactory());
+		return new RatingList\RatingListCache($this->getCache(), $this->getLock(), $this->createRatingListFactory(), $this->getDriverAccessor());
 	}
 
 
-	public function setRatingListCache(RatingList\RatingListCache $ratingListCache): void
+	protected function createCnb(): Driver\Driver
 	{
-		$this->ratingListCache = $ratingListCache;
+		return new Driver\Cnb\Day($this->getClient(), $this->getRequestFactory());
 	}
 
 
-	public function getDriver(): Driver
+	protected function createEcb(): Driver\Driver
 	{
-		if ($this->driver === null) {
-			$this->driver = new Day($this->getClient(), $this->getRequestFactory());
-		}
-
-		return $this->driver;
+		return new Driver\Ecb\Day($this->getClient(), $this->getRequestFactory());
 	}
 
 
-	public function setDriver(Driver $driver): void
-	{
-		$this->driver = $driver;
-	}
-
-
-	public function getRequestFactory(): RequestFactoryInterface
+	protected function getRequestFactory(): RequestFactoryInterface
 	{
 		if ($this->requestFactory === null) {
-			self::checkGuzzle();
+			self::checkGuzzle(HttpFactory::class);
 
 			return $this->requestFactory = new HttpFactory();
 		}
@@ -170,10 +160,16 @@ final class ExchangeFactory
 	}
 
 
-	public function getClient(): ClientInterface
+	public function setClient(ClientInterface $client): void
+	{
+		$this->client = $client;
+	}
+
+
+	protected function getClient(): ClientInterface
 	{
 		if ($this->client === null) {
-			self::checkGuzzle();
+			self::checkGuzzle(Client::class);
 			$this->client = new Client();
 		}
 
@@ -181,16 +177,22 @@ final class ExchangeFactory
 	}
 
 
-	public function setClient(ClientInterface $client): void
+	protected function getDriverAccessor(): Driver\DriverAccessor
 	{
-		$this->client = $client;
+		$this->addDriver(Driver\Cnb\Day::class, fn () => $this->createCnb());
+		$this->addDriver(Driver\Ecb\Day::class, fn () => $this->createEcb());
+
+		return new Driver\DriverCollection($this->drivers);
 	}
 
 
-	public static function checkGuzzle(): void
+	/**
+	 * @param class-string $class
+	 */
+	public static function checkGuzzle(string $class): void
 	{
-		if (class_exists(Client::class) === false) {
-			throw new InvalidStateException('Guzzle not found, let implement own solution or install guzzle by: composer require guzzlehttp/guzzle');
+		if (class_exists($class) === false) {
+			throw new InvalidStateException(sprintf('Guzzle class "%s" not found, let implement own solution via PSR 7,17,18 or install guzzle by: composer require guzzlehttp/guzzle', $class));
 		}
 	}
 

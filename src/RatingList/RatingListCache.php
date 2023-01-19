@@ -9,19 +9,23 @@ use NinjaMutex\Lock\LockInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\SimpleCache\CacheInterface;
 
-class RatingListCache implements Builder
+class RatingListCache
 {
 
 	public function __construct(
 		private CacheInterface $cache,
 		private LockInterface $lock,
 		private RatingListBuilder $ratingListBuilder,
+		private Driver\DriverAccessor $driverAccessor,
 	)
 	{
 	}
 
 
-	public function create(Driver\Driver $driver, \DateTimeInterface $date = null): RatingList
+	/**
+	 * @param class-string $driver
+	 */
+	public function create(string $driver, \DateTimeInterface $date = null): RatingList
 	{
 		$key = self::createKey($driver, $date);
 		$ratingList = $this->loadData($key);
@@ -34,10 +38,10 @@ class RatingListCache implements Builder
 	}
 
 
-	public function flush(Driver\Driver $driver, \DateTimeInterface $date = null): void
+	public function flush(string|Driver\Driver $driver, \DateTimeInterface $date = null): void
 	{
 		$this->cache->delete(
-			self::createKey($driver, $date),
+			self::createKey(is_string($driver) ? $driver : $driver::class, $date),
 		);
 	}
 
@@ -45,7 +49,7 @@ class RatingListCache implements Builder
 	private function tryCreateCriticalSection(
 		?RatingList $ratingList,
 		string $key,
-		Driver\Driver $driver,
+		string $driver,
 		?\DateTimeInterface $date,
 	): RatingList
 	{
@@ -74,13 +78,13 @@ class RatingListCache implements Builder
 	 */
 	private function criticalSection(
 		string $key,
-		Driver\Driver $driver,
+		string $driver,
 		\DateTimeInterface $date = null,
 	): RatingList
 	{
 		$ratingList = $this->loadData($key);
 		if ($ratingList === null) {
-			$ratingList = $this->ratingListBuilder->create($driver, $date);
+			$ratingList = $this->ratingListBuilder->create($this->driverAccessor->get($driver), $date);
 
 			$this->saveData($key, $ratingList);
 		}
@@ -111,7 +115,7 @@ class RatingListCache implements Builder
 	}
 
 
-	private static function createKey(Driver\Driver $driver, ?\DateTimeInterface $date): string
+	private static function createKey(string $driver, ?\DateTimeInterface $date): string
 	{
 		$suffix = $date === null ? '' : $date->format('.Y-m-d');
 
@@ -119,9 +123,9 @@ class RatingListCache implements Builder
 	}
 
 
-	private static function driverName(Driver\Driver $driver): string
+	private static function driverName(string $driver): string
 	{
-		return str_replace('\\', '.', $driver::class);
+		return str_replace('\\', '.', $driver);
 	}
 
 }

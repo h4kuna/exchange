@@ -13,6 +13,7 @@
 - CookieManager moved [this extension](//github.com/h4kuna/exchange-nette)
 - remove dependency on h4kuna/number-format
 - Formats.php and Filters.php moved [this extension](//github.com/h4kuna/exchange-nette)
+- add lazy mode for create Driver, Client, HttpFactory
 
 ## v6.0
 

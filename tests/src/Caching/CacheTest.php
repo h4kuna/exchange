@@ -19,17 +19,17 @@ final class CacheTest extends TestCase
 	public function testBasic(): void
 	{
 		$exchangeFactory = createExchangeFactory();
-		$cache = $exchangeFactory->getRatingListCache();
+		$cache = $exchangeFactory->createRatingListCache();
 
 		$cacheFile = __DIR__ . '/../../temp/exchange/0ea1c449373f12be227083321205c307';
 
-		$cache->create($exchangeFactory->getDriver());
+		$cache->create(Exchange\Driver\Cnb\Day::class);
 		Assert::true(is_file($cacheFile));
 
-		$cache->flush($exchangeFactory->getDriver());
+		$cache->flush(Exchange\Driver\Cnb\Day::class);
 		Assert::false(is_file($cacheFile));
 
-		$cache->create($exchangeFactory->getDriver());
+		$cache->create(Exchange\Driver\Cnb\Day::class);
 		Assert::true(is_file($cacheFile));
 	}
 
@@ -37,18 +37,18 @@ final class CacheTest extends TestCase
 	public function testHistory(): void
 	{
 		$exchangeFactory = createExchangeFactory();
-		$cache = $exchangeFactory->getRatingListCache();
+		$cache = $exchangeFactory->createRatingListCache();
 
 		$cacheFile = __DIR__ . '/../../temp/exchange/ab0a31063d28b5d1970a3db6b58e8188';
 		$date = new \DateTime('2022-12-01');
 
-		$cache->create($exchangeFactory->getDriver(), $date);
+		$cache->create(Exchange\Driver\Cnb\Day::class, $date);
 		Assert::true(is_file($cacheFile));
 
-		$cache->flush($exchangeFactory->getDriver(), $date);
+		$cache->flush(Exchange\Driver\Cnb\Day::class, $date);
 		Assert::false(is_file($cacheFile));
 
-		$cache->create($exchangeFactory->getDriver(), $date);
+		$cache->create(Exchange\Driver\Cnb\Day::class, $date);
 		Assert::true(is_file($cacheFile));
 	}
 

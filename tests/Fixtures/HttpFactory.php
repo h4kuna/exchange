@@ -3,6 +3,8 @@
 namespace h4kuna\Exchange\Fixtures;
 
 use GuzzleHttp\Psr7;
+use h4kuna\Exchange\Driver\Cnb;
+use h4kuna\Exchange\Driver\Ecb;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -23,12 +25,12 @@ final class HttpFactory implements RequestFactoryInterface, ClientInterface
 	{
 		$date = '';
 		$filePath = $this->filePath;
-		if ($filePath === 'cnb') {
-			$filePath .= '.txt';
+		if ($filePath === Cnb\Day::class) {
+			$filePath = self::driverName($filePath) . '.txt';
 			parse_str($request->getUri()->getQuery(), $params);
 			$date = isset($params['date']) ? strval($params['date']) . '.' : '';
-		} elseif ($filePath === 'ecb') {
-			$filePath .= '.xml';
+		} elseif ($filePath === Ecb\Day::class) {
+			$filePath = self::driverName($filePath) . '.xml';
 		} else {
 			throw new InvalidStateException(sprintf('Driver name is not defined "%s".', $this->filePath));
 		}
@@ -42,6 +44,14 @@ final class HttpFactory implements RequestFactoryInterface, ClientInterface
 	public function createRequest(string $method, $uri): RequestInterface
 	{
 		return new Psr7\Request($method, $uri);
+	}
+
+
+	private static function driverName(string $class): string
+	{
+		$names = explode('\\', $class);
+
+		return strtolower(array_splice($names, -2)[0]);
 	}
 
 }

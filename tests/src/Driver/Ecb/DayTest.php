@@ -16,7 +16,7 @@ final class DayTest extends TestCase
 
 	public function testDownload(): void
 	{
-		$exchangeFactory = createExchangeFactory('ecb');
+		$exchangeFactory = createExchangeFactory(Exchange\Driver\Ecb\Day::class);
 
 		$exchange = $exchangeFactory->create();
 		$ratingList = $exchange->getIterator();
@@ -26,8 +26,7 @@ final class DayTest extends TestCase
 
 	public function testDownloadHistory(): void
 	{
-		$exchangeFactory = createExchangeFactory();
-		$exchangeFactory->setDriver(new Exchange\Driver\Ecb\Day($exchangeFactory->getClient(), $exchangeFactory->getRequestFactory()));
+		$exchangeFactory = createExchangeFactory(Exchange\Driver\Ecb\Day::class);
 
 		Assert::exception(fn (
 		) => $exchangeFactory->create(new \DateTime('2022-12-15')), Exchange\Exceptions\InvalidStateException::class, 'Ecb does not support history.');;

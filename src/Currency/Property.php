@@ -41,7 +41,7 @@ class Property
 	public function __unserialize(array $data): void
 	{
 		foreach ($data as $name => $value) {
-			$this->{$name} = $value;
+			$this->$name = $value;
 		}
 	}
 

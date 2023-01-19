@@ -65,17 +65,3 @@ foreach ($exchange as $code => $property) {
     var_dump($property);
 }
 ```
-
-### Limit for currencies
-
-```php
-$cache = new Caching\Cache('/temp/dir');
-$cache->setAllowedCurrencies(['CZK', 'USD', 'EUR']);
-$exchange = new Exchange\Exchange($cache);
-
-// in cache are only this three currencies
-foreach ($exchange as $code => $property) {
-    /* @var $property Exchange\Currenry\Property */
-    var_dump($property);
-}
-```

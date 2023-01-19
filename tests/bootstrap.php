@@ -12,7 +12,7 @@ if (defined('__PHPSTAN_RUNNING__')) {
 	return;
 }
 
-function createExchangeFactory(string $driver = 'cnb'): Exchange\ExchangeFactory
+function createExchangeFactory(string $driver = Exchange\Driver\Cnb\Day::class): Exchange\ExchangeFactory
 {
 	$httpFactory = new Exchange\Fixtures\HttpFactory($driver);
 
@@ -20,12 +20,9 @@ function createExchangeFactory(string $driver = 'cnb'): Exchange\ExchangeFactory
 		'CZK',
 		'USD',
 		'EUR',
-	]);
+	], $driver);
 	$exchangeFactory->setClient($httpFactory);
 	$exchangeFactory->setRequestFactory($httpFactory);
-	if ($driver === 'ecb') {
-		$exchangeFactory->setDriver(new Exchange\Driver\Ecb\Day($exchangeFactory->getClient(), $exchangeFactory->getRequestFactory()));
-	}
 
 	return $exchangeFactory;
 }
