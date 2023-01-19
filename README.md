@@ -31,17 +31,19 @@ For example define own exchange rates:
 use h4kuna\Exchange;
 
 $exchangeFactory = new Exchange\ExchangeFactory('eur', 'usd', '/tmp/exchange', [
-		'czk',
-		'usd',
-		'eur',
+		'CZK',
+		'USD',
+		'eur', // lower case will be changed to upper case
 	]);
 
 $exchange = $exchangeFactory->create();
 
 echo $exchange->change(100); // EUR -> USD = 125.0
-echo $exchange->change(100, 'czk'); // CZK -> USD = 5.0
-echo $exchange->change(100, NULL, 'czk'); // EUR -> CZK = 2500.0
-echo $exchange->change(100, 'usd', 'czk'); // USD -> CZK = 2000.0
+
+// use only upper case
+echo $exchange->change(100, 'CZK'); // CZK -> USD = 5.0
+echo $exchange->change(100, NULL, 'CZK'); // EUR -> CZK = 2500.0
+echo $exchange->change(100, 'USD', 'CZK'); // USD -> CZK = 2000.0
 ```
 
 ### Change driver and date
@@ -56,7 +58,7 @@ $exchange = $exchangeFactory->create(new \Datetime('2000-12-30'));
 
 ```php
 /* @var $property Exchange\Currenry\Property */
-$property = $exchange->getRatingList()['eur'];
+$property = $exchange->getRatingList()['EUR'];
 var_dump($property);
 
 
