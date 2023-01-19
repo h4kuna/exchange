@@ -15,6 +15,8 @@ class Day extends Exchange\Driver\Driver
 
 	protected string $refresh = 'today 15:30';
 
+	protected string $timeZone = 'Europe/Prague';
+
 
 	protected function createList(ResponseInterface $response): iterable
 	{
@@ -22,7 +24,7 @@ class Day extends Exchange\Driver\Driver
 		$list = explode("\n", Exchange\Utils::stroke2point($data));
 		$list[1] = 'Česká Republika|koruna|1|CZK|1';
 
-		$this->setDate('d.m.Y', explode(' ', $list[0])[0]);
+		$this->setDate('!d.m.Y', explode(' ', $list[0])[0]);
 		unset($list[0]);
 
 		return $list;

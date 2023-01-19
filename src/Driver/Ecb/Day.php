@@ -10,6 +10,8 @@ use Psr\Http\Message\ResponseInterface;
  */
 class Day extends Exchange\Driver\Driver
 {
+	protected string $timeZone = 'Europe/Berlin';
+
 
 	/**
 	 * @return iterable<\SimpleXMLElement>
@@ -29,7 +31,7 @@ class Day extends Exchange\Driver\Driver
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
 		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
-		$this->setDate('Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
+		$this->setDate('!Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
 
 		return $xml->Cube->Cube->Cube;
 	}

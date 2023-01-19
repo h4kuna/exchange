@@ -44,7 +44,7 @@ final class RatingListBuilder implements Builder
 
 	private function countTTL(Driver $driver): int
 	{
-		$refresh = (int) (new \DateTime($driver->getRefresh()))->format('U');
+		$refresh = (int) $driver->getRefresh()->format('U');
 		if (time() >= $refresh) {
 			$refresh += self::DAY;
 		}

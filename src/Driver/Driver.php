@@ -20,6 +20,8 @@ abstract class Driver
 
 	private \DateTimeImmutable $date;
 
+	protected string $timeZone = 'UTC';
+
 	protected string $refresh = 'tomorrow midnight';
 
 	/**
@@ -72,19 +74,19 @@ abstract class Driver
 	}
 
 
-	public function getRefresh(): string
+	public function getRefresh(): \DateTime
 	{
-		return $this->refresh;
+		return new \DateTime($this->refresh, new \DateTimeZone($this->timeZone));
 	}
 
 
 	protected function setDate(string $format, string $value): void
 	{
-		$date = \DateTime::createFromFormat($format, $value);
+		$date = \DateTime::createFromFormat($format, $value, new \DateTimeZone($this->timeZone));
 		if ($date === false) {
 			throw new Exchange\Exceptions\InvalidStateException(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
 		}
-		$this->date = \DateTimeImmutable::createFromMutable($date->setTime(0, 0));
+		$this->date = \DateTimeImmutable::createFromMutable($date);
 	}
 
 
@@ -106,6 +108,11 @@ abstract class Driver
 
 	protected function createRequest(?\DateTimeInterface $date): RequestInterface
 	{
+		if ($date !== null && $date->getTimezone()->getName() !== $this->timeZone) {
+			$date = new \DateTime('@' . $date->getTimestamp(), new \DateTimeZone('UTC'));
+			$date->setTimezone(new \DateTimeZone($this->timeZone));
+		}
+
 		return $this->requestFactory->createRequest('GET', $this->prepareUrl($date));
 	}
 
