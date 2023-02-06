@@ -4,6 +4,7 @@ namespace h4kuna\Exchange;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use h4kuna\Dir\TempDir;
 use h4kuna\Exchange\Caching\Cache;
 use h4kuna\Exchange\Driver;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
@@ -17,6 +18,7 @@ use Psr\SimpleCache\CacheInterface;
 
 final class ExchangeFactory
 {
+	private TempDir $tempDir;
 	private ?LockInterface $lock = null;
 
 	private ?CacheInterface $cache = null;
@@ -43,15 +45,12 @@ final class ExchangeFactory
 	public function __construct(
 		private string $from,
 		private ?string $to = null,
-		private ?string $tempDir = null,
+		string $tempDir = 'exchange',
 		array $allowedCurrencies = [],
 		private string $driver = Driver\Cnb\Day::class,
 	)
 	{
-		if ($this->tempDir === null) {
-			$this->tempDir = sys_get_temp_dir() . '/exchange';
-		}
-		!is_dir($this->tempDir) && mkdir($this->tempDir, 0777, true);
+		$this->tempDir = new TempDir($tempDir);
 		$this->allowedCurrencies = Utils::transformCurrencies($allowedCurrencies);
 	}
 
@@ -86,9 +85,7 @@ final class ExchangeFactory
 
 	protected function getLock(): LockInterface
 	{
-		assert($this->tempDir !== null);
-
-		return $this->lock ??= new FlockLock($this->tempDir);
+		return $this->lock ??= new FlockLock($this->tempDir->getDir());
 	}
 
 
@@ -112,8 +109,6 @@ final class ExchangeFactory
 
 	public function getCache(): CacheInterface
 	{
-		assert($this->tempDir !== null);
-
 		return $this->cache ??= new Cache($this->tempDir);
 	}
 

@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange\Caching;
 
+use h4kuna\Dir\TempDir;
 use Psr\SimpleCache\CacheInterface;
 
 final class Cache implements CacheInterface
@@ -12,7 +13,7 @@ final class Cache implements CacheInterface
 	private array $keys = [];
 
 
-	public function __construct(private string $tempDir)
+	public function __construct(private TempDir $tempDir)
 	{
 	}
 
@@ -79,7 +80,7 @@ final class Cache implements CacheInterface
 	private function file(string $key): string
 	{
 		if (!isset($this->keys[$key])) {
-			$this->keys[$key] = $this->tempDir . '/' . md5($key);
+			$this->keys[$key] = $this->tempDir->filename(md5($key));
 		}
 
 		return $this->keys[$key];
