@@ -21,7 +21,7 @@ final class CacheTest extends TestCase
 		$exchangeFactory = createExchangeFactory();
 		$cache = $exchangeFactory->createRatingListCache();
 
-		$cacheFile = __DIR__ . '/../../temp/exchange/0ea1c449373f12be227083321205c307';
+		$cacheFile = __DIR__ . '/../../temp/exchange/h4kuna/cache/_.h4kuna.Exchange.Driver.Cnb.Day';
 
 		$cache->create(Exchange\Driver\Cnb\Day::class);
 		Assert::true(is_file($cacheFile));
@@ -39,7 +39,7 @@ final class CacheTest extends TestCase
 		$exchangeFactory = createExchangeFactory();
 		$cache = $exchangeFactory->createRatingListCache();
 
-		$cacheFile = __DIR__ . '/../../temp/exchange/ab0a31063d28b5d1970a3db6b58e8188';
+		$cacheFile = __DIR__ . '/../../temp/exchange/h4kuna/cache/_.h4kuna.Exchange.Driver.Cnb.Day.2022-12-01';
 		$date = new \DateTime('2022-12-01');
 
 		$cache->create(Exchange\Driver\Cnb\Day::class, $date);

@@ -4,24 +4,17 @@ namespace h4kuna\Exchange;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
-use h4kuna\Dir\TempDir;
-use h4kuna\Exchange\Caching\Cache;
+use h4kuna\CriticalCache\CacheFactory;
 use h4kuna\Exchange\Driver;
-use h4kuna\Exchange\Exceptions\InvalidStateException;
+use h4kuna\Exchange\Exceptions\MissingDependencyException;
 use h4kuna\Exchange\RatingList\RatingListBuilder;
 use h4kuna\Exchange\RatingList\RatingListRequest;
-use NinjaMutex\Lock\FlockLock;
-use NinjaMutex\Lock\LockInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\SimpleCache\CacheInterface;
 
 final class ExchangeFactory
 {
-	private TempDir $tempDir;
-	private ?LockInterface $lock = null;
-
-	private ?CacheInterface $cache = null;
+	private ?CacheFactory $cacheFactory = null;
 
 	private ?RequestFactoryInterface $requestFactory = null;
 
@@ -45,12 +38,11 @@ final class ExchangeFactory
 	public function __construct(
 		private string $from,
 		private ?string $to = null,
-		string $tempDir = 'exchange',
+		private string $tempDir = 'exchange',
 		array $allowedCurrencies = [],
 		private string $driver = Driver\Cnb\Day::class,
 	)
 	{
-		$this->tempDir = new TempDir($tempDir);
 		$this->allowedCurrencies = Utils::transformCurrencies($allowedCurrencies);
 	}
 
@@ -69,29 +61,16 @@ final class ExchangeFactory
 	 */
 	public function create(\DateTimeInterface $date = null, ?string $driver = null): Exchange
 	{
-		$config = $this->createConfiguration();
-
 		return new Exchange(
+			$this->from,
+			$this->to ?? $this->from,
 			new RatingListRequest(
 				$this->createRatingListCache()->create(
 					$driver ?? $this->driver,
 					$date,
 				)
 			),
-			$config
 		);
-	}
-
-
-	protected function getLock(): LockInterface
-	{
-		return $this->lock ??= new FlockLock($this->tempDir->getDir());
-	}
-
-
-	public function setLock(LockInterface $lock): void
-	{
-		$this->lock = $lock;
 	}
 
 
@@ -101,27 +80,27 @@ final class ExchangeFactory
 	}
 
 
-	public function createConfiguration(): Configuration
+	public function getCacheFactory(): CacheFactory
 	{
-		return new Configuration($this->from, $this->to ?? $this->from);
+		if ($this->cacheFactory === null) {
+			$this->cacheFactory = new CacheFactory($this->tempDir);
+		}
+
+		return $this->cacheFactory;
 	}
 
 
-	public function getCache(): CacheInterface
+	public function setCacheFactory(CacheFactory $cacheFactory): void
 	{
-		return $this->cache ??= new Cache($this->tempDir);
-	}
-
-
-	public function setCache(CacheInterface $cache): void
-	{
-		$this->cache = $cache;
+		$this->cacheFactory = $cacheFactory;
 	}
 
 
 	public function createRatingListCache(): RatingList\RatingListCache
 	{
-		return new RatingList\RatingListCache($this->getCache(), $this->getLock(), $this->createRatingListFactory(), $this->getDriverAccessor());
+		$cacheFactory = $this->getCacheFactory();
+
+		return new RatingList\RatingListCache($cacheFactory->create(), $this->createRatingListFactory(), $this->getDriverAccessor());
 	}
 
 
@@ -140,7 +119,7 @@ final class ExchangeFactory
 	protected function getRequestFactory(): RequestFactoryInterface
 	{
 		if ($this->requestFactory === null) {
-			self::checkGuzzle(HttpFactory::class);
+			MissingDependencyException::guzzleFactory();
 
 			return $this->requestFactory = new HttpFactory();
 		}
@@ -164,7 +143,7 @@ final class ExchangeFactory
 	protected function getClient(): ClientInterface
 	{
 		if ($this->client === null) {
-			self::checkGuzzle(Client::class);
+			MissingDependencyException::guzzleClient();
 			$this->client = new Client();
 		}
 
@@ -178,17 +157,6 @@ final class ExchangeFactory
 		$this->addDriver(Driver\Ecb\Day::class, fn () => $this->createEcb());
 
 		return new Driver\DriverCollection($this->drivers);
-	}
-
-
-	/**
-	 * @param class-string $class
-	 */
-	public static function checkGuzzle(string $class): void
-	{
-		if (class_exists($class) === false) {
-			throw new InvalidStateException(sprintf('Guzzle class "%s" not found, let implement own solution via PSR 7,17,18 or install guzzle by: composer require guzzlehttp/guzzle', $class));
-		}
 	}
 
 }

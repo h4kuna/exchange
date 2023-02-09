@@ -2,19 +2,16 @@
 
 namespace h4kuna\Exchange\RatingList;
 
+use h4kuna\CriticalCache\CacheLocking;
 use h4kuna\Exchange\Driver;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
-use h4kuna\Serialize\Serialize;
-use NinjaMutex\Lock\LockInterface;
 use Psr\Http\Client\ClientExceptionInterface;
-use Psr\SimpleCache\CacheInterface;
 
 class RatingListCache
 {
 
 	public function __construct(
-		private CacheInterface $cache,
-		private LockInterface $lock,
+		private CacheLocking $cache,
 		private RatingListBuilder $ratingListBuilder,
 		private Driver\DriverAccessor $driverAccessor,
 	)
@@ -28,10 +25,11 @@ class RatingListCache
 	public function create(string $driver, \DateTimeInterface $date = null): RatingList
 	{
 		$key = self::createKey($driver, $date);
-		$ratingList = $this->loadData($key);
+		$ratingList = $this->cache->get($key);
 
 		if ($ratingList === null || $ratingList->isValid() === false) {
-			$ratingList = $this->tryCreateCriticalSection($ratingList, $key, $driver, $date);
+			$ratingList = $this->cache->load($key, fn (
+			) => $this->criticalSection($ratingList, $driver, $date));
 		}
 
 		return $ratingList;
@@ -46,72 +44,22 @@ class RatingListCache
 	}
 
 
-	private function tryCreateCriticalSection(
+	private function criticalSection(
 		?RatingList $ratingList,
-		string $key,
 		string $driver,
 		?\DateTimeInterface $date,
 	): RatingList
 	{
-		if ($this->lock->acquireLock($key)) {
-			try {
-				$ratingList = $this->criticalSection($key, $driver, $date);
-			} catch (ClientExceptionInterface $e) {
-				if ($ratingList === null) {
-					throw new InvalidStateException('No data.', $e->getCode(), $e);
-				}
-				$ratingList->extendTTL();
-				$this->saveData($key, $ratingList);
-			} finally {
-				$this->lock->releaseLock($key);
-			}
-		} else {
-			throw new InvalidStateException('No exclusive lock and no data.');
-		}
-
-		return $ratingList;
-	}
-
-
-	/**
-	 * @throws ClientExceptionInterface
-	 */
-	private function criticalSection(
-		string $key,
-		string $driver,
-		\DateTimeInterface $date = null,
-	): RatingList
-	{
-		$ratingList = $this->loadData($key);
-		if ($ratingList === null) {
+		try {
 			$ratingList = $this->ratingListBuilder->create($this->driverAccessor->get($driver), $date);
-
-			$this->saveData($key, $ratingList);
+		} catch (ClientExceptionInterface $e) {
+			if ($ratingList === null) {
+				throw new InvalidStateException('No data.', $e->getCode(), $e);
+			}
+			$ratingList->extendTTL();
 		}
 
 		return $ratingList;
-	}
-
-
-	private function saveData(string $key, RatingList $data): void
-	{
-		$this->cache->set($key, Serialize::encode($data));
-	}
-
-
-	private function loadData(string $key): ?RatingList
-	{
-		$data = $this->cache->get($key); // first fetch without lock
-
-		if ($data !== null) {
-			assert(is_string($data));
-			$ratingList = Serialize::decode($data);
-			assert($ratingList instanceof RatingList);
-
-			return $ratingList;
-		}
-
-		return null;
 	}
 
 

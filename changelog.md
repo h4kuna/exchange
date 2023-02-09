@@ -2,9 +2,9 @@
 
 ## v7.0
 
-- your temporary rate implement by own RatingList
+- for your temporary rate implement by own RatingList
 - custom driver must be to use in Builder, see to ExchangeFactory
-- cache is implemented by PSR-6
+- cache is implemented by PSR-6, provided by [h4kuna/critical-cache](//github.com/h4kuna/critical-cache)
 - remove dependency on Guzzle, PSR-7, PRS-17 and PSR-18 ready
 - remove dependency on h4kuna/data-type, nette/safe-stream, nette/utils
 - access for currency use RatingList instead of Exchange, Exchange::getRatingList()['EUR']

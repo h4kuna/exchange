@@ -28,7 +28,7 @@ function createExchangeFactory(string $driver = Exchange\Driver\Cnb\Day::class):
 }
 
 
-Tester\Helpers::purge(TEMP_DIR . '/exchange');
+// Tester\Helpers::purge(TEMP_DIR . '/exchange');
 Tester\Environment::setup();
 
 Tracy\Debugger::enable(false, TEMP_DIR);

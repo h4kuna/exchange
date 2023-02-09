@@ -13,14 +13,14 @@
   ],
   "require": {
     "php": ">=8.0",
-    "arvenil/ninja-mutex": "^0.6",
-    "h4kuna/dir": "^0.1.2",
-    "h4kuna/serialize-polyfill": "^0.2",
-    "psr/http-factory": "^1.0",
-    "psr/simple-cache": "^3.0"
+    "h4kuna/critical-cache": "^0.1.2",
+    "psr/http-factory": "^1.0"
   },
   "require-dev": {
     "guzzlehttp/guzzle": "^7.0",
+    "h4kuna/dir": "^0.1.2",
+    "malkusch/lock": "^2.2",
+    "nette/caching": "^3.2",
     "nette/tester": "^2.0",
     "phpstan/phpstan": "^1.0",
     "phpstan/phpstan-strict-rules": "^1.4",

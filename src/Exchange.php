@@ -12,20 +12,46 @@ use h4kuna\Exchange\RatingList;
 class Exchange implements \IteratorAggregate
 {
 
-	public function __construct(private RatingList\Accessor $ratingList, private Configuration $configuration)
+	public function __construct(
+		private string $from,
+		private string $to,
+		private RatingList\Accessor $ratingList,
+	)
 	{
+	}
+
+
+	public function getFrom(): string
+	{
+		return $this->from;
+	}
+
+
+	public function default(string $to, string $from = null): static
+	{
+		$exchange = clone $this;
+		$exchange->from = strtoupper($from ?? $this->from);
+		$exchange->to = strtoupper($to);
+
+		return $exchange;
+	}
+
+
+	public function getTo(): string
+	{
+		return $this->to;
 	}
 
 
 	public function getDefault(): Currency\Property
 	{
-		return $this->ratingList->get()->offsetGet($this->configuration->from);
+		return $this->ratingList->get()->offsetGet($this->from);
 	}
 
 
 	public function getOutput(): Currency\Property
 	{
-		return $this->ratingList->get()->offsetGet($this->configuration->to);
+		return $this->ratingList->get()->offsetGet($this->to);
 	}
 
 
@@ -43,12 +69,12 @@ class Exchange implements \IteratorAggregate
 	 */
 	public function transfer(float $price, ?string $from = null, ?string $to = null): array
 	{
-		$to = $this->ratingList->get()->offsetGet($to ?? $this->configuration->to);
+		$to = $this->ratingList->get()->offsetGet($to ?? $this->to);
 		if ($price === 0.0) {
 			return [0, $to];
 		}
 
-		$from = $this->ratingList->get()->offsetGet($from ?? $this->configuration->from);
+		$from = $this->ratingList->get()->offsetGet($from ?? $this->from);
 		if ($to !== $from) {
 			$price *= $from->rate / $to->rate;
 		}
