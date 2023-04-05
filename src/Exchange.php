@@ -11,47 +11,61 @@ use h4kuna\Exchange\RatingList;
  */
 class Exchange implements \IteratorAggregate
 {
+	private Currency\Property $from;
+
+	private Currency\Property $to;
+
 
 	public function __construct(
-		private string $from,
-		private string $to,
+		string $from,
+		string $to,
 		private RatingList\Accessor $ratingList,
 	)
 	{
+		$this->setFrom($from);
+		$this->setTo($to);
 	}
 
 
-	public function getFrom(): string
+	public function getFrom(): Currency\Property
 	{
 		return $this->from;
 	}
 
 
-	public function default(string $to, string $from = null): static
+	public function default(string $to, string $from = ''): static
 	{
 		$exchange = clone $this;
-		$exchange->from = strtoupper($from ?? $this->from);
-		$exchange->to = strtoupper($to);
+		if ($from !== '') {
+			$exchange->setFrom($from);
+		}
+		$exchange->setTo($to);
 
 		return $exchange;
 	}
 
 
-	public function getTo(): string
+	public function getTo(): Currency\Property
 	{
 		return $this->to;
 	}
 
 
+	/**
+	 * @deprecated use getFrom()
+	 */
 	public function getDefault(): Currency\Property
 	{
-		return $this->ratingList->get()->offsetGet($this->from);
+		return $this->getFrom();
 	}
 
 
+	/**
+	 * @deprecated use getTo()
+	 */
 	public function getOutput(): Currency\Property
 	{
-		return $this->ratingList->get()->offsetGet($this->to);
+		return $this->getTo();
 	}
 
 
@@ -69,12 +83,12 @@ class Exchange implements \IteratorAggregate
 	 */
 	public function transfer(float $price, ?string $from = null, ?string $to = null): array
 	{
-		$to = $this->ratingList->get()->offsetGet($to ?? $this->to);
+		$to = $to === null ? $this->to : $this->ratingList->get()->offsetGet($to);
 		if ($price === 0.0) {
-			return [0, $to];
+			return [0.0, $to];
 		}
 
-		$from = $this->ratingList->get()->offsetGet($from ?? $this->from);
+		$from = $from === null ? $this->from : $this->ratingList->get()->offsetGet($from);
 		if ($to !== $from) {
 			$price *= $from->rate / $to->rate;
 		}
@@ -95,6 +109,18 @@ class Exchange implements \IteratorAggregate
 	public function getRatingList(): RatingList\RatingList
 	{
 		return $this->ratingList->get();
+	}
+
+
+	protected function setFrom(string $from): void
+	{
+		$this->from = $this->ratingList->get()->offsetGet(strtoupper($from));
+	}
+
+
+	protected function setTo(string $to): void
+	{
+		$this->to = $this->ratingList->get()->offsetGet(strtoupper($to));
 	}
 
 }

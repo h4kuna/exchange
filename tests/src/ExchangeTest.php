@@ -11,8 +11,8 @@ $exchangeFactory = createExchangeFactory();
 $exchange = $exchangeFactory->create();
 
 // change driver
-Assert::same('EUR', $exchange->getDefault()->code);
-Assert::same($exchange->getOutput(), $exchange->getDefault());
+Assert::same('EUR', $exchange->getFrom()->code);
+Assert::same($exchange->getTo(), $exchange->getFrom());
 
 Assert::same(100.0, $exchange->change(100));
 Assert::same(25.0, $exchange->change(1, 'EUR', 'CZK'));
@@ -29,3 +29,6 @@ Assert::same('EUR', $result[1]->code);
 foreach ($exchange as $code => $property) {
 	Assert::type(Exchange\Currency\Property::class, $property);
 }
+
+$exchange2 = $exchange->default('CZK', 'EUR');
+Assert::same(2500.0, $exchange2->change(100));

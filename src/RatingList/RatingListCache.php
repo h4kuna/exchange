@@ -26,6 +26,7 @@ class RatingListCache
 	{
 		$key = self::createKey($driver, $date);
 		$ratingList = $this->cache->get($key);
+		assert($ratingList === null || $ratingList instanceof RatingList);
 
 		if ($ratingList === null || $ratingList->isValid() === false) {
 			$ratingList = $this->cache->load($key, fn (
