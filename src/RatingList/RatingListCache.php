@@ -29,11 +29,23 @@ class RatingListCache
 		assert($ratingList === null || $ratingList instanceof RatingList);
 
 		if ($ratingList === null || $ratingList->isValid() === false) {
-			$ratingList = $this->cache->load($key, fn (
-			) => $this->criticalSection($ratingList, $driver, $date));
+			$ratingList = $this->cache->load($key, fn() => $this->criticalSection($ratingList, $driver, $date));
 		}
 
 		return $ratingList;
+	}
+
+
+	public function rebuild(string $driver, \DateTimeInterface $date = null): bool
+	{
+		$key = self::createKey($driver, $date);
+		try {
+			$this->cache->load($key, fn() => $this->criticalSection(null, $driver, $date));
+		} catch (InvalidStateException) {
+			return false;
+		}
+
+		return true;
 	}
 
 
