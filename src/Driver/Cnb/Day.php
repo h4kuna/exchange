@@ -13,7 +13,7 @@ class Day extends Exchange\Driver\Driver
 {
 	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
-	protected string $refresh = 'today 15:30';
+	protected string $refresh = 'today 15:00:00';
 
 	protected string $timeZone = 'Europe/Prague';
 

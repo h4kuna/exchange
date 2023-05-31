@@ -29,23 +29,34 @@ class RatingListCache
 		assert($ratingList === null || $ratingList instanceof RatingList);
 
 		if ($ratingList === null || $ratingList->isValid() === false) {
-			$ratingList = $this->cache->load($key, fn() => $this->criticalSection($ratingList, $driver, $date));
+			$driverObject = $this->driverAccessor->get($driver);
+			$ratingList = $this->cache->load(
+				$key,
+				fn() => $this->criticalSection($ratingList, $driverObject, $date),
+				self::countTTL($driverObject->getRefresh(), $date)
+			);
 		}
 
 		return $ratingList;
 	}
 
 
-	public function rebuild(string $driver, \DateTimeInterface $date = null): bool
+	public function rebuild(string $driver, \DateTimeInterface $date = null): ?RatingList
 	{
 		$key = self::createKey($driver, $date);
 		try {
-			$this->cache->load($key, fn() => $this->criticalSection(null, $driver, $date));
+			$driverObject = $this->driverAccessor->get($driver);
+			$ratingList = $this->criticalSection(
+				null,
+				$this->driverAccessor->get($driver), $date
+			);
+
+			$this->cache->set($key, $ratingList, self::countTTL($driverObject->getRefresh(), $date));
 		} catch (InvalidStateException) {
-			return false;
+			return null;
 		}
 
-		return true;
+		return $ratingList;
 	}
 
 
@@ -59,12 +70,12 @@ class RatingListCache
 
 	private function criticalSection(
 		?RatingList $ratingList,
-		string $driver,
+		Driver\Driver $driver,
 		?\DateTimeInterface $date,
 	): RatingList
 	{
 		try {
-			$ratingList = $this->ratingListBuilder->create($this->driverAccessor->get($driver), $date);
+			$ratingList = $this->ratingListBuilder->create($driver, $date);
 		} catch (ClientExceptionInterface $e) {
 			if ($ratingList === null) {
 				throw new InvalidStateException('No data.', $e->getCode(), $e);
@@ -87,6 +98,21 @@ class RatingListCache
 	private static function driverName(string $driver): string
 	{
 		return str_replace('\\', '.', $driver);
+	}
+
+
+	private static function countTTL(\DateTime $dateTime, \DateTimeInterface $historyDate = null): ?int
+	{
+		if ($historyDate !== null) {
+			return null;
+		}
+
+		$currentTime = time();
+		if ($dateTime->getTimestamp() < $currentTime) {
+			$dateTime->modify('+1 day');
+		}
+
+		return $dateTime->getTimestamp() - $currentTime;
 	}
 
 }

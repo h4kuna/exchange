@@ -22,7 +22,7 @@ abstract class Driver
 
 	protected string $timeZone = 'UTC';
 
-	protected string $refresh = 'tomorrow midnight';
+	protected string $refresh = 'midnight';
 
 	/**
 	 * @var iterable<Source>
