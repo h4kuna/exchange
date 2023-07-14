@@ -30,5 +30,5 @@ foreach ($exchange as $code => $property) {
 	Assert::type(Exchange\Currency\Property::class, $property);
 }
 
-$exchange2 = $exchange->default('CZK', 'EUR');
+$exchange2 = $exchange->modify('CZK', 'EUR');
 Assert::same(2500.0, $exchange2->change(100));

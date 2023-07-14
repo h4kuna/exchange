@@ -18,12 +18,11 @@ class Exchange implements \IteratorAggregate
 
 	public function __construct(
 		string $from,
-		string $to,
 		private RatingList\Accessor $ratingList,
 	)
 	{
 		$this->setFrom($from);
-		$this->setTo($to);
+		$this->to = $this->from;
 	}
 
 
@@ -33,7 +32,7 @@ class Exchange implements \IteratorAggregate
 	}
 
 
-	public function default(string $to, string $from = ''): static
+	public function modify(string $to, string $from = ''): static
 	{
 		$exchange = clone $this;
 		if ($from !== '') {
@@ -118,7 +117,7 @@ class Exchange implements \IteratorAggregate
 	}
 
 
-	protected function setTo(string $to): void
+	public function setTo(string $to): void
 	{
 		$this->to = $this->ratingList->get()->offsetGet(strtoupper($to));
 	}

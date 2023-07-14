@@ -61,9 +61,8 @@ final class ExchangeFactory
 	 */
 	public function create(\DateTimeInterface $date = null, ?string $driver = null): Exchange
 	{
-		return new Exchange(
+		$exchange = new Exchange(
 			$this->from,
-			$this->to ?? $this->from,
 			new RatingListRequest(
 				$this->createRatingListCache()->create(
 					$driver ?? $this->driver,
@@ -71,6 +70,11 @@ final class ExchangeFactory
 				)
 			),
 		);
+		if ($this->to !== null) {
+			$exchange->setTo($this->to);
+		}
+
+		return $exchange;
 	}
 
 
