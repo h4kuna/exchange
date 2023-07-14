@@ -20,9 +20,11 @@ final class MissingDependencyException extends \RuntimeException
 	}
 
 
-	private static function check(string $class, string $package): self
+	private static function check(string $class, string $package): void
 	{
-		return new self("Missing class \"$class\", you can install by: composer require $package");
+		if (class_exists($class) === false) {
+			throw new self("Missing class \"$class\", you can install by: composer require $package");
+		}
 	}
 
 }
