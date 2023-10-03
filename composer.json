@@ -48,7 +48,7 @@
   },
   "scripts": {
     "phpstan": "vendor/bin/phpstan analyse",
-    "tests": "vendor/bin/tester -s -j 4 -C --colors 1 tests/src",
-    "coverage": "vendor/bin/tester -s -C -p xphp --coverage tests/temp/coverage.html --coverage-src=src --colors 1 tests/src"
+    "tests": "vendor/bin/tester --colors 1 -s -C tests/src",
+    "coverage": "vendor/bin/tester --coverage coverage.html --coverage-src src/ --colors 1 -s -C tests/src"
   }
 }

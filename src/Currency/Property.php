@@ -2,7 +2,9 @@
 
 namespace h4kuna\Exchange\Currency;
 
-class Property
+use Stringable;
+
+class Property implements Stringable
 {
 	public float $rate;
 

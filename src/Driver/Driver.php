@@ -82,11 +82,11 @@ abstract class Driver
 
 	protected function setDate(string $format, string $value): void
 	{
-		$date = \DateTime::createFromFormat($format, $value, new \DateTimeZone($this->timeZone));
+		$date = \DateTimeImmutable::createFromFormat($format, $value, new \DateTimeZone($this->timeZone));
 		if ($date === false) {
 			throw new Exchange\Exceptions\InvalidStateException(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
 		}
-		$this->date = \DateTimeImmutable::createFromMutable($date);
+		$this->date = $date;
 	}
 
 

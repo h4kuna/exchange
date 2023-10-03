@@ -1,3 +1,5 @@
-/composer.lock
 /vendor/
+composer.lock
+*~
+/tests/**/output/
 coverage.html
