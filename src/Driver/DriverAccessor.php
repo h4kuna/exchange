@@ -5,6 +5,6 @@ namespace h4kuna\Exchange\Driver;
 interface DriverAccessor
 {
 
-	function get(string $name): Driver;
+	function get(string|int $key): Driver;
 
 }

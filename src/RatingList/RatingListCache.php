@@ -2,117 +2,119 @@
 
 namespace h4kuna\Exchange\RatingList;
 
+use DateTime;
+use DateTimeImmutable;
 use h4kuna\CriticalCache\CacheLocking;
-use h4kuna\Exchange\Driver;
+use h4kuna\CriticalCache\Utils\Dependency;
+use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Driver\DriverAccessor;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
+use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
+use h4kuna\Serialize\Serialize;
 use Psr\Http\Client\ClientExceptionInterface;
+use Psr\SimpleCache\CacheInterface;
 
-class RatingListCache
+final class RatingListCache
 {
+	public int $floatTtl = 600;
 
+
+	/**
+	 * @param array<string, int> $allowedCurrencies
+	 */
 	public function __construct(
+		private array $allowedCurrencies,
 		private CacheLocking $cache,
-		private RatingListBuilder $ratingListBuilder,
-		private Driver\DriverAccessor $driverAccessor,
+		private DriverAccessor $driverAccessor,
 	)
 	{
 	}
 
 
+	public function build(CacheEntity $cacheEntity): DateTimeImmutable
+	{
+		return $this->cache->load($cacheEntity->cacheKeyTtl, function (
+			Dependency $dependency,
+			CacheInterface $cache,
+			string $prefix,
+		) use ($cacheEntity): DateTimeImmutable {
+			[$date, $ttl] = $this->buildCache($cacheEntity, $cache, $prefix);
+			$dependency->ttl = $ttl;
+
+			return $date;
+		});
+	}
+
+
+	public function rebuild(CacheEntity $cacheEntity): void
+	{
+		[$date, $ttl] = $this->buildCache($cacheEntity, $this->cache, '');
+		$this->cache->set($cacheEntity->cacheKeyTtl, $date, $ttl);
+	}
+
+
+	public function currency(CacheEntity $cacheEntity, string $code): Property
+	{
+		$value = $this->cache->get($cacheEntity->keyCode($code));
+		if ($value === null) {
+			throw new UnknownCurrencyException($code);
+		}
+		assert(is_string($value));
+		$property = Serialize::decode($value);
+		assert($property instanceof Property);
+
+		return $property;
+	}
+
+
 	/**
-	 * @param class-string $driver
+	 * @return array<string, bool>
 	 */
-	public function create(string $driver, \DateTimeInterface $date = null): RatingList
+	public function all(CacheEntity $cacheEntity): array
 	{
-		$key = self::createKey($driver, $date);
-		$ratingList = $this->cache->get($key);
-		assert($ratingList === null || $ratingList instanceof RatingList);
-
-		if ($ratingList === null || $ratingList->isValid() === false) {
-			$driverObject = $this->driverAccessor->get($driver);
-			$ratingList = $this->cache->load(
-				$key,
-				fn() => $this->criticalSection($ratingList, $driverObject, $date),
-				self::countTTL($driverObject->getRefresh(), $date)
-			);
-		}
-
-		return $ratingList;
+		return $this->cache->load($cacheEntity->cacheKeyAll, static fn (
+		) => throw new InvalidStateException('Call build() first.'));
 	}
 
 
-	public function rebuild(string $driver, \DateTimeInterface $date = null): ?RatingList
+	/**
+	 * @return array{DateTimeImmutable, ?int}
+	 */
+	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache, string $prefix): array
 	{
-		$key = self::createKey($driver, $date);
+		$provider = $this->driverAccessor->get($cacheEntity->driver);
 		try {
-			$driverObject = $this->driverAccessor->get($driver);
-			$ratingList = $this->criticalSection(
-				null,
-				$this->driverAccessor->get($driver), $date
-			);
-
-			$this->cache->set($key, $ratingList, self::countTTL($driverObject->getRefresh(), $date));
-		} catch (InvalidStateException) {
-			return null;
-		}
-
-		return $ratingList;
-	}
-
-
-	public function flush(string|Driver\Driver $driver, \DateTimeInterface $date = null): void
-	{
-		$this->cache->delete(
-			self::createKey(is_string($driver) ? $driver : $driver::class, $date),
-		);
-	}
-
-
-	private function criticalSection(
-		?RatingList $ratingList,
-		Driver\Driver $driver,
-		?\DateTimeInterface $date,
-	): RatingList
-	{
-		try {
-			$ratingList = $this->ratingListBuilder->create($driver, $date);
+			$provider->initRequest($cacheEntity->date);
 		} catch (ClientExceptionInterface $e) {
-			if ($ratingList === null) {
-				throw new InvalidStateException('No data.', $e->getCode(), $e);
+			$data = $cache->get($prefix . $cacheEntity->cacheKeyAll) ?? [];
+
+			if ($cacheEntity->date === null && $data !== []) {
+				return [new DateTimeImmutable(), time() + $this->floatTtl];
 			}
-			$ratingList->extendTTL();
+			throw $e;
 		}
 
-		return $ratingList;
-	}
-
-
-	private static function createKey(string $driver, ?\DateTimeInterface $date): string
-	{
-		$suffix = $date === null ? '' : $date->format('.Y-m-d');
-
-		return self::driverName($driver) . $suffix;
-	}
-
-
-	private static function driverName(string $driver): string
-	{
-		return str_replace('\\', '.', $driver);
-	}
-
-
-	private static function countTTL(\DateTime $dateTime, \DateTimeInterface $historyDate = null): ?int
-	{
-		if ($historyDate !== null) {
-			return null;
+		$all = [];
+		foreach ($provider->properties($this->allowedCurrencies) as $property) {
+			$cache->set($prefix . $cacheEntity->keyCode($property->code), Serialize::encode($property));
+			$all[$property->code] = true;
 		}
 
-		$currentTime = time();
-		if ($dateTime->getTimestamp() < $currentTime) {
+		$cache->set($prefix . $cacheEntity->cacheKeyAll, $all);
+
+		return $cacheEntity->date === null
+			? [$provider->getDate(), self::countTTL($provider->getRefresh())]
+			: [$provider->getDate(), null];
+	}
+
+
+	private static function countTTL(DateTime $dateTime): int
+	{
+		if ($dateTime->getTimestamp() < time()) {
 			$dateTime->modify('+1 day');
 		}
 
-		return $dateTime->getTimestamp() - $currentTime;
+		return $dateTime->getTimestamp();
 	}
 
 }

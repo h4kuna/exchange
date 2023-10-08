@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use h4kuna\CriticalCache\CacheFactory;
 use h4kuna\Exchange;
 
 ini_set('date.timezone', 'Europe/Prague');
@@ -15,16 +16,21 @@ if (defined('__PHPSTAN_RUNNING__')) {
 function createExchangeFactory(string $driver = Exchange\Driver\Cnb\Day::class): Exchange\ExchangeFactory
 {
 	$httpFactory = new Exchange\Fixtures\HttpFactory($driver);
-
-	$exchangeFactory = new Exchange\ExchangeFactory('EUR', null, __DIR__ . '/temp/exchange', [
+	$driverBuilderFactory = new Exchange\Driver\DriverBuilderFactory($httpFactory, $httpFactory);
+	$allowed = [
 		'CZK',
 		'USD',
 		'EUR',
-	], $driver);
-	$exchangeFactory->setClient($httpFactory);
-	$exchangeFactory->setRequestFactory($httpFactory);
+	];
 
-	return $exchangeFactory;
+	return new Exchange\ExchangeFactory(
+		'EUR',
+		null,
+		$allowed,
+		$driverBuilderFactory,
+		new CacheFactory(TEMP_DIR . '/exchange'),
+		$driver
+	);
 }
 
 

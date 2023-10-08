@@ -8,16 +8,6 @@ parameters:
 	checkGenericClassInNonGenericObjectType: false
 	ignoreErrors:
 		-
-			message: "#^Variable property access on \\$this\\(h4kuna\\\\Exchange\\\\Currency\\\\Property\\)\\.$#"
-			count: 1
-			path: src/Currency/Property.php
-
-		-
-			message: "#^Property h4kuna\\\\Exchange\\\\Driver\\\\DriverCollection\\:\\:\\$drivers \\(array\\<class\\-string, \\(Closure\\(\\)\\: h4kuna\\\\Exchange\\\\Driver\\\\Driver\\)\\|h4kuna\\\\Exchange\\\\Driver\\\\Driver\\>\\) does not accept non\\-empty\\-array\\<string, \\(Closure\\(\\)\\: h4kuna\\\\Exchange\\\\Driver\\\\Driver\\)\\|h4kuna\\\\Exchange\\\\Driver\\\\Driver\\>\\.$#"
-			count: 1
-			path: src/Driver/DriverCollection.php
-
-		-
 			message: "#^Expression \"\\$ratingList\\['QWE'\\]\" on a separate line does not do anything\\.$#"
 			count: 1
 			path: tests/src/RatingList/RatingListTest.php

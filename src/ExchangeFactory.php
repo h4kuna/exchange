@@ -2,33 +2,23 @@
 
 namespace h4kuna\Exchange;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
+use DateTimeInterface;
 use h4kuna\CriticalCache\CacheFactory;
 use h4kuna\Exchange\Driver;
-use h4kuna\Exchange\Exceptions\MissingDependencyException;
-use h4kuna\Exchange\RatingList\RatingListBuilder;
-use h4kuna\Exchange\RatingList\RatingListRequest;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
+use h4kuna\Exchange\RatingList\CacheEntity;
+use h4kuna\Exchange\RatingList\RatingList;
+use h4kuna\Exchange\RatingList\RatingListCache;
 
 final class ExchangeFactory
 {
-	private ?CacheFactory $cacheFactory = null;
-
-	private ?RequestFactoryInterface $requestFactory = null;
-
-	private ?ClientInterface $client = null;
-
 	/**
 	 * @var array<string, int>
 	 */
 	private array $allowedCurrencies;
 
-	/**
-	 * @var array<class-string, \Closure>
-	 */
-	private array $drivers = [];
+	private Driver\DriverBuilderFactory $driverBuilderFactory;
+
+	private CacheFactory $cacheFactory;
 
 
 	/**
@@ -38,129 +28,43 @@ final class ExchangeFactory
 	public function __construct(
 		private string $from,
 		private ?string $to = null,
-		private string $tempDir = 'exchange',
 		array $allowedCurrencies = [],
+		?Driver\DriverBuilderFactory $driverBuilderFactory = null,
+		?CacheFactory $cacheFactory = null,
 		private string $driver = Driver\Cnb\Day::class,
 	)
 	{
 		$this->allowedCurrencies = Utils::transformCurrencies($allowedCurrencies);
+		$this->driverBuilderFactory = $driverBuilderFactory ?? new Driver\DriverBuilderFactory();
+		$this->cacheFactory = $cacheFactory ?? $this->createCacheFactory();
 	}
 
 
-	/**
-	 * @param class-string $name
-	 */
-	public function addDriver(string $name, \Closure $factory): void
+	public function create(DateTimeInterface $date = null): Exchange
 	{
-		$this->drivers[$name] = $factory;
-	}
+		$cache = $this->createRatingListCache();
 
-
-	/**
-	 * @param class-string $driver
-	 */
-	public function create(\DateTimeInterface $date = null, ?string $driver = null): Exchange
-	{
-		$exchange = new Exchange(
+		return new Exchange(
 			$this->from,
-			new RatingListRequest(
-				$this->createRatingListCache()->create(
-					$driver ?? $this->driver,
-					$date,
-				)
-			),
+			new RatingList(new CacheEntity($date, $this->driver), $cache),
+			$this->to,
 		);
-		if ($this->to !== null) {
-			$exchange->setTo($this->to);
-		}
-
-		return $exchange;
 	}
 
 
-	public function createRatingListFactory(): RatingList\RatingListBuilder
+	protected function createCacheFactory(): CacheFactory
 	{
-		return new RatingListBuilder($this->allowedCurrencies);
+		return new CacheFactory('exchange');
 	}
 
 
-	public function getCacheFactory(): CacheFactory
+	public function createRatingListCache(): RatingListCache
 	{
-		if ($this->cacheFactory === null) {
-			$this->cacheFactory = new CacheFactory($this->tempDir);
-		}
-
-		return $this->cacheFactory;
-	}
-
-
-	public function setCacheFactory(CacheFactory $cacheFactory): void
-	{
-		$this->cacheFactory = $cacheFactory;
-	}
-
-
-	public function createRatingListCache(): RatingList\RatingListCache
-	{
-		$cacheFactory = $this->getCacheFactory();
-
-		return new RatingList\RatingListCache($cacheFactory->create(), $this->createRatingListFactory(), $this->getDriverAccessor());
-	}
-
-
-	protected function createCnb(): Driver\Driver
-	{
-		return new Driver\Cnb\Day($this->getClient(), $this->getRequestFactory());
-	}
-
-
-	protected function createEcb(): Driver\Driver
-	{
-		return new Driver\Ecb\Day($this->getClient(), $this->getRequestFactory());
-	}
-
-
-	protected function getRequestFactory(): RequestFactoryInterface
-	{
-		if ($this->requestFactory === null) {
-			MissingDependencyException::guzzleFactory();
-
-			return $this->requestFactory = new HttpFactory();
-		}
-
-		return $this->requestFactory;
-	}
-
-
-	public function setRequestFactory(RequestFactoryInterface $requestFactory): void
-	{
-		$this->requestFactory = $requestFactory;
-	}
-
-
-	public function setClient(ClientInterface $client): void
-	{
-		$this->client = $client;
-	}
-
-
-	protected function getClient(): ClientInterface
-	{
-		if ($this->client === null) {
-			MissingDependencyException::guzzleClient();
-			$this->client = new Client();
-		}
-
-		return $this->client;
-	}
-
-
-	protected function getDriverAccessor(): Driver\DriverAccessor
-	{
-		$this->addDriver(Driver\Cnb\Day::class, fn () => $this->createCnb());
-		$this->addDriver(Driver\Ecb\Day::class, fn () => $this->createEcb());
-
-		return new Driver\DriverCollection($this->drivers);
+		return new RatingListCache(
+			$this->allowedCurrencies,
+			$this->cacheFactory->create(),
+			$this->driverBuilderFactory->create()
+		);
 	}
 
 }

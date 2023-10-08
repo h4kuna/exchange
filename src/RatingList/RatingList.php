@@ -2,131 +2,116 @@
 
 namespace h4kuna\Exchange\RatingList;
 
+use ArrayAccess;
+use DateTimeImmutable;
+use Generator;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
-use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
+use IteratorAggregate;
 
 /**
- * @implements \ArrayAccess<string, Property>
- * @implements \Iterator<string, Property>
+ * @implements IteratorAggregate<string, Property>
+ * @implements ArrayAccess<string, Property>
  */
-class RatingList implements \ArrayAccess, \Iterator
+final class RatingList implements RatingListInterface, IteratorAggregate, ArrayAccess
 {
-
-	/** @var array<string, Property> */
-	private array $currencies = [];
-
-	private int $ttl = 0;
-
-
-	public function __construct(private \DateTimeImmutable $date)
-	{
-	}
-
-
-	public function isValid(): bool
-	{
-		return $this->currencies !== [] && $this->ttl === 0 || $this->ttl >= time();
-	}
-
-
-	public function extendTTL(int $seconds = 300): void
-	{
-		$this->ttl += $seconds; // default is 5 minutes
-	}
-
-
-	public function setTTL(int $ttl): void
-	{
-		$this->ttl = $ttl;
-	}
-
-
-	public function addProperty(Property $property): void
-	{
-		$this->currencies[$property->code] = $property;
-	}
-
-
 	/**
-	 * @return array<Property>
+	 * @var array<string, bool>|null
 	 */
-	public function getCurrencies(): array
+	private ?array $all = null;
+
+	private RatingListBuilder $ratingListBuilder;
+
+	private ?DateTimeImmutable $date = null;
+
+
+	public function __construct(private CacheEntity $cacheEntity, private RatingListCache $ratingListCache)
 	{
-		return $this->currencies;
+		$this->ratingListBuilder = new RatingListBuilder();
+		$this->ratingListBuilder->setDefault(function (string|int $key): Property {
+			$this->getDate(); // init cache
+			assert(is_string($key));
+			return $this->ratingListCache->currency($this->cacheEntity, $key);
+		});
 	}
 
 
-	public function getDate(): \DateTimeImmutable
+	public function modify(CacheEntity $cacheEntity): self
 	{
+		return new self($cacheEntity, $this->ratingListCache);
+	}
+
+
+	public function get(string $code): Property
+	{
+		return $this->ratingListBuilder->get($code);
+	}
+
+
+	public function all(): array
+	{
+		if ($this->all === null) {
+			$this->all = $this->ratingListCache->all($this->cacheEntity);
+		}
+
+		return $this->all;
+	}
+
+
+	public function getDate(): DateTimeImmutable
+	{
+		if ($this->date === null) {
+			$this->date = $this->ratingListCache->build($this->cacheEntity);
+		}
 		return $this->date;
 	}
 
 
-	public function offsetExists($offset): bool
+	/**
+	 * @return Generator<string, Property>
+	 * @deprecated moved to class Exchange
+	 */
+	public function getIterator(): Generator
 	{
-		assert($this->currencies !== []);
-
-		return isset($this->currencies[$offset]);
-	}
-
-
-	public function offsetGet($offset): Property
-	{
-		assert($this->currencies !== []);
-
-		if (!isset($this->currencies[$offset])) {
-			throw new UnknownCurrencyException($offset);
+		foreach ($this->all() as $code => $exists) {
+			yield $code => $this->get($code);
 		}
-
-		return $this->currencies[$offset];
 	}
 
 
-	public function offsetSet($offset, $value): void
+	/**
+	 * @deprecated moved to class Exchange
+	 */
+	public function offsetExists(mixed $offset): bool
 	{
-		throw new FrozenMethodException(__METHOD__);
+		return isset($this->all()[$offset]);
 	}
 
 
-	public function offsetUnset($offset): void
+	/**
+	 * @deprecated moved to class Exchange
+	 */
+	public function offsetGet(mixed $offset): Property
 	{
-		throw new FrozenMethodException(__METHOD__);
+		return $this->get($offset);
 	}
 
 
-	public function current(): Property
+	/**
+	 * @deprecated moved to class Exchange
+	 */
+	public function offsetSet(mixed $offset, mixed $value): void
 	{
-		assert($this->currencies !== []);
-
-		return current($this->currencies);
+		throw new FrozenMethodException('not supported');
 	}
 
 
-	public function next(): void
+	/**
+	 * @deprecated moved to class Exchange
+	 */
+	public function offsetUnset(mixed $offset): void
 	{
-		assert($this->currencies !== []);
-		next($this->currencies);
-	}
-
-
-	public function key(): mixed
-	{
-		assert($this->currencies !== []);
-
-		return key($this->currencies);
-	}
-
-
-	public function valid(): bool
-	{
-		return key($this->currencies) !== null;
-	}
-
-
-	public function rewind(): void
-	{
-		reset($this->currencies);
+		throw new FrozenMethodException('not supported');
 	}
 
 }

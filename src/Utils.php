@@ -2,22 +2,20 @@
 
 namespace h4kuna\Exchange;
 
+use h4kuna\DataType\Basic\Strings;
+use Nette\StaticClass;
+
 final class Utils
 {
 
-	private function __construct()
-	{
-	}
-
+	use StaticClass;
 
 	/**
 	 * Stroke replace by point
-	 * @param string $str
-	 * @return string
 	 */
-	public static function stroke2point($str)
+	public static function stroke2point(string $str): string
 	{
-		return trim(str_replace(',', '.', $str));
+		return trim(Strings::strokeToPoint($str));
 	}
 
 

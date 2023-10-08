@@ -3,9 +3,7 @@
 namespace h4kuna\Exchange\Tests\Caching;
 
 use h4kuna\Exchange;
-use h4kuna\Exchange\RatingList\RatingListCache;
 use Tester\Assert;
-use Tester\Environment;
 use Tester\TestCase;
 
 require_once __DIR__ . '/../../bootstrap.php';
@@ -21,16 +19,13 @@ final class CacheTest extends TestCase
 		$exchangeFactory = createExchangeFactory();
 		$cache = $exchangeFactory->createRatingListCache();
 
-		$cacheFile = __DIR__ . '/../../temp/exchange/h4kuna/cache/_.h4kuna.Exchange.Driver.Cnb.Day';
+		$cacheEntity = new Exchange\RatingList\CacheEntity(null, Exchange\Driver\Cnb\Day::class);
+		$date = $cache->build($cacheEntity);
+		Assert::same('2022-12-21', $date->format('Y-m-d'));
 
-		$cache->create(Exchange\Driver\Cnb\Day::class);
-		Assert::true(is_file($cacheFile));
+		$cache->rebuild($cacheEntity);
 
-		$cache->flush(Exchange\Driver\Cnb\Day::class);
-		Assert::false(is_file($cacheFile));
-
-		$cache->create(Exchange\Driver\Cnb\Day::class);
-		Assert::true(is_file($cacheFile));
+		Assert::count(3, $cache->all($cacheEntity));
 	}
 
 
@@ -38,18 +33,14 @@ final class CacheTest extends TestCase
 	{
 		$exchangeFactory = createExchangeFactory();
 		$cache = $exchangeFactory->createRatingListCache();
+		$cacheEntity = new Exchange\RatingList\CacheEntity(new \DateTime('2022-12-01'), Exchange\Driver\Cnb\Day::class);
 
-		$cacheFile = __DIR__ . '/../../temp/exchange/h4kuna/cache/_.h4kuna.Exchange.Driver.Cnb.Day.2022-12-01';
-		$date = new \DateTime('2022-12-01');
+		$date = $cache->build($cacheEntity);
+		Assert::same('2022-12-01', $date->format('Y-m-d'));
 
-		$cache->create(Exchange\Driver\Cnb\Day::class, $date);
-		Assert::true(is_file($cacheFile));
+		$cache->rebuild($cacheEntity);
 
-		$cache->flush(Exchange\Driver\Cnb\Day::class, $date);
-		Assert::false(is_file($cacheFile));
-
-		$cache->create(Exchange\Driver\Cnb\Day::class, $date);
-		Assert::true(is_file($cacheFile));
+		Assert::count(3, $cache->all($cacheEntity));
 	}
 
 }

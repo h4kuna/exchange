@@ -8,11 +8,16 @@ use Tester\Assert;
 
 require_once __DIR__ . '/../../bootstrap.php';
 
+/**
+ * @deprecated test back compatibility
+ */
+
 $exchange = createExchangeFactory()->create();
-$ratingList = $exchange->getIterator();
+$ratingList = $exchange->getRatingList();
 
 Assert::same(20.0, $ratingList['USD']->rate);
 Assert::same(25.0, $ratingList['EUR']->rate);
+Assert::true(isset($ratingList['EUR']));
 
 Assert::exception(function () use ($ratingList) {
 	$ratingList->offsetSet('XXX', new Exchange\Currency\Property(
@@ -43,3 +48,10 @@ Assert::exception(function () use ($ratingList) {
 Assert::exception(function () use ($ratingList) {
 	unset($ratingList['CZK']);
 }, Exceptions\FrozenMethodException::class);
+
+$list = [];
+foreach ($ratingList as $item) {
+	$list[] = $item;
+}
+
+Assert::count(3, $list);

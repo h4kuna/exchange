@@ -3,7 +3,6 @@
 namespace h4kuna\Exchange\Driver\Cnb;
 
 use h4kuna\Exchange;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -31,9 +30,6 @@ class Day extends Exchange\Driver\Driver
 	}
 
 
-	/**
-	 * @return Property
-	 */
 	protected function createProperty($row): Property
 	{
 		assert(is_string($row));

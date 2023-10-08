@@ -24,27 +24,4 @@ class Property implements Stringable
 		return $this->code;
 	}
 
-
-	/**
-	 * @return array<string, bool|float|int|string>
-	 */
-	public function __serialize(): array
-	{
-		/** @var array<string, bool|float|int|string> $data */
-		$data = get_object_vars($this);
-
-		return $data;
-	}
-
-
-	/**
-	 * @param array<string, bool|float|int|string> $data
-	 */
-	public function __unserialize(array $data): void
-	{
-		foreach ($data as $name => $value) {
-			$this->$name = $value;
-		}
-	}
-
 }

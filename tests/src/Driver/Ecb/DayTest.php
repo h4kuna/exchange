@@ -17,10 +17,8 @@ final class DayTest extends TestCase
 	public function testDownload(): void
 	{
 		$exchangeFactory = createExchangeFactory(Exchange\Driver\Ecb\Day::class);
-
 		$exchange = $exchangeFactory->create();
-		$ratingList = $exchange->getIterator();
-		Assert::same('2022-12-21', $ratingList->getDate()->format('Y-m-d'));
+		Assert::same('2022-12-21', $exchange->getDate()->format('Y-m-d'));
 	}
 
 

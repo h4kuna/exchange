@@ -2,49 +2,61 @@
 
 namespace h4kuna\Exchange;
 
+use DateTimeImmutable;
+use Generator;
+use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Exceptions\FrozenMethodException;
 use h4kuna\Exchange\RatingList;
+use h4kuna\Exchange\RatingList\CacheEntity;
 
 /**
- * @author Milan Matějček
  * @since 2009-06-22 - version 0.5
- * @implements \IteratorAggregate<string, Currency\Property>
+ * @implements \IteratorAggregate<string, Property>
+ * @implements \ArrayAccess<string, Property>
  */
-class Exchange implements \IteratorAggregate
+class Exchange implements \IteratorAggregate, \ArrayAccess
 {
-	private Currency\Property $from;
+	private Property $from;
 
-	private Currency\Property $to;
+	private Property $to;
 
 
 	public function __construct(
-		string $from,
-		private RatingList\Accessor $ratingList,
+		string|Property $from,
+		private RatingList\RatingListInterface $ratingList,
+		string|Property|null $to = null,
 	)
 	{
 		$this->setFrom($from);
-		$this->to = $this->from;
+		if ($to === null) {
+			$this->to = $this->from;
+		} else {
+			$this->setTo($to);
+		}
 	}
 
 
-	public function getFrom(): Currency\Property
+	public function getFrom(): Property
 	{
 		return $this->from;
 	}
 
 
-	public function modify(string $to, string $from = ''): static
+	public function modify(?string $to = null, ?string $from = null, ?CacheEntity $cacheEntity = null): static
 	{
 		$exchange = clone $this;
-		if ($from !== '') {
-			$exchange->setFrom($from);
+		if ($cacheEntity !== null) {
+			$exchange->ratingList = $this->ratingList->modify($cacheEntity);
 		}
-		$exchange->setTo($to);
+
+		$exchange->setFrom($from ?? $this->from->code);
+		$exchange->setTo($to ?? $this->to->code);
 
 		return $exchange;
 	}
 
 
-	public function getTo(): Currency\Property
+	public function getTo(): Property
 	{
 		return $this->to;
 	}
@@ -53,7 +65,7 @@ class Exchange implements \IteratorAggregate
 	/**
 	 * @deprecated use getFrom()
 	 */
-	public function getDefault(): Currency\Property
+	public function getDefault(): Property
 	{
 		return $this->getFrom();
 	}
@@ -62,7 +74,7 @@ class Exchange implements \IteratorAggregate
 	/**
 	 * @deprecated use getTo()
 	 */
-	public function getOutput(): Currency\Property
+	public function getOutput(): Property
 	{
 		return $this->getTo();
 	}
@@ -78,16 +90,16 @@ class Exchange implements \IteratorAggregate
 
 
 	/**
-	 * @return array{float, Currency\Property}
+	 * @return array{float, Property}
 	 */
 	public function transfer(float $price, ?string $from = null, ?string $to = null): array
 	{
-		$to = $to === null ? $this->to : $this->ratingList->get()->offsetGet($to);
+		$to = $to === null ? $this->to : $this->ratingList->get($to);
 		if ($price === 0.0) {
 			return [0.0, $to];
 		}
 
-		$from = $from === null ? $this->from : $this->ratingList->get()->offsetGet($from);
+		$from = $from === null ? $this->from : $this->ratingList->get($from);
 		if ($to !== $from) {
 			$price *= $from->rate / $to->rate;
 		}
@@ -97,29 +109,65 @@ class Exchange implements \IteratorAggregate
 
 
 	/**
-	 * @return RatingList\RatingList
+	 * @return Generator<string, Property>
 	 */
-	public function getIterator(): \Traversable
+	public function getIterator(): Generator
 	{
-		return $this->getRatingList();
+		foreach ($this->ratingList->all() as $code => $exists) {
+			yield $code => $this->ratingList->get($code);
+		}
 	}
 
 
+	public function offsetExists(mixed $offset): bool
+	{
+		return isset($this->ratingList->all()[$offset]);
+	}
+
+
+	public function offsetGet(mixed $offset): Property
+	{
+		return $this->ratingList->get($offset);
+	}
+
+
+	public function offsetSet(mixed $offset, mixed $value): void
+	{
+		throw new FrozenMethodException('not supported');
+	}
+
+
+	public function offsetUnset(mixed $offset): void
+	{
+		throw new FrozenMethodException('not supported');
+	}
+
+
+	/**
+	 * @deprecated method will remove
+	 */
 	public function getRatingList(): RatingList\RatingList
 	{
-		return $this->ratingList->get();
+		assert($this->ratingList instanceof RatingList\RatingList);
+		return $this->ratingList;
 	}
 
 
-	protected function setFrom(string $from): void
+	public function getDate(): DateTimeImmutable
 	{
-		$this->from = $this->ratingList->get()->offsetGet(strtoupper($from));
+		return $this->ratingList->getDate();
 	}
 
 
-	public function setTo(string $to): void
+	protected function setFrom(string|Property $from): void
 	{
-		$this->to = $this->ratingList->get()->offsetGet(strtoupper($to));
+		$this->from = $from instanceof Property ? $from : $this->ratingList->get(strtoupper($from));
+	}
+
+
+	public function setTo(string|Property $to): void
+	{
+		$this->to = $to instanceof Property ? $to : $this->ratingList->get(strtoupper($to));
 	}
 
 }

@@ -1,0 +1,5 @@
+20.12.2022 #246
+země|měna|množství|kód|kurz
+EMU|euro|1|EUR|26,000
+USA|dolar|1|USD|13,000
+Velká Británie|libra|1|GBP|27,629
