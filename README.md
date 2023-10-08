@@ -1,7 +1,10 @@
 Exchange
 -------
-[![Latest stable](https://img.shields.io/packagist/v/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
 [![Downloads this Month](https://img.shields.io/packagist/dm/h4kuna/exchange.svg)](https://packagist.org/packages/h4kuna/exchange)
+[![Latest Stable Version](https://poser.pugx.org/h4kuna/exchange/v/stable?format=flat)](https://packagist.org/packages/h4kuna/exchange)
+[![Coverage Status](https://coveralls.io/repos/github/h4kuna/exchange/badge.svg?branch=master)](https://coveralls.io/github/h4kuna/exchange?branch=master)
+[![Total Downloads](https://poser.pugx.org/h4kuna/exchange/downloads?format=flat)](https://packagist.org/packages/h4kuna/exchange)
+[![License](https://poser.pugx.org/h4kuna/exchange/license?format=flat)](https://packagist.org/packages/h4kuna/exchange)
 
 Exchange is PHP script works with currencies. You can convert price, format add VAT or only render exchange rates.
 
