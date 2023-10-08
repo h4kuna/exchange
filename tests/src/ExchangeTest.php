@@ -2,7 +2,6 @@
 
 namespace h4kuna\Exchange;
 
-use _PHPStan_1623582d5\Nette\Utils\DateTime;
 use h4kuna\Exchange;
 use Psr\Http\Client\ClientExceptionInterface;
 use Tester\Assert;
@@ -54,7 +53,7 @@ Assert::exception(static function() use ($exchange) {
 	$exchange->modify(cacheEntity: new Exchange\RatingList\CacheEntity(new \DateTime('2022-12-02'), Driver\Cnb\Day::class));
 }, ClientExceptionInterface::class);
 
-$exchange3 = $exchange->modify(cacheEntity: new Exchange\RatingList\CacheEntity(new DateTime(), Driver\Cnb\Day::class));
+$exchange3 = $exchange->modify(cacheEntity: new Exchange\RatingList\CacheEntity(new \DateTime(), Driver\Cnb\Day::class));
 Assert::same(25.0, $exchange3['EUR']->rate);
 unlink(TEMP_DIR . '/exchange/h4kuna/cache/_.h4kuna.Exchange.Driver.Cnb.Day.ttl');
 Exchange\Fixtures\HttpFactory::$exception = true;
