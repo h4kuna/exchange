@@ -31,13 +31,20 @@ For example define own exchange rates:
 - 20 CZK = 1 USD
 
 ```php
-use h4kuna\Exchange;
+use h4kuna\CriticalCache;use h4kuna\Exchange;
 
-$exchangeFactory = new Exchange\ExchangeFactory('eur', 'usd', '/tmp/exchange', [
+$cacheFactory = new CriticalCache\CacheFactory('exchange');
+
+$exchangeFactory = new Exchange\ExchangeFactory(
+    from: 'eur', 
+    to: 'usd', 
+    allowedCurrencies: [
 		'CZK',
 		'USD',
 		'eur', // lower case will be changed to upper case
-	]);
+	],
+	cacheFactory: $cacheFactory
+);
 
 $exchange = $exchangeFactory->create();
 
@@ -54,14 +61,18 @@ echo $exchange->change(100, 'USD', 'CZK'); // USD -> CZK = 2000.0
 Download history exchange rates. Make new instance of Exchange with history rate.
 
 ```php
-$exchange = $exchangeFactory->create(new \Datetime('2000-12-30'));
+use h4kuna\Exchange\RatingList;
+use h4kuna\Exchange;
+
+$exchangePast = $exchange->modify(cacheEntity: new RatingList\CacheEntity(new \Datetime('2000-12-30'), Exchange\Driver\Cnb\Day::class));
+$exchangePast->change(100);
 ```
 
 ### Access and iterator
 
 ```php
 /* @var $property Exchange\Currenry\Property */
-$property = $exchange->getRatingList()['EUR'];
+$property = $exchange['EUR'];
 var_dump($property);
 
 
