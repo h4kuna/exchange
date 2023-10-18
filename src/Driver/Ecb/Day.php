@@ -12,6 +12,8 @@ class Day extends Exchange\Driver\Driver
 {
 	protected string $timeZone = 'Europe/Berlin';
 
+	public static string $url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+
 
 	/**
 	 * @return iterable<\SimpleXMLElement>
@@ -55,7 +57,7 @@ class Day extends Exchange\Driver\Driver
 			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
 		}
 
-		return 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+		return self::$url;
 	}
 
 }

@@ -12,6 +12,8 @@ class Day extends Exchange\Driver\Driver
 {
 	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
 
+	public static string $url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+
 	protected string $refresh = 'today 15:00:00';
 
 	protected string $timeZone = 'Europe/Prague';
@@ -47,7 +49,7 @@ class Day extends Exchange\Driver\Driver
 
 	protected function prepareUrl(?\DateTimeInterface $date): string
 	{
-		$url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+		$url = self::$url;
 
 		if ($date === null) {
 			return $url;

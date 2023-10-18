@@ -54,7 +54,6 @@ class DriverBuilderFactory
 	{
 		if ($this->requestFactory === null) {
 			MissingDependencyException::guzzleFactory();
-
 			$this->requestFactory = new HttpFactory();
 		}
 

@@ -3,6 +3,8 @@
 namespace h4kuna\Exchange\Driver;
 
 use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Generator;
 use h4kuna\Exchange;
@@ -20,7 +22,7 @@ use Psr\Http\Message\ResponseInterface;
 abstract class Driver
 {
 
-	private \DateTimeImmutable $date;
+	private DateTimeImmutable $date;
 
 	protected string $timeZone = 'UTC';
 
@@ -43,14 +45,14 @@ abstract class Driver
 	/**
 	 * @throws ClientExceptionInterface
 	 */
-	public function initRequest(?\DateTimeInterface $date): void
+	public function initRequest(?DateTimeInterface $date): void
 	{
 		$content = $this->client->sendRequest($this->createRequest($date));
 		$this->list = $this->createList($content);
 	}
 
 
-	public function getDate(): \DateTimeImmutable
+	public function getDate(): DateTimeImmutable
 	{
 		return $this->date;
 	}
@@ -84,7 +86,7 @@ abstract class Driver
 
 	protected function setDate(string $format, string $value): void
 	{
-		$date = \DateTimeImmutable::createFromFormat($format, $value, new DateTimeZone($this->timeZone));
+		$date = DateTimeImmutable::createFromFormat($format, $value, new DateTimeZone($this->timeZone));
 		if ($date === false) {
 			throw new Exchange\Exceptions\InvalidStateException(sprintf('Can not create DateTime object from source "%s" with format "%s".', $value, $format));
 		}
@@ -105,14 +107,15 @@ abstract class Driver
 	abstract protected function createProperty($row);
 
 
-	abstract protected function prepareUrl(?\DateTimeInterface $date): string;
+	abstract protected function prepareUrl(?DateTimeInterface $date): string;
 
 
-	private function createRequest(?\DateTimeInterface $date): RequestInterface
+	private function createRequest(?DateTimeInterface $date): RequestInterface
 	{
 		if ($date !== null && $date->getTimezone()->getName() !== $this->timeZone) {
-			$date = new DateTime('@' . $date->getTimestamp(), new DateTimeZone('UTC'));
-			$date->setTimezone(new DateTimeZone($this->timeZone));
+			$tmp = new DateTime('now', new DateTimeZone($this->timeZone));
+			$tmp->setTimestamp($date->getTimestamp());
+			$date = $tmp;
 		}
 
 		$request = $this->requestFactory->createRequest('GET', $this->prepareUrl($date));

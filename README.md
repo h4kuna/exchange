@@ -81,3 +81,19 @@ foreach ($exchange as $code => $property) {
     var_dump($property);
 }
 ```
+
+## Caching
+
+The cache invalid automatic at some time, defined by property `Driver::$refresh`. From this property is counted time to live. Little better is invalid cache by cron. Because one request on server does not lock other requests. Let's run cron max. 15 minutes before invalidate cache.
+```php
+use h4kuna\Exchange\RatingList\RatingListCache;
+use h4kuna\Exchange\RatingList\CacheEntity;
+use h4kuna\Exchange\Driver\Cnb\Day;
+
+/** @var RatingListCache $ratingListCache */
+$ratingListCache->rebuild(new CacheEntity(null, Day::class));
+```
+
+In example, is used `h4kuna\Exchange\Driver\Cnb\Day::$refresh` is defined at 15:00. Run cron 14:55 every day.
+
+

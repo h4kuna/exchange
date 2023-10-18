@@ -4,6 +4,9 @@ namespace h4kuna\Exchange\RatingList;
 
 use DateTimeInterface;
 
+/**
+ * readonly php 8.2+
+ */
 final class CacheEntity
 {
 	public ?DateTimeInterface $date;

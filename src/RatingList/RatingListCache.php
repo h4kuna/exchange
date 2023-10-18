@@ -2,7 +2,6 @@
 
 namespace h4kuna\Exchange\RatingList;
 
-use DateTime;
 use DateTimeImmutable;
 use h4kuna\CriticalCache\CacheLocking;
 use h4kuna\CriticalCache\Utils\Dependency;
@@ -10,13 +9,14 @@ use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Driver\DriverAccessor;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
 use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
+use h4kuna\Exchange\Utils;
 use h4kuna\Serialize\Serialize;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\SimpleCache\CacheInterface;
 
 final class RatingListCache
 {
-	public int $floatTtl = 600;
+	public int $floatTtl = 600; // seconds -> 10 minutes
 
 
 	/**
@@ -89,7 +89,7 @@ final class RatingListCache
 			$data = $cache->get($prefix . $cacheEntity->cacheKeyAll) ?? [];
 
 			if ($cacheEntity->date === null && $data !== []) {
-				return [new DateTimeImmutable(), time() + $this->floatTtl];
+				return [new DateTimeImmutable(), $this->floatTtl];
 			}
 			throw $e;
 		}
@@ -103,18 +103,8 @@ final class RatingListCache
 		$cache->set($prefix . $cacheEntity->cacheKeyAll, $all);
 
 		return $cacheEntity->date === null
-			? [$provider->getDate(), self::countTTL($provider->getRefresh())]
+			? [$provider->getDate(), Utils::countTTL($provider->getRefresh())]
 			: [$provider->getDate(), null];
-	}
-
-
-	private static function countTTL(DateTime $dateTime): int
-	{
-		if ($dateTime->getTimestamp() < time()) {
-			$dateTime->modify('+1 day');
-		}
-
-		return $dateTime->getTimestamp();
 	}
 
 }

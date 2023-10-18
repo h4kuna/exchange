@@ -39,6 +39,8 @@
   "suggest": {
     "guzzlehttp/guzzle": "As default implementation for PSR standards.",
     "guzzlehttp/psr7": "Minimum ^2.4 for guzzle.",
+    "h4kuna/dir": "If you want to use build-in factory.",
+    "nette/caching": "If you have not own PSR-6 implementation.",
     "ext-simplexml": "If you want to use h4kuna\\Exchange\\Driver\\Ecb."
   },
   "autoload-dev": {

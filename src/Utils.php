@@ -2,6 +2,7 @@
 
 namespace h4kuna\Exchange;
 
+use DateTime;
 use h4kuna\DataType\Basic\Strings;
 use Nette\StaticClass;
 
@@ -28,6 +29,19 @@ final class Utils
 	public static function transformCurrencies(array $currencies): array
 	{
 		return array_flip(array_map(fn (string $v) => strtoupper($v), $currencies));
+	}
+
+
+	/**
+	 * @param int $beforeExpiration // 900 seconds -> 15 minutes
+	 */
+	public static function countTTL(DateTime $dateTime, int $beforeExpiration = 900): int
+	{
+		if (($dateTime->getTimestamp() - $beforeExpiration) < time()) {
+			$dateTime->modify('+1 day');
+		}
+
+		return $dateTime->getTimestamp() - time();
 	}
 
 }
