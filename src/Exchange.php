@@ -49,6 +49,7 @@ class Exchange implements \IteratorAggregate, \ArrayAccess
 			$exchange->ratingList = $this->ratingList->modify($cacheEntity);
 		}
 
+		// add currency code instead of Property, because load new data from cache
 		$exchange->setFrom($from ?? $this->from->code);
 		$exchange->setTo($to ?? $this->to->code);
 
