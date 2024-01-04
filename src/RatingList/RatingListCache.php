@@ -83,8 +83,12 @@ final class RatingListCache
 	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache, string $prefix): array
 	{
 		$provider = $this->driverAccessor->get($cacheEntity->driver);
+		$all = [];
 		try {
-			$provider->initRequest($cacheEntity->date);
+			foreach ($provider->initRequest($cacheEntity->date, $this->allowedCurrencies) as $property) {
+				$cache->set($prefix . $cacheEntity->keyCode($property->code), Serialize::encode($property));
+				$all[$property->code] = true;
+			}
 		} catch (ClientExceptionInterface $e) {
 			$data = $cache->get($prefix . $cacheEntity->cacheKeyAll) ?? [];
 
@@ -92,12 +96,6 @@ final class RatingListCache
 				return [new DateTimeImmutable(), $this->floatTtl];
 			}
 			throw $e;
-		}
-
-		$all = [];
-		foreach ($provider->properties($this->allowedCurrencies) as $property) {
-			$cache->set($prefix . $cacheEntity->keyCode($property->code), Serialize::encode($property));
-			$all[$property->code] = true;
 		}
 
 		$cache->set($prefix . $cacheEntity->cacheKeyAll, $all);

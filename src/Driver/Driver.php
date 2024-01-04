@@ -35,28 +35,16 @@ abstract class Driver
 
 
 	/**
-	 * @throws ClientExceptionInterface
-	 */
-	public function initRequest(?DateTimeInterface $date): void
-	{
-		$content = $this->client->sendRequest($this->createRequest($date));
-		$this->list = $this->createList($content);
-	}
-
-
-	public function getDate(): DateTimeImmutable
-	{
-		return $this->date;
-	}
-
-
-	/**
 	 * @param array<string, int> $allowedCurrencies
 	 * @return Generator<T>
+	 *
+	 * @throws ClientExceptionInterface
 	 */
-	public function properties(array $allowedCurrencies): Generator
+	public function initRequest(?DateTimeInterface $date, array $allowedCurrencies): Generator
 	{
-		foreach ($this->list as $data) {
+		$content = $this->client->sendRequest($this->createRequest($date));
+
+		foreach ($this->createList($content) as $data) {
 			$property = $this->createProperty($data);
 
 			if ($property->rate === 0.0 || ($allowedCurrencies !== [] && isset($allowedCurrencies[$property->code]) === false)) {
@@ -67,6 +55,12 @@ abstract class Driver
 		}
 
 		return [];
+	}
+
+
+	public function getDate(): DateTimeImmutable
+	{
+		return $this->date;
 	}
 
 
