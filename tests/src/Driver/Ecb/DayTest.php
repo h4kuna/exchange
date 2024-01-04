@@ -2,8 +2,10 @@
 
 namespace h4kuna\Exchange\Tests\Driver\Ecb;
 
-use Tester\Assert;
+use DateTime;
 use h4kuna\Exchange;
+use h4kuna\Exchange\Currency\Property;
+use Tester\Assert;
 use Tester\TestCase;
 
 require_once __DIR__ . '/../../../bootstrap.php';
@@ -16,18 +18,17 @@ final class DayTest extends TestCase
 
 	public function testDownload(): void
 	{
-		$exchangeFactory = createExchangeFactory(Exchange\Driver\Ecb\Day::class);
-		$exchange = $exchangeFactory->create();
-		Assert::same('2022-12-21', $exchange->getDate()->format('Y-m-d'));
+		$list = Exchange\Fixtures\SourceListBuilder::make(Exchange\Driver\Ecb\Day::class);
+
+		Assert::equal(new Property(1, 1, 'EUR'), $list['EUR']);
+		Assert::same(['JPY', 'CZK', 'EUR'], array_keys($list));
 	}
 
 
 	public function testDownloadHistory(): void
 	{
-		$exchangeFactory = createExchangeFactory(Exchange\Driver\Ecb\Day::class);
-
 		Assert::exception(fn (
-		) => $exchangeFactory->create(new \DateTime('2022-12-15')), Exchange\Exceptions\InvalidStateException::class, 'Ecb does not support history.');;
+		) => Exchange\Fixtures\SourceListBuilder::make(Exchange\Driver\Ecb\Day::class, new DateTime('2022-12-15')), Exchange\Exceptions\InvalidStateException::class, 'Ecb does not support history.');;
 	}
 
 }

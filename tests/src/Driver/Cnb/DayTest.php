@@ -5,6 +5,8 @@ namespace h4kuna\Exchange\Tests\Driver\Cnb;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use h4kuna\Exchange\Driver\Cnb\Day;
+use h4kuna\Exchange\Driver\Cnb\Property;
+use h4kuna\Exchange\Fixtures\SourceListBuilder;
 use h4kuna\Exchange\Utils;
 use Tester\Assert;
 use Tester\TestCase;
@@ -19,9 +21,14 @@ final class DayTest extends TestCase
 
 	public function testDownloadHistory(): void
 	{
-		$exchange = createExchangeFactory()->create(new \DateTime('2022-12-01'));
-		Assert::same(24.0, $exchange['EUR']->rate);
-		Assert::same('2022-12-01', $exchange->getDate()->format('Y-m-d'));
+		$list = SourceListBuilder::make(Day::class, new \DateTime('2024-01-03'));
+
+		$expected = [
+			'CZK' => new Property(1, 1, 'CZK', 'Česká Republika', 'koruna'),
+			'EUR' => new Property(1, 24.675, 'EUR', 'EMU', 'euro'),
+			'JPY' => new Property(100, 15.809, 'JPY', 'Japonsko', 'jen'),
+		];
+		Assert::equal($expected, $list);
 	}
 
 
