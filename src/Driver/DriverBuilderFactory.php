@@ -4,6 +4,7 @@ namespace h4kuna\Exchange\Driver;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use h4kuna\Exchange\Driver\RB\Day;
 use h4kuna\Exchange\Exceptions\MissingDependencyException;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -23,6 +24,9 @@ class DriverBuilderFactory
 		return new DriverBuilder([
 			Cnb\Day::class => fn () => $this->createCnb(),
 			Ecb\Day::class => fn () => $this->createEcb(),
+			RB\DayCenter::class => fn () => $this->createRB(RB\DayCenter::class),
+			RB\DayBuy::class => fn () => $this->createRB(RB\DayBuy::class),
+			RB\DaySell::class => fn () => $this->createRB(RB\DaySell::class),
 		]);
 	}
 
@@ -36,6 +40,15 @@ class DriverBuilderFactory
 	protected function createEcb(): Driver
 	{
 		return new Ecb\Day($this->getClient(), $this->getRequestFactory());
+	}
+
+
+	/**
+	 * @param class-string<Day> $class
+	 */
+	protected function createRB(string $class): Driver
+	{
+		return new $class($this->getClient(), $this->getRequestFactory());
 	}
 
 
