@@ -37,7 +37,8 @@ final class Utils
 	 */
 	public static function countTTL(DateTime $dateTime, int $beforeExpiration = 900): int
 	{
-		if (($dateTime->getTimestamp() - $beforeExpiration) < time()) {
+		$time = time();
+		if (($dateTime->getTimestamp() - $beforeExpiration) <= $time) {
 			$dateTime->modify('+1 day');
 		}
 
