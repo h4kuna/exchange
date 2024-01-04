@@ -3,10 +3,12 @@
 namespace h4kuna\Exchange\Driver\Cnb;
 
 use h4kuna\Exchange;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * @extends Exchange\Driver\Driver<Property>
+ * @extends Exchange\Driver\Driver<string, Property>
  */
 class Day extends Exchange\Driver\Driver
 {
@@ -14,9 +16,16 @@ class Day extends Exchange\Driver\Driver
 
 	public static string $url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
 
-	protected string $refresh = 'today 15:00:00';
 
-	protected string $timeZone = 'Europe/Prague';
+	public function __construct(
+		ClientInterface $client,
+		RequestFactoryInterface $requestFactory,
+		string $timeZone = 'Europe/Prague',
+		string $refresh = 'today 15:00:00',
+	)
+	{
+		parent::__construct($client, $requestFactory, $timeZone, $refresh);
+	}
 
 
 	protected function createList(ResponseInterface $response): iterable
@@ -34,7 +43,6 @@ class Day extends Exchange\Driver\Driver
 
 	protected function createProperty($row): Property
 	{
-		assert(is_string($row));
 		$currency = explode('|', $row);
 
 		return new Property(
@@ -51,11 +59,7 @@ class Day extends Exchange\Driver\Driver
 	{
 		$url = self::$url;
 
-		if ($date === null) {
-			return $url;
-		}
-
-		return "$url?date=" . urlencode($date->format('d.m.Y'));
+		return $date === null ? $url : "$url?date=" . urlencode($date->format('d.m.Y'));
 	}
 
 }

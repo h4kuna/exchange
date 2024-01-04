@@ -16,27 +16,19 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * Download currency from server.
- * @phpstan-type Source object|string
+ * @template Source
  * @template T of Exchange\Currency\Property
  */
 abstract class Driver
 {
-
 	private DateTimeImmutable $date;
-
-	protected string $timeZone = 'UTC';
-
-	protected string $refresh = 'midnight';
-
-	/**
-	 * @var iterable<Source>
-	 */
-	private iterable $list;
 
 
 	public function __construct(
 		private ClientInterface $client,
 		private RequestFactoryInterface $requestFactory,
+		protected string $timeZone = 'UTC',
+		protected string $refresh = 'midnight',
 	)
 	{
 	}

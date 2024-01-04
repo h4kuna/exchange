@@ -2,22 +2,32 @@
 
 namespace h4kuna\Exchange\Driver\Ecb;
 
+use DateTimeInterface;
 use h4kuna\Exchange;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use SimpleXMLElement;
 
 /**
- * @extends Exchange\Driver\Driver<Exchange\Currency\Property>
+ * @extends Exchange\Driver\Driver<SimpleXMLElement, Exchange\Currency\Property>
  */
 class Day extends Exchange\Driver\Driver
 {
-	protected string $timeZone = 'Europe/Berlin';
-
 	public static string $url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 
-	/**
-	 * @return iterable<\SimpleXMLElement>
-	 */
+	public function __construct(
+		ClientInterface $client,
+		RequestFactoryInterface $requestFactory,
+		string $timeZone = 'Europe/Berlin',
+		string $refresh = 'UTC',
+	)
+	{
+		parent::__construct($client, $requestFactory, $timeZone, $refresh);
+	}
+
+
 	protected function createList(ResponseInterface $response): iterable
 	{
 		$data = $response->getBody()->getContents();
@@ -29,7 +39,7 @@ class Day extends Exchange\Driver\Driver
 		}
 
 		// including EUR
-		$eur = $xml->Cube->Cube->addChild("Cube");
+		$eur = $xml->Cube->Cube->addChild('Cube');
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
 		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
@@ -41,8 +51,6 @@ class Day extends Exchange\Driver\Driver
 
 	protected function createProperty($row): Exchange\Currency\Property
 	{
-		assert($row instanceof \SimpleXMLElement);
-
 		return new Exchange\Currency\Property(
 			1,
 			floatval(strval($row->xpath('@rate')[0])),
@@ -51,7 +59,7 @@ class Day extends Exchange\Driver\Driver
 	}
 
 
-	protected function prepareUrl(?\DateTimeInterface $date): string
+	protected function prepareUrl(?DateTimeInterface $date): string
 	{
 		if ($date !== null) {
 			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
