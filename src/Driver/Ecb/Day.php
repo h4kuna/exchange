@@ -14,7 +14,7 @@ use SimpleXMLElement;
  */
 class Day extends Exchange\Driver\Driver
 {
-	public static string $url = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+	public static string $url = 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 
 	public function __construct(
