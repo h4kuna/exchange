@@ -6,7 +6,6 @@ use DateTimeImmutable;
 use Generator;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
-use h4kuna\Exchange\RatingList;
 use h4kuna\Exchange\RatingList\CacheEntity;
 
 /**
