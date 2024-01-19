@@ -36,6 +36,24 @@ final class UtilsTest extends TestCase
 					);
 				},
 			],
+			[
+				function (self $self) {
+					$self->assert(
+						87300,
+						new DateTime('2023-01-01 14:45:00'),
+						(new DateTime('2023-01-01 14:45:00, -900 seconds'))->getTimestamp(),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assert(
+						901,
+						new DateTime('2023-01-01 14:45:00'),
+						(new DateTime('2023-01-01 14:45:00, -901 seconds'))->getTimestamp(),
+					);
+				},
+			],
 		];
 	}
 
@@ -52,10 +70,15 @@ final class UtilsTest extends TestCase
 
 	public function assert(
 		int $expectedTime,
-		DateTime $from
+		DateTime $from,
+		int $time = 0
 	): void
 	{
-		Assert::same($expectedTime, Utils::countTTL($from));
+		if ($time === 0) {
+			Assert::same($expectedTime, Utils::countTTL($from, 900));
+		} else {
+			Assert::same($expectedTime, Utils::countTTL($from, 900, $time));
+		}
 	}
 }
 

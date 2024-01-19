@@ -2,10 +2,16 @@
 
 namespace h4kuna\Exchange\RatingList;
 
+use ArrayAccess;
 use DateTimeImmutable;
 use h4kuna\Exchange\Currency\Property;
+use IteratorAggregate;
 
-interface RatingListInterface
+/**
+ * @extends IteratorAggregate<string, Property>
+ * @extends ArrayAccess<string, Property>
+ */
+interface RatingListInterface extends IteratorAggregate, ArrayAccess
 {
 	/**
 	 * @return self - clone or new object
@@ -23,5 +29,8 @@ interface RatingListInterface
 
 
 	function getDate(): DateTimeImmutable;
+
+
+	function getExpire(): ?DateTimeImmutable;
 
 }

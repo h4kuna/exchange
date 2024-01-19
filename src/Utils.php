@@ -35,14 +35,14 @@ final class Utils
 	/**
 	 * @param int $beforeExpiration // 900 seconds -> 15 minutes
 	 */
-	public static function countTTL(DateTime $dateTime, int $beforeExpiration = 900): int
+	public static function countTTL(DateTime $dateTime, int $beforeExpiration = 900, int $time = null): int
 	{
-		$time = time();
+		$time ??= time();
 		if (($dateTime->getTimestamp() - $beforeExpiration) <= $time) {
 			$dateTime->modify('+1 day');
 		}
 
-		return $dateTime->getTimestamp() - time();
+		return $dateTime->getTimestamp() - $time;
 	}
 
 }

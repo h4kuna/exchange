@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use h4kuna\CriticalCache\CacheLocking;
 use h4kuna\CriticalCache\Utils\Dependency;
 use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Driver\Driver;
 use h4kuna\Exchange\Driver\DriverAccessor;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
 use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
@@ -14,9 +15,12 @@ use h4kuna\Serialize\Serialize;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\SimpleCache\CacheInterface;
 
+/**
+ * @phpstan-type cacheType array{date: DateTimeImmutable, expire: ?DateTimeImmutable, ttl: ?int}
+ */
 final class RatingListCache
 {
-	public int $floatTtl = 600; // seconds -> 10 minutes
+	public int $floatTtl = 900; // seconds -> 15 minutes
 
 
 	/**
@@ -31,25 +35,39 @@ final class RatingListCache
 	}
 
 
-	public function build(CacheEntity $cacheEntity): DateTimeImmutable
+	/**
+	 * @return cacheType
+	 *
+	 * @throws ClientExceptionInterface
+	 */
+	public function build(CacheEntity $cacheEntity): array
 	{
 		return $this->cache->load($cacheEntity->cacheKeyTtl, function (
 			Dependency $dependency,
 			CacheInterface $cache,
 			string $prefix,
-		) use ($cacheEntity): DateTimeImmutable {
-			[$date, $ttl] = $this->buildCache($cacheEntity, $cache, $prefix);
-			$dependency->ttl = $ttl;
+		) use ($cacheEntity): array {
+			$cacheType = $this->buildCache($cacheEntity, $cache, $prefix);
+			$dependency->ttl = $cacheType['ttl'];
 
-			return $date;
+			return $cacheType;
 		});
 	}
 
 
-	public function rebuild(CacheEntity $cacheEntity): void
+	/**
+	 * @throws ClientExceptionInterface
+	 */
+	public function rebuild(CacheEntity $cacheEntity): bool
 	{
-		[$date, $ttl] = $this->buildCache($cacheEntity, $this->cache, '');
-		$this->cache->set($cacheEntity->cacheKeyTtl, $date, $ttl);
+		/**
+		 * @var ?cacheType $cacheTypeOld
+		 */
+		$cacheTypeOld = $this->cache->get($cacheEntity->cacheKeyTtl);
+		$cacheType = $this->buildCache($cacheEntity, $this->cache, '');
+		$this->cache->set($cacheEntity->cacheKeyTtl, $cacheType, $cacheType['ttl']);
+
+		return $cacheTypeOld === null || $cacheTypeOld['expire']?->format(DATE_ATOM) !== $cacheType['expire']?->format(DATE_ATOM);
 	}
 
 
@@ -78,7 +96,9 @@ final class RatingListCache
 
 
 	/**
-	 * @return array{DateTimeImmutable, ?int}
+	 * @return array{date: DateTimeImmutable, expire: ?DateTimeImmutable, ttl: ?int}
+	 *
+	 * @throws ClientExceptionInterface
 	 */
 	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache, string $prefix): array
 	{
@@ -93,7 +113,11 @@ final class RatingListCache
 			$data = $cache->get($prefix . $cacheEntity->cacheKeyAll) ?? [];
 
 			if ($cacheEntity->date === null && $data !== []) {
-				return [new DateTimeImmutable(), $this->floatTtl];
+				return self::makeCacheData(
+					new DateTimeImmutable(),
+					new DateTimeImmutable(sprintf('+%s seconds', $this->floatTtl)),
+					$this->floatTtl,
+				);
 			}
 			throw $e;
 		}
@@ -101,8 +125,36 @@ final class RatingListCache
 		$cache->set($prefix . $cacheEntity->cacheKeyAll, $all);
 
 		return $cacheEntity->date === null
-			? [$provider->getDate(), Utils::countTTL($provider->getRefresh())]
-			: [$provider->getDate(), null];
+			? self::countCacheData($provider, $this->floatTtl)
+			: self::makeCacheData($provider->getDate());
 	}
 
+
+	/**
+	 * @return cacheType
+	 */
+	private static function makeCacheData(
+		DateTimeImmutable $date,
+		?DateTimeImmutable $expire = null,
+		?int $ttl = null
+	): array
+	{
+		return [
+			'date' => $date,
+			'expire' => $expire,
+			'ttl' => $ttl,
+		];
+	}
+
+
+	/**
+	 * @return cacheType
+	 */
+	private static function countCacheData(Driver $provider, int $floatTtl): array
+	{
+		$expire = $provider->getRefresh();
+		$ttl = Utils::countTTL($expire, $floatTtl);
+
+		return self::makeCacheData($provider->getDate(), DateTimeImmutable::createFromMutable($expire), $ttl);
+	}
 }

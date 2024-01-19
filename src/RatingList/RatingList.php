@@ -2,18 +2,12 @@
 
 namespace h4kuna\Exchange\RatingList;
 
-use ArrayAccess;
 use DateTimeImmutable;
 use Generator;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
-use IteratorAggregate;
 
-/**
- * @implements IteratorAggregate<string, Property>
- * @implements ArrayAccess<string, Property>
- */
-final class RatingList implements RatingListInterface, IteratorAggregate, ArrayAccess
+final class RatingList implements RatingListInterface
 {
 	/**
 	 * @var array<string, bool>|null
@@ -23,6 +17,8 @@ final class RatingList implements RatingListInterface, IteratorAggregate, ArrayA
 	private RatingListBuilder $ratingListBuilder;
 
 	private ?DateTimeImmutable $date = null;
+
+	private ?DateTimeImmutable $expire = null;
 
 
 	public function __construct(private CacheEntity $cacheEntity, private RatingListCache $ratingListCache)
@@ -51,6 +47,7 @@ final class RatingList implements RatingListInterface, IteratorAggregate, ArrayA
 	public function all(): array
 	{
 		if ($this->all === null) {
+			$this->getDate(); // init cache
 			$this->all = $this->ratingListCache->all($this->cacheEntity);
 		}
 
@@ -61,9 +58,19 @@ final class RatingList implements RatingListInterface, IteratorAggregate, ArrayA
 	public function getDate(): DateTimeImmutable
 	{
 		if ($this->date === null) {
-			$this->date = $this->ratingListCache->build($this->cacheEntity);
+			[
+				'date' => $this->date,
+				'expire' => $this->expire,
+			] = $this->ratingListCache->build($this->cacheEntity);
 		}
 		return $this->date;
+	}
+
+
+	public function getExpire(): ?DateTimeImmutable
+	{
+		$this->getDate(); // init cache
+		return $this->expire;
 	}
 
 

@@ -21,7 +21,7 @@ class Day extends Exchange\Driver\Driver
 		ClientInterface $client,
 		RequestFactoryInterface $requestFactory,
 		string $timeZone = 'Europe/Prague',
-		string $refresh = 'today 15:00:00',
+		string $refresh = 'today 14:45:00',
 	)
 	{
 		parent::__construct($client, $requestFactory, $timeZone, $refresh);

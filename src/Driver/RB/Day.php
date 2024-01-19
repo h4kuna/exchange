@@ -22,7 +22,7 @@ abstract class Day extends Driver
 		ClientInterface $client,
 		RequestFactoryInterface $requestFactory,
 		string $timeZone = 'Europe/Prague',
-		string $refresh = 'midnight, +1 minute',
+		string $refresh = 'midnight, +15 minute',
 	)
 	{
 		parent::__construct($client, $requestFactory, $timeZone, $refresh);
