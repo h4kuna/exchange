@@ -6,9 +6,10 @@ use SimpleXMLElement;
 
 final class DayBuy extends Day
 {
-	protected function rate(SimpleXMLElement $element): float
+
+	protected function rate(SimpleXMLElement $element): SimpleXMLElement
 	{
-		return floatval($element->exchangeRateBuyCash);
+		return $element->exchangeRateBuy;
 	}
 
 }

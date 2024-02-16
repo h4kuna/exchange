@@ -2,123 +2,94 @@
 
 namespace h4kuna\Exchange\RatingList;
 
+use ArrayIterator;
+use DateTime;
 use DateTimeImmutable;
-use Generator;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
+use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
 
+/**
+ * Serializable, remember if you want to rename!
+ */
 final class RatingList implements RatingListInterface
 {
 	/**
-	 * @var array<string, bool>|null
+	 * @param array<string, Property> $properties
 	 */
-	private ?array $all = null;
-
-	private RatingListBuilder $ratingListBuilder;
-
-	private ?DateTimeImmutable $date = null;
-
-	private ?DateTimeImmutable $expire = null;
-
-
-	public function __construct(private CacheEntity $cacheEntity, private RatingListCache $ratingListCache)
+	public function __construct(
+		private DateTimeImmutable $date,
+		private ?DateTimeImmutable $request, // null is today
+		private ?DateTime $expire, // not null is for current
+		private array $properties,
+	)
 	{
-		$this->ratingListBuilder = new RatingListBuilder();
-		$this->ratingListBuilder->setDefault(function (string|int $key): Property {
-			$this->getDate(); // init cache
-			assert(is_string($key));
-			return $this->ratingListCache->currency($this->cacheEntity, $key);
-		});
 	}
 
 
-	public function modify(CacheEntity $cacheEntity): self
+	public function getRequest(): ?DateTimeImmutable
 	{
-		return new self($cacheEntity, $this->ratingListCache);
+		return $this->request;
 	}
 
 
-	public function get(string $code): Property
+	public function getIterator(): ArrayIterator
 	{
-		return $this->ratingListBuilder->get($code);
+		return new ArrayIterator($this->properties);
 	}
 
 
-	public function all(): array
-	{
-		if ($this->all === null) {
-			$this->getDate(); // init cache
-			$this->all = $this->ratingListCache->all($this->cacheEntity);
-		}
-
-		return $this->all;
-	}
-
-
-	public function getDate(): DateTimeImmutable
-	{
-		if ($this->date === null) {
-			[
-				'date' => $this->date,
-				'expire' => $this->expire,
-			] = $this->ratingListCache->build($this->cacheEntity);
-		}
-		return $this->date;
-	}
-
-
-	public function getExpire(): ?DateTimeImmutable
-	{
-		$this->getDate(); // init cache
-		return $this->expire;
-	}
-
-
-	/**
-	 * @return Generator<string, Property>
-	 * @deprecated moved to class Exchange
-	 */
-	public function getIterator(): Generator
-	{
-		foreach ($this->all() as $code => $exists) {
-			yield $code => $this->get($code);
-		}
-	}
-
-
-	/**
-	 * @deprecated moved to class Exchange
-	 */
-	public function offsetExists(mixed $offset): bool
-	{
-		return isset($this->all()[$offset]);
-	}
-
-
-	/**
-	 * @deprecated moved to class Exchange
-	 */
 	public function offsetGet(mixed $offset): Property
 	{
 		return $this->get($offset);
 	}
 
 
-	/**
-	 * @deprecated moved to class Exchange
-	 */
-	public function offsetSet(mixed $offset, mixed $value): void
+	public function get(string $code): Property
 	{
-		throw new FrozenMethodException('not supported');
+		// no check if exist for fast
+		return $this->properties[$code];
 	}
 
 
-	/**
-	 * @deprecated moved to class Exchange
-	 */
+	public function offsetSet(mixed $offset, mixed $value): void
+	{
+		throw new FrozenMethodException('deny, readonly');
+	}
+
+
 	public function offsetUnset(mixed $offset): void
 	{
-		throw new FrozenMethodException('not supported');
+		throw new FrozenMethodException('deny, readonly');
+	}
+
+
+	public function getSafe(string $code): Property
+	{
+		$code = strtoupper($code);
+		if ($this->offsetExists($code) === false) {
+			throw new UnknownCurrencyException($code === '' ? '[empty string]' : $code);
+		}
+
+		return $this->get($code);
+	}
+
+
+	public function offsetExists(mixed $offset): bool
+	{
+		return isset($this->properties[$offset]);
+	}
+
+
+	public function getDate(): DateTimeImmutable
+	{
+		return $this->date;
+	}
+
+
+	public function getExpire(): ?DateTime
+	{
+		return $this->expire;
 	}
 
 }

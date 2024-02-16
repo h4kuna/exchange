@@ -2,7 +2,9 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-final class FrozenMethodException extends \RuntimeException
+use RuntimeException;
+
+final class FrozenMethodException extends RuntimeException
 {
 
 }

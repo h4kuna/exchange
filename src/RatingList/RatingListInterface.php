@@ -3,8 +3,10 @@
 namespace h4kuna\Exchange\RatingList;
 
 use ArrayAccess;
+use DateTime;
 use DateTimeImmutable;
 use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
 use IteratorAggregate;
 
 /**
@@ -13,24 +15,25 @@ use IteratorAggregate;
  */
 interface RatingListInterface extends IteratorAggregate, ArrayAccess
 {
+
 	/**
-	 * @return self - clone or new object
+	 * check currency if exist before use, then error undefined index
 	 */
-	function modify(CacheEntity $cacheEntity): self;
-
-
 	function get(string $code): Property;
 
 
 	/**
-	 * @return array<string, bool>
+	 * @throws UnknownCurrencyException
 	 */
-	function all(): array;
+	function getSafe(string $code): Property;
+
+
+	function getRequest(): ?DateTimeImmutable;
 
 
 	function getDate(): DateTimeImmutable;
 
 
-	function getExpire(): ?DateTimeImmutable;
+	function getExpire(): ?DateTime;
 
 }

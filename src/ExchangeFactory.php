@@ -2,69 +2,78 @@
 
 namespace h4kuna\Exchange;
 
-use DateTimeInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
 use h4kuna\CriticalCache\CacheFactory;
-use h4kuna\Exchange\Driver;
+use h4kuna\Exchange\Download\SourceDownload;
+use h4kuna\Exchange\Exceptions\MissingDependencyException;
 use h4kuna\Exchange\RatingList\CacheEntity;
-use h4kuna\Exchange\RatingList\RatingList;
 use h4kuna\Exchange\RatingList\RatingListCache;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 
-final class ExchangeFactory
+final class ExchangeFactory implements ExchangeFactoryInterface
 {
-	/**
-	 * @var array<string, int>
-	 */
-	private array $allowedCurrencies;
-
-	private Driver\DriverBuilderFactory $driverBuilderFactory;
-
-	private CacheFactory $cacheFactory;
+	private RatingListCache $ratingListCache;
 
 
 	/**
 	 * @param array<string> $allowedCurrencies
-	 * @param class-string $driver
 	 */
 	public function __construct(
-		private string $from,
+		private string $from = 'CZK',
 		private ?string $to = null,
+		?RatingListCache $ratingListCache = null,
 		array $allowedCurrencies = [],
-		?Driver\DriverBuilderFactory $driverBuilderFactory = null,
-		?CacheFactory $cacheFactory = null,
-		private string $driver = Driver\Cnb\Day::class,
 	)
 	{
-		$this->allowedCurrencies = Utils::transformCurrencies($allowedCurrencies);
-		$this->driverBuilderFactory = $driverBuilderFactory ?? new Driver\DriverBuilderFactory();
-		$this->cacheFactory = $cacheFactory ?? $this->createCacheFactory();
+		$this->ratingListCache = $ratingListCache ?? self::createRatingListCache(Utils::transformCurrencies($allowedCurrencies));
 	}
 
 
-	public function create(DateTimeInterface $date = null): Exchange
+	/**
+	 * @param array<string, int> $allowedCurrencies
+	 */
+	private static function createRatingListCache(array $allowedCurrencies): RatingListCache
 	{
-		$cache = $this->createRatingListCache();
-
-		return new Exchange(
-			$this->from,
-			new RatingList(new CacheEntity($date, $this->driver), $cache),
-			$this->to,
+		return new RatingListCache(
+			self::createCacheFactory()->create(),
+			new SourceDownload(self::createClient(), self::createRequestFactory(), $allowedCurrencies),
 		);
 	}
 
 
-	protected function createCacheFactory(): CacheFactory
+	public function create(
+		?string $from = null,
+		?string $to = null,
+		?CacheEntity $cacheEntity = null,
+	): Exchange
+	{
+		return new Exchange(
+			$from ?? $this->from,
+			$this->ratingListCache->build($cacheEntity ?? new CacheEntity()),
+			$to ?? $this->to,
+		);
+	}
+
+
+	private static function createCacheFactory(): CacheFactory
 	{
 		return new CacheFactory('exchange');
 	}
 
 
-	public function createRatingListCache(): RatingListCache
+	private static function createClient(): ClientInterface
 	{
-		return new RatingListCache(
-			$this->allowedCurrencies,
-			$this->cacheFactory->create(),
-			$this->driverBuilderFactory->create()
-		);
+		MissingDependencyException::guzzleClient();
+		return new Client();
+	}
+
+
+	private static function createRequestFactory(): RequestFactoryInterface
+	{
+		MissingDependencyException::guzzleFactory();
+		return new HttpFactory();
 	}
 
 }

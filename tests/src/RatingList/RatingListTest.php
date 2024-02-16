@@ -1,57 +1,32 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace h4kuna\Exchange\Tests\RatingList;
 
-use h4kuna\Exchange;
-use h4kuna\Exchange\Exceptions;
-use Tester\Assert;
-
 require_once __DIR__ . '/../../bootstrap.php';
 
-/**
- * @deprecated test back compatibility
- */
+use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
+use h4kuna\Exchange\RatingList\RatingList;
+use Tester\Assert;
+use Tester\TestCase;
 
-$exchange = createExchangeFactory()->create();
-$ratingList = $exchange->getRatingList();
+final class RatingListTest extends TestCase
+{
+	public function testBasic(): void
+	{
+		$ratingList = new RatingList(new \DateTimeImmutable(), null, null, [
+			'CZK' => new Property(1, 1, 'CZK'),
+			'EUR' => new Property(1, 26, 'EUR'),
+			'USD' => new Property(10, 130, 'USD'),
+		]);
 
-Assert::same(20.0, $ratingList['USD']->rate);
-Assert::same(25.0, $ratingList['EUR']->rate);
-Assert::true(isset($ratingList['EUR']));
+		Assert::same(26.0, $ratingList['EUR']->rate);
 
-Assert::exception(function () use ($ratingList) {
-	$ratingList->offsetSet('XXX', new Exchange\Currency\Property(
-		1,
-		1,
-		'XXX',
-	));
-}, Exceptions\FrozenMethodException::class);
-
-Assert::exception(function () use ($ratingList) {
-	$ratingList->offsetUnset('XXX');
-}, Exceptions\FrozenMethodException::class);
-
-Assert::exception(function () use ($ratingList) {
-	$ratingList['QWE'];
-}, Exchange\Exceptions\UnknownCurrencyException::class);
-
-Assert::type(Exchange\Currency\Property::class, $ratingList->offsetGet('CZK'));
-
-Assert::exception(function () use ($ratingList) {
-	$ratingList['CZK'] = new Exchange\Currency\Property(
-		1,
-		1,
-		'XXX',
-	);
-}, Exceptions\FrozenMethodException::class);
-
-Assert::exception(function () use ($ratingList) {
-	unset($ratingList['CZK']);
-}, Exceptions\FrozenMethodException::class);
-
-$list = [];
-foreach ($ratingList as $item) {
-	$list[] = $item;
+		Assert::exception(fn () => $ratingList->getSafe(''), UnknownCurrencyException::class, '[empty string]');
+		Assert::exception(fn () => $ratingList->getSafe('AAA'), UnknownCurrencyException::class, 'AAA');
+	}
 }
 
-Assert::count(3, $list);
+(new RatingListTest())->run();

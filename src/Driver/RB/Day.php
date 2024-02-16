@@ -2,34 +2,55 @@
 
 namespace h4kuna\Exchange\Driver\RB;
 
+use DateTimeInterface;
+use DateTimeZone;
 use h4kuna\Exchange\Currency\Property;
-use h4kuna\Exchange\Driver\Driver;
+use h4kuna\Exchange\Download\SourceData;
+use h4kuna\Exchange\Driver\Source;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
+use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
 
-/**
- * @extends Driver<SimpleXMLElement, Property>
- */
-abstract class Day extends Driver
+abstract class Day implements Source
 {
+
 	public static string $url = 'https://www.rb.cz/frontend-controller/backend-data/currency/listDataXml';
+
+	private DateTimeZone $timeZone;
 
 
 	public function __construct(
-		ClientInterface $client,
-		RequestFactoryInterface $requestFactory,
-		string $timeZone = 'Europe/Prague',
-		string $refresh = 'midnight, +15 minute',
+		string|DateTimeZone $timeZone = 'Europe/Prague',
+		private string $refresh = 'midnight',
 	)
 	{
-		parent::__construct($client, $requestFactory, $timeZone, $refresh);
+		$this->timeZone = Utils::createTimeZone($timeZone);
 	}
 
 
-	protected function createList(ResponseInterface $response): iterable
+	public function makeUrl(?DateTimeInterface $date): string
+	{
+		$url = self::$url;
+
+		if ($date === null) {
+			return $url;
+		}
+
+		return "$url?" . http_build_query([
+				'filtered' => 'true',
+				'date' => $date->format('Y-m-d'),
+			]);
+	}
+
+
+	public function getTimeZone(): DateTimeZone
+	{
+		return $this->timeZone;
+	}
+
+
+	public function createSourceData(ResponseInterface $response): SourceData
 	{
 		$data = $response->getBody()->getContents();
 		$xml = simplexml_load_string($data);
@@ -44,31 +65,30 @@ abstract class Day extends Driver
 		$czk->addChild('exchangeRateCenter', '1');
 		$czk->addChild('currencyFrom', 'CZK');
 		$czk->addChild('exchangeRateSellCash', '1');
+		$czk->addChild('exchangeRateSellCenter', '1');
+		$czk->addChild('exchangeRateSell', '1');
 		$czk->addChild('exchangeRateBuyCash', '1');
+		$czk->addChild('exchangeRateCenter', '1');
+		$czk->addChild('exchangeRateBuy', '1');
 
-		$this->setDate(DATE_RFC3339_EXTENDED, (string) $xml->exchangeRateList->effectiveDateFrom);
+		$date = Utils::createFromFormat(DATE_RFC3339_EXTENDED, (string) $xml->exchangeRateList->effectiveDateFrom, $this->timeZone);
 
-		return $xml->exchangeRateList->exchangeRates->exchangeRate;
+		return new SourceData($date, $this->refresh, $xml->exchangeRateList->exchangeRates->exchangeRate);
 	}
 
 
-	protected function createProperty($row)
+	public function createProperty(mixed $row): Property
 	{
+		assert($row instanceof SimpleXMLElement);
+
 		return new Property(
 			intval($row->unitsFrom),
-			$this->rate($row),
+			floatval((string) $this->rate($row)),
 			strval($row->currencyFrom),
 		);
 	}
 
 
-	abstract protected function rate(SimpleXMLElement $element): float;
+	abstract protected function rate(SimpleXMLElement $element): SimpleXMLElement;
 
-
-	protected function prepareUrl(?\DateTimeInterface $date): string
-	{
-		$url = self::$url;
-
-		return $date === null ? $url : "$url?filtered=true&date=" . urlencode($date->format('Y-m-d'));
-	}
 }

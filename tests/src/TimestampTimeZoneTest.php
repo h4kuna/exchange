@@ -16,13 +16,17 @@ final class TimestampTimeZoneTest extends TestCase
 {
 	public function testDefault(): void
 	{
-		$date = new DateTime('1986-12-30 5:30:57', new DateTimeZone('America/Adak'));
+		$adak = new DateTimeZone('America/Adak');
+		$prague = new DateTimeZone('Europe/Prague');
+		$date = new DateTime('1986-12-30 5:30:57', $adak);
 
-		$newDate = new DateTime('now', new DateTimeZone('Europe/Prague'));
+		$newDate = new DateTime('now', $prague);
 		$newDate->setTimestamp($date->getTimestamp());
 
 		Assert::same('1986-12-30 05:30:57', $date->format('Y-m-d H:i:s'));
 		Assert::same('1986-12-30 16:30:57', $newDate->format('Y-m-d H:i:s'));
+
+		Assert::notSame((new DateTime('midnight', $prague))->getTimestamp(), (new DateTime('midnight', $adak))->getTimestamp());
 	}
 }
 

@@ -4,8 +4,9 @@ namespace h4kuna\Exchange\Exceptions;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use RuntimeException;
 
-final class MissingDependencyException extends \RuntimeException
+final class MissingDependencyException extends RuntimeException
 {
 
 	public static function guzzleFactory(): void
@@ -14,17 +15,17 @@ final class MissingDependencyException extends \RuntimeException
 	}
 
 
-	public static function guzzleClient(): void
-	{
-		self::check(Client::class, 'guzzlehttp/guzzle');
-	}
-
-
 	private static function check(string $class, string $package): void
 	{
 		if (class_exists($class) === false) {
 			throw new self("Missing class \"$class\", you can install by: composer require $package");
 		}
+	}
+
+
+	public static function guzzleClient(): void
+	{
+		self::check(Client::class, 'guzzlehttp/guzzle');
 	}
 
 }

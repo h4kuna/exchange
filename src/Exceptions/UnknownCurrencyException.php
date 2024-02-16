@@ -2,7 +2,9 @@
 
 namespace h4kuna\Exchange\Exceptions;
 
-final class UnknownCurrencyException extends \InvalidArgumentException
+use InvalidArgumentException;
+
+final class UnknownCurrencyException extends InvalidArgumentException
 {
 
 }

@@ -6,6 +6,9 @@ namespace h4kuna\Exchange\Tests;
 
 use Closure;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use h4kuna\Exchange\Utils;
 use Tester\Assert;
 use Tester\TestCase;
@@ -17,12 +20,12 @@ final class UtilsTest extends TestCase
 	/**
 	 * @return array<string|int, array{0: Closure(static):void}>
 	 */
-	public function data(): array
+	public function dataCountTTL(): array
 	{
 		return [
 			[
 				function (self $self) {
-					$self->assert(
+					$self->assertCountTTL(
 						901,
 						new DateTime('+901 seconds'),
 					);
@@ -30,7 +33,7 @@ final class UtilsTest extends TestCase
 			],
 			[
 				function (self $self) {
-					$self->assert(
+					$self->assertCountTTL(
 						87300,
 						new DateTime('+900 seconds'),
 					);
@@ -38,7 +41,7 @@ final class UtilsTest extends TestCase
 			],
 			[
 				function (self $self) {
-					$self->assert(
+					$self->assertCountTTL(
 						87300,
 						new DateTime('2023-01-01 14:45:00'),
 						(new DateTime('2023-01-01 14:45:00, -900 seconds'))->getTimestamp(),
@@ -47,7 +50,7 @@ final class UtilsTest extends TestCase
 			],
 			[
 				function (self $self) {
-					$self->assert(
+					$self->assertCountTTL(
 						901,
 						new DateTime('2023-01-01 14:45:00'),
 						(new DateTime('2023-01-01 14:45:00, -901 seconds'))->getTimestamp(),
@@ -60,7 +63,7 @@ final class UtilsTest extends TestCase
 
 	/**
 	 * @param Closure(static):void $assert
-	 * @dataProvider data
+	 * @dataProvider dataCountTTL
 	 */
 	public function testCountTTL(Closure $assert): void
 	{
@@ -68,7 +71,7 @@ final class UtilsTest extends TestCase
 	}
 
 
-	public function assert(
+	public function assertCountTTL(
 		int $expectedTime,
 		DateTime $from,
 		int $time = 0
@@ -80,6 +83,100 @@ final class UtilsTest extends TestCase
 			Assert::same($expectedTime, Utils::countTTL($from, 900, $time));
 		}
 	}
+
+
+	/**
+	 * @return array<string|int, array{0: Closure(static):void}>
+	 */
+	public function dataToImmutable(): array
+	{
+		return [
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						null,
+						null,
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						null,
+						new DateTime(),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						null,
+						new DateTimeImmutable(),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						null,
+						new DateTimeImmutable('now', new DateTimeZone('America/Adak')),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						'1986-12-30T15:16:17+01:00',
+						new DateTimeImmutable('1986-12-30 15:16:17'),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						'1986-12-30T15:16:17+01:00',
+						new DateTime('1986-12-30 15:16:17', new DateTimeZone('Europe/Berlin')),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						'1986-12-30T15:16:17+01:00',
+						new DateTimeImmutable('1986-12-30 15:16:17', new DateTimeZone('Europe/Berlin')),
+					);
+				},
+			],
+			[
+				function (self $self) {
+					$self->assertToImmutable(
+						'1986-12-31T02:16:17+01:00',
+						new DateTime('1986-12-30 15:16:17', new DateTimeZone('America/Adak')),
+					);
+				},
+			],
+		];
+	}
+
+
+	/**
+	 * @param Closure(static):void $assert
+	 * @dataProvider dataToImmutable
+	 */
+	public function testToImmutable(Closure $assert): void
+	{
+		$assert($this);
+	}
+
+
+	public function assertToImmutable(
+		?string $expected,
+		?DateTimeInterface $date
+	): void
+	{
+		Assert::same($expected, Utils::toImmutable($date, new DateTimeZone('Europe/Prague'))?->format(DateTimeInterface::RFC3339));
+	}
+
 }
 
 (new UtilsTest())->run();

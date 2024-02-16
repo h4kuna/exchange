@@ -3,37 +3,47 @@
 namespace h4kuna\Exchange\Driver\Ecb;
 
 use DateTimeInterface;
+use DateTimeZone;
 use h4kuna\Exchange;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
+use h4kuna\Exchange\Download\SourceData;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
 
-/**
- * @extends Exchange\Driver\Driver<SimpleXMLElement, Exchange\Currency\Property>
- */
-class Day extends Exchange\Driver\Driver
+class Day implements Exchange\Driver\Source
 {
 	public static string $url = 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
+	private DateTimeZone $timeZone;
+
 
 	public function __construct(
-		ClientInterface $client,
-		RequestFactoryInterface $requestFactory,
-		string $timeZone = 'Europe/Berlin',
-		string $refresh = 'UTC',
+		string|DateTimeZone $timeZone = 'Europe/Berlin',
+		private string $refresh = 'midnight',
 	)
 	{
-		parent::__construct($client, $requestFactory, $timeZone, $refresh);
+		$this->timeZone = Exchange\Utils::createTimeZone($timeZone);
 	}
 
 
-	protected function createList(ResponseInterface $response): iterable
+	public function makeUrl(?DateTimeInterface $date): string
 	{
-		$data = $response->getBody()->getContents();
+		if ($date !== null) {
+			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
+		}
 
-		$xml = simplexml_load_string($data);
+		return self::$url;
+	}
 
+
+	public function getTimeZone(): DateTimeZone
+	{
+		return $this->timeZone;
+	}
+
+
+	public function createSourceData(ResponseInterface $response): SourceData
+	{
+		$xml = simplexml_load_string($response->getBody()->getContents());
 		if ($xml === false) {
 			throw new Exchange\Exceptions\InvalidStateException('Invalid source xml.');
 		}
@@ -43,29 +53,21 @@ class Day extends Exchange\Driver\Driver
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
 		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
-		$this->setDate('!Y-m-d', (string) $xml->Cube->Cube->attributes()['time']);
+		$date = Exchange\Utils::createFromFormat('!Y-m-d', (string) $xml->Cube->Cube->attributes()['time'], $this->timeZone);
 
-		return $xml->Cube->Cube->Cube;
+		return new SourceData($date, $this->refresh, $xml->Cube->Cube->Cube);
 	}
 
 
-	protected function createProperty($row): Exchange\Currency\Property
+	public function createProperty(mixed $row): Exchange\Currency\Property
 	{
+		assert($row instanceof SimpleXMLElement);
+
 		return new Exchange\Currency\Property(
 			1,
 			floatval(strval($row->xpath('@rate')[0])),
 			(string) $row->xpath('@currency')[0],
 		);
-	}
-
-
-	protected function prepareUrl(?DateTimeInterface $date): string
-	{
-		if ($date !== null) {
-			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
-		}
-
-		return self::$url;
 	}
 
 }

@@ -7,10 +7,7 @@ parameters:
 		- tests/bootstrap.php
 	checkGenericClassInNonGenericObjectType: false
 	ignoreErrors:
-		-
-			message: "#^Expression \"\\$ratingList\\['QWE'\\]\" on a separate line does not do anything\\.$#"
-			count: 1
-			path: tests/src/RatingList/RatingListTest.php
+		- "#^Call to an undefined method Mockery\\.*#"
 
 includes:
 	- vendor/phpstan/phpstan-strict-rules/rules.neon

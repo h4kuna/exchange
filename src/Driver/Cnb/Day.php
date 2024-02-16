@@ -2,47 +2,65 @@
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
+use DateTimeInterface;
+use DateTimeZone;
 use h4kuna\Exchange;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestFactoryInterface;
+use h4kuna\Exchange\Download\SourceData;
+use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * @extends Exchange\Driver\Driver<string, Property>
- */
-class Day extends Exchange\Driver\Driver
+class Day implements Exchange\Driver\Source
 {
-	// private const URL_DAY_OTHER = 'http://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_ostatnich_men/kurzy.txt';
-
 	public static string $url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
+
+	private DateTimeZone $timeZone;
 
 
 	public function __construct(
-		ClientInterface $client,
-		RequestFactoryInterface $requestFactory,
-		string $timeZone = 'Europe/Prague',
-		string $refresh = 'today 14:45:00',
+		string|DateTimeZone $timeZone = 'Europe/Prague',
+		private string $refresh = 'today 14:30:00',
 	)
 	{
-		parent::__construct($client, $requestFactory, $timeZone, $refresh);
+		$this->timeZone = Utils::createTimeZone($timeZone);
 	}
 
 
-	protected function createList(ResponseInterface $response): iterable
+	public function getTimeZone(): DateTimeZone
+	{
+		return $this->timeZone;
+	}
+
+
+	public function makeUrl(?DateTimeInterface $date): string
+	{
+		$url = self::$url;
+
+		if ($date === null) {
+			return $url;
+		}
+
+		return "$url?" . http_build_query([
+				'date' => $date->format('d.m.Y'),
+			]);
+	}
+
+
+	public function createSourceData(ResponseInterface $response): SourceData
 	{
 		$data = $response->getBody()->getContents();
-		$list = explode("\n", Exchange\Utils::stroke2point($data));
+		$list = explode("\n", Utils::stroke2point($data));
 		$list[1] = 'Česká Republika|koruna|1|CZK|1';
 
-		$this->setDate('!d.m.Y', explode(' ', $list[0])[0]);
+		$date = Utils::createFromFormat('!d.m.Y', explode(' ', $list[0])[0], $this->timeZone);
 		unset($list[0]);
 
-		return $list;
+		return new SourceData($date, $this->refresh, $list);
 	}
 
 
-	protected function createProperty($row): Property
+	public function createProperty(mixed $row): Property
 	{
+		assert(is_string($row));
 		$currency = explode('|', $row);
 
 		return new Property(
@@ -52,14 +70,6 @@ class Day extends Exchange\Driver\Driver
 			$currency[0],
 			$currency[1],
 		);
-	}
-
-
-	protected function prepareUrl(?\DateTimeInterface $date): string
-	{
-		$url = self::$url;
-
-		return $date === null ? $url : "$url?date=" . urlencode($date->format('d.m.Y'));
 	}
 
 }

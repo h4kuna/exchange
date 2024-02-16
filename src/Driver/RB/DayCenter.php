@@ -6,9 +6,10 @@ use SimpleXMLElement;
 
 final class DayCenter extends Day
 {
-	protected function rate(SimpleXMLElement $element): float
+
+	protected function rate(SimpleXMLElement $element): SimpleXMLElement
 	{
-		return floatval($element->exchangeRateCenter);
+		return $element->exchangeRateCenter;
 	}
 
 }

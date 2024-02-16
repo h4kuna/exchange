@@ -6,7 +6,7 @@ Exchange
 [![Total Downloads](https://poser.pugx.org/h4kuna/exchange/downloads?format=flat)](https://packagist.org/packages/h4kuna/exchange)
 [![License](https://poser.pugx.org/h4kuna/exchange/license?format=flat)](https://packagist.org/packages/h4kuna/exchange)
 
-Exchange is PHP script works with currencies. You can convert price, format add VAT or only render exchange rates.
+Exchange is PHP script works with currencies. You can convert price.
 
 Here is [changelog](changelog.md).
 
@@ -14,12 +14,17 @@ Here is [changelog](changelog.md).
 
 - [Nette extension](//github.com/h4kuna/exchange-nette)
 
-Installation via composer
------------------------
+## Installation via composer
 
 ```sh
 $ composer require h4kuna/exchange
 ```
+Optional packages
+```sh
+$ composer require guzzlehttp/guzzle guzzlehttp/psr7 h4kuna/dir nette/caching
+```
+
+Support PSR-6 for cache.
 
 ## How to use
 
@@ -31,29 +36,42 @@ For example define own exchange rates:
 - 20 CZK = 1 USD
 
 ```php
-use h4kuna\CriticalCache;use h4kuna\Exchange;
+use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\Driver\Cnb\Day;
+use h4kuna\Exchange\Exchange;
+use h4kuna\Exchange\ExchangeFactory;
+use h4kuna\Exchange\RatingList\CacheEntity;
+use h4kuna\Exchange\RatingList\RatingList;
 
-$cacheFactory = new CriticalCache\CacheFactory('exchange');
+{ # by factory
+	$exchangeFactory = new ExchangeFactory(
+		from: 'eur',
+		to: 'usd',
+		allowedCurrencies: [
+			'CZK',
+			'USD',
+			'eur', // lower case will be changed to upper case
+		],
+	);
 
-$exchangeFactory = new Exchange\ExchangeFactory(
-    from: 'eur', 
-    to: 'usd', 
-    allowedCurrencies: [
-		'CZK',
-		'USD',
-		'eur', // lower case will be changed to upper case
-	],
-	cacheFactory: $cacheFactory
-);
+	$exchange = $exchangeFactory->create();
+}
 
-$exchange = $exchangeFactory->create();
+{ # custom RatingList
+	$ratingList = new RatingList(new DateTimeImmutable(), new DateTimeImmutable(), null, [
+		'EUR' => new Property(1, 25.0, 'EUR'),
+		'USD' => new Property(1, 20.0, 'USD'),
+		'CZK' => new Property(1, 1.0, 'CZK'),
+	]);
+	$exchange = new Exchange('EUR', $ratingList, 'USD');
+}
 
-echo $exchange->change(100); // EUR -> USD = 125.0
+echo $exchange->change(100) . PHP_EOL; // EUR -> USD = 125.0
 
 // use only upper case
-echo $exchange->change(100, 'CZK'); // CZK -> USD = 5.0
-echo $exchange->change(100, NULL, 'CZK'); // EUR -> CZK = 2500.0
-echo $exchange->change(100, 'USD', 'CZK'); // USD -> CZK = 2000.0
+echo $exchange->change(100, 'CZK') . PHP_EOL; // CZK -> USD = 5.0
+echo $exchange->change(100, null, 'CZK') . PHP_EOL; // EUR -> CZK = 2500.0
+echo $exchange->change(100, 'USD', 'CZK') . PHP_EOL; // USD -> CZK = 2000.0
 ```
 
 ### Change driver and date
@@ -64,36 +82,35 @@ Download history exchange rates. Make new instance of Exchange with history rate
 use h4kuna\Exchange\RatingList;
 use h4kuna\Exchange;
 
-$exchangePast = $exchange->modify(cacheEntity: new RatingList\CacheEntity(new \Datetime('2000-12-30'), Exchange\Driver\Cnb\Day::class));
-$exchangePast->change(100);
+$exchangePast = $exchangeFactory->create(cacheEntity: new CacheEntity(new Datetime('2000-12-30'), new Day));
+echo $exchangePast->change(100) . PHP_EOL;
 ```
 
 ### Access and iterator
 
 ```php
-/* @var $property Exchange\Currenry\Property */
+use h4kuna\Exchange\Currency\Property;
+/* @var $property Property */
 $property = $exchange['EUR'];
 var_dump($property);
-
+echo PHP_EOL;
 
 foreach ($exchange as $code => $property) {
-    /* @var $property Exchange\Currenry\Property */
-    var_dump($property);
+	/* @var $property Property */
+	var_dump($code, $property);
 }
 ```
 
 ## Caching
 
-The cache invalid automatic at some time, defined by property `Driver::$refresh`. From this property is counted time to live. Little better is invalid cache by cron. Because one request on server does not lock other requests. Let's run cron max. 15 minutes before invalidate cache.
+The cache invalid automatic at some time, defined by property `SourceData::$refresh`. From this property is counted time to live. Little better is invalid cache by cron. Because one request on server does not lock other requests. Let's run cron max. 29 minutes before invalidate cache.
 ```php
 use h4kuna\Exchange\RatingList\RatingListCache;
 use h4kuna\Exchange\RatingList\CacheEntity;
 use h4kuna\Exchange\Driver\Cnb\Day;
 
 /** @var RatingListCache $ratingListCache */
-$ratingListCache->rebuild(new CacheEntity(null, Day::class));
+$ratingListCache->rebuild(new CacheEntity(null, new Day));
 ```
 
-In example, is used `h4kuna\Exchange\Driver\Cnb\Day::$refresh` is defined at 15:00. Run cron 14:55 every day.
-
-
+In example, is used `h4kuna\Exchange\Driver\Cnb\Day::$refresh` is defined at 14:30 + 30 minute the cache is valid. Run cron 14:32 every day.

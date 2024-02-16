@@ -1,5 +1,11 @@
 # Changelog
 
+## v7.1
+- `Exchange::modify()` was removed, replace by ExchangeFactory
+- `Exchange::transfer()` was removed, use change($amount, $from, $to) and getTo($to) of getFrom($from)
+- improve [RatingListCache.php](./src/RatingList/RatingListCache.php)
+- remove dependency `h4kuna/serialize-polyfill`
+
 ## v7.0
 
 - for your temporary rate implement by own RatingList

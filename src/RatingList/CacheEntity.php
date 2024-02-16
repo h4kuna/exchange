@@ -3,6 +3,9 @@
 namespace h4kuna\Exchange\RatingList;
 
 use DateTimeInterface;
+use h4kuna\Exchange\Driver\Cnb\Day;
+use h4kuna\Exchange\Driver\Source;
+use h4kuna\Exchange\Utils;
 
 /**
  * readonly php 8.2+
@@ -11,36 +14,28 @@ final class CacheEntity
 {
 	public ?DateTimeInterface $date;
 
-	public string $cacheKey;
-
 	public string $cacheKeyTtl;
 
 	public string $cacheKeyAll;
 
+	public Source $source;
 
-	public function __construct(?DateTimeInterface $date, public string $driver)
+
+	public function __construct(?DateTimeInterface $date = null, ?Source $source = null)
 	{
-		if ($date !== null && $date->format('Y-m-d') >= date('Y-m-d')) {
-			$date = null;
-		}
+		$this->source = $source ?? new Day();
+		$this->date = $date !== null && Utils::isTodayAndFuture($date, $this->source->getTimeZone()) ? null : $date;
 
-		$this->date = $date;
-		$this->cacheKey = $this->makeCacheKey();
-		$this->cacheKeyTtl = self::joinKey($this->cacheKey, 'ttl');
-		$this->cacheKeyAll = self::joinKey($this->cacheKey, 'all');
+		$cacheKey = self::makeCacheKey($this->source, $this->date);
+		$this->cacheKeyTtl = self::joinKey($cacheKey, 'ttl');
+		$this->cacheKeyAll = self::joinKey($cacheKey, 'all.v7.1');
 	}
 
 
-	public function keyCode(string $code): string
+	private static function makeCacheKey(Source $source, ?DateTimeInterface $date): string
 	{
-		return self::joinKey($this->cacheKey, $code);
-	}
-
-
-	private function makeCacheKey(): string
-	{
-		$key = $this->date === null ? '' : $this->date->format('.Y-m-d');
-		return str_replace('\\', '.', $this->driver) . $key;
+		$key = $date === null ? '' : $date->format('.' . Utils::DateFormat);
+		return str_replace('\\', '.', $source::class) . $key;
 	}
 
 
