@@ -33,6 +33,9 @@ final class RatingList implements RatingListInterface
 	}
 
 
+	/**
+	 * @return ArrayIterator<string, Property>
+	 */
 	public function getIterator(): ArrayIterator
 	{
 		return new ArrayIterator($this->properties);

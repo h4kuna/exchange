@@ -14,7 +14,7 @@ use h4kuna\Exchange\Download\SourceDownloadInterface;
 use h4kuna\Exchange\RatingList\CacheEntity;
 use h4kuna\Exchange\RatingList\RatingList;
 use h4kuna\Exchange\RatingList\RatingListCache;
-use Mockery\Mock;
+use Mockery\MockInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\SimpleCache\CacheInterface;
 use Tester\Assert;
@@ -70,8 +70,9 @@ final class RatingListCacheTest extends TestCase
 		$ratingList = self::createRatingList();
 		$ratingList2 = self::createRatingList();
 
-		$cacheLocking = mock(CacheLocking::class)
-			->makePartial();
+		/** @var MockInterface&CacheLocking $cacheLocking */
+		$cacheLocking = mock(CacheLocking::class);
+		$cacheLocking->makePartial();
 		$cacheLocking->shouldReceive('get')
 			->with('h4kuna.Exchange.Driver.Cnb.Day.ttl')
 			->andReturn($ratingList, $ratingList2);
@@ -148,29 +149,33 @@ final class RatingListCacheTest extends TestCase
 
 
 	/**
-	 * @return Mock&SourceDownloadInterface
+	 * @return MockInterface&SourceDownloadInterface
 	 */
 	private static function createSourceDownload()
 	{
-		$source = mock(SourceDownloadInterface::class)
-			->makePartial();
+		/** @var MockInterface&SourceDownloadInterface $source */
+		$source = mock(SourceDownloadInterface::class);
+		$source->makePartial();
 
 		return $source;
 	}
 
 
 	/**
-	 * @return Mock&CacheInterface
+	 * @return MockInterface&CacheInterface
 	 */
 	private static function createCache()
 	{
-		return mock(CacheInterface::class)
-			->makePartial();
+		/** @var MockInterface&CacheInterface $cache */
+		$cache = mock(CacheInterface::class);
+		$cache->makePartial();
+
+		return $cache;
 	}
 
 
 	/**
-	 * @return Mock&CacheLocking
+	 * @return MockInterface&CacheLocking
 	 */
 	private static function createCacheLocking(
 		RatingList $ratingList,
@@ -189,6 +194,7 @@ final class RatingListCacheTest extends TestCase
 			return true;
 		};
 
+		/** @var CacheLocking&MockInterface $cacheLocking */
 		$cacheLocking = mock(CacheLocking::class)
 			->makePartial();
 		$cacheLocking->shouldReceive('set')

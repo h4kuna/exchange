@@ -15,6 +15,7 @@ use h4kuna\Exchange\Exchange;
 use h4kuna\Exchange\RatingList\CacheEntity;
 use h4kuna\Exchange\RatingList\RatingList;
 use h4kuna\Exchange\RatingList\RatingListCache;
+use Mockery\MockInterface;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -96,13 +97,15 @@ final class ExchangeTest extends TestCase
 			'USD' => new Property(10, 135, 'USD'),
 		]);
 
-		$ratingListCache = mock(CacheLocking::class)
-			->makePartial();
+		/** @var CacheLocking&MockInterface $ratingListCache */
+		$ratingListCache = mock(CacheLocking::class);
+		$ratingListCache->makePartial();
 		$ratingListCache->shouldReceive('load')
 			->andReturn(null);
 		$ratingListCache->shouldReceive('get')
 			->andReturn($ratingList, $ratingList2);
 
+		/** @var SourceDownloadInterface&MockInterface $sourceDownload */
 		$sourceDownload = mock(SourceDownloadInterface::class);
 
 		$ratingListCache = new RatingListCache($ratingListCache, $sourceDownload);

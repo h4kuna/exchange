@@ -5,7 +5,6 @@ parameters:
 		- tests/src
 	bootstrapFiles:
 		- tests/bootstrap.php
-	checkGenericClassInNonGenericObjectType: false
 	ignoreErrors:
 		- "#^Call to an undefined method Mockery\\.*#"
 
