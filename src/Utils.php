@@ -7,8 +7,11 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
+use h4kuna\Exchange\Exceptions\XmlResponseFailedException;
 use Nette\StaticClass;
 use Nette\Utils\DateTime as NetteDateTime;
+use Psr\Http\Message\ResponseInterface;
+use SimpleXMLElement;
 
 final class Utils
 {
@@ -26,6 +29,18 @@ final class Utils
 	public static function stroke2point(string $str): string
 	{
 		return trim(strtr($str, [',' => '.']));
+	}
+
+
+	public static function createSimpleXMLElement(ResponseInterface $response): SimpleXMLElement
+	{
+		$xml = @simplexml_load_string($response->getBody()->getContents());
+
+		if ($xml === false) {
+			throw new XmlResponseFailedException((string) $response->getStatusCode());
+		}
+
+		return $xml;
 	}
 
 

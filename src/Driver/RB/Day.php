@@ -52,12 +52,7 @@ abstract class Day implements Source
 
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
-		$data = $response->getBody()->getContents();
-		$xml = simplexml_load_string($data);
-
-		if ($xml === false) {
-			throw new InvalidStateException('Invalid source xml.');
-		}
+		$xml = Utils::createSimpleXMLElement($response);
 
 		// add CZK
 		$czk = $xml->exchangeRateList->exchangeRates->addChild('exchangeRate');

@@ -43,10 +43,7 @@ class Day implements Exchange\Driver\Source
 
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
-		$xml = simplexml_load_string($response->getBody()->getContents());
-		if ($xml === false) {
-			throw new Exchange\Exceptions\InvalidStateException('Invalid source xml.');
-		}
+		$xml = Exchange\Utils::createSimpleXMLElement($response);
 
 		// including EUR
 		$eur = $xml->Cube->Cube->addChild('Cube');

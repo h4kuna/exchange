@@ -9,6 +9,8 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use GuzzleHttp\Psr7\Response;
+use h4kuna\Exchange\Exceptions\XmlResponseFailedException;
 use h4kuna\Exchange\Utils;
 use Tester\Assert;
 use Tester\TestCase;
@@ -175,6 +177,15 @@ final class UtilsTest extends TestCase
 	): void
 	{
 		Assert::same($expected, Utils::toImmutable($date, new DateTimeZone('Europe/Prague'))?->format(DateTimeInterface::RFC3339));
+	}
+
+
+	public function testCreateSimpleXMLElement(): void
+	{
+		$response = new Response(403, body: (string) file_get_contents(__DIR__ . '/../Fixtures/rb.failed.no.xml.html'));
+
+		Assert::exception(static fn (
+		) => Utils::createSimpleXMLElement($response), XmlResponseFailedException::class, '403');
 	}
 
 }
