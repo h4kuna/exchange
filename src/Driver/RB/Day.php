@@ -7,7 +7,6 @@ use DateTimeZone;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceData;
 use h4kuna\Exchange\Driver\Source;
-use h4kuna\Exchange\Exceptions\InvalidStateException;
 use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
