@@ -5,7 +5,7 @@ namespace h4kuna\Exchange\RatingList;
 use ArrayIterator;
 use DateTime;
 use DateTimeImmutable;
-use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\CurrencyInterface;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
 use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
 
@@ -15,7 +15,7 @@ use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
 final class RatingList implements RatingListInterface
 {
 	/**
-	 * @param array<string, Property> $properties
+	 * @param array<string, CurrencyInterface> $properties
 	 */
 	public function __construct(
 		private DateTimeImmutable $date,
@@ -34,7 +34,7 @@ final class RatingList implements RatingListInterface
 
 
 	/**
-	 * @return ArrayIterator<string, Property>
+	 * @return ArrayIterator<string, CurrencyInterface>
 	 */
 	public function getIterator(): ArrayIterator
 	{
@@ -42,13 +42,13 @@ final class RatingList implements RatingListInterface
 	}
 
 
-	public function offsetGet(mixed $offset): Property
+	public function offsetGet(mixed $offset): CurrencyInterface
 	{
 		return $this->get($offset);
 	}
 
 
-	public function get(string $code): Property
+	public function get(string $code): CurrencyInterface
 	{
 		// no check if exist for fast
 		return $this->properties[$code];
@@ -67,7 +67,7 @@ final class RatingList implements RatingListInterface
 	}
 
 
-	public function getSafe(string $code): Property
+	public function getSafe(string $code): CurrencyInterface
 	{
 		$code = strtoupper($code);
 		if ($this->offsetExists($code) === false) {

@@ -65,7 +65,7 @@ final class ExchangeTest extends TestCase
 	public function testArrayAccess(): void
 	{
 		$exchange = self::createExchange();
-		Assert::same('EUR', $exchange['EUR']->code);
+		Assert::same('EUR', $exchange['EUR']->getCode());
 		Assert::true(isset($exchange['EUR']));
 		Assert::false(isset($exchange['CCC']));
 
@@ -82,7 +82,7 @@ final class ExchangeTest extends TestCase
 		Assert::exception(fn () => $exchange->get('AAA'), UnknownCurrencyException::class);
 	}
 
-
+	/** @return Exchange<Property> */
 	private static function createExchange(): Exchange
 	{
 		$ratingList = new RatingList(new \DateTimeImmutable(), null, null, [
@@ -110,7 +110,10 @@ final class ExchangeTest extends TestCase
 
 		$ratingListCache = new RatingListCache($ratingListCache, $sourceDownload);
 
-		return new Exchange('EUR', $ratingListCache->build(new CacheEntity()));
+		/** @var Exchange<Property> $exchange */
+		$exchange = new Exchange('EUR', $ratingListCache->build(new CacheEntity()));
+
+		return $exchange;
 	}
 }
 

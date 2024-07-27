@@ -4,7 +4,7 @@ namespace h4kuna\Exchange\Download;
 
 use DateTimeInterface;
 use h4kuna\Exchange\Driver\Source;
-use h4kuna\Exchange\RatingList\RatingList;
+use h4kuna\Exchange\RatingList\RatingListInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
 interface SourceDownloadInterface
@@ -13,5 +13,5 @@ interface SourceDownloadInterface
 	/**
 	 * @throws ClientExceptionInterface
 	 */
-	function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingList;
+	function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingListInterface;
 }

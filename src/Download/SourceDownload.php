@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use h4kuna\Exchange\Driver\Source;
 use h4kuna\Exchange\RatingList\RatingList;
+use h4kuna\Exchange\RatingList\RatingListInterface;
 use h4kuna\Exchange\Utils;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -33,7 +34,7 @@ final class SourceDownload implements SourceDownloadInterface
 	}
 
 
-	public function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingList
+	public function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingListInterface
 	{
 		$date = Utils::toImmutable($date, $sourceExchange->getTimeZone());
 		$key = self::makeKey($sourceExchange, $date);
@@ -50,11 +51,11 @@ final class SourceDownload implements SourceDownloadInterface
 		$properties = [];
 		foreach ($sourceData->properties as $item) {
 			$property = $sourceExchange->createProperty($item);
-			if ($property->rate === 0.0 || ($this->allowedCurrencies !== [] && isset($this->allowedCurrencies[$property->code]) === false)) {
+			if ($property->getRate() === 0.0 || ($this->allowedCurrencies !== [] && isset($this->allowedCurrencies[$property->getCode()]) === false)) {
 				continue;
 			}
 
-			$properties[$property->code] = $property;
+			$properties[$property->getCode()] = $property;
 		}
 
 		return new RatingList($sourceData->date, $date, $expire, $properties);

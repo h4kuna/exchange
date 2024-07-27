@@ -3,41 +3,50 @@
 namespace h4kuna\Exchange;
 
 use ArrayAccess;
-use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Exceptions\UnknownCurrencyException;
 use h4kuna\Exchange\RatingList\RatingListInterface;
 use IteratorAggregate;
 
 /**
+ * @template T of CurrencyInterface
  * @since 2009-06-22 - version 0.5
- * @implements IteratorAggregate<string, Property>
- * @implements ArrayAccess<string, Property>
+ * @implements IteratorAggregate<string, T>
+ * @implements ArrayAccess<string, T>
  * properties become readonly
  */
 class Exchange implements IteratorAggregate, ArrayAccess
 {
-	private Property $from;
+	private CurrencyInterface $from;
 
-	private Property $to;
+	private CurrencyInterface $to;
 
 
+	/**
+	 * @param RatingListInterface<T> $ratingList
+	 */
 	public function __construct(
-		string $from,
+		string|CurrencyInterface $from,
 		public RatingListInterface $ratingList,
-		?string $to = null,
+		string|CurrencyInterface|null $to = null,
 	)
 	{
-		$this->from = $this->get($from);
-		$this->to = $to === null ? $this->from : $this->get($to);
+		$this->from = $from instanceof CurrencyInterface ? $from : $this->get($from);
+		$this->to = $to === null
+			? $this->from
+			: ($to instanceof CurrencyInterface ? $to : $this->get($to));
 	}
 
 
 	/**
+	 * @return T
 	 * @throws UnknownCurrencyException
 	 */
-	public function get(string $code): Property
+	public function get(string $code): CurrencyInterface
 	{
-		return $this->ratingList->getSafe($code);
+		/** @var T $currency */
+		$currency = $this->ratingList->getSafe($code);
+
+		return $currency;
 	}
 
 
@@ -53,25 +62,40 @@ class Exchange implements IteratorAggregate, ArrayAccess
 		$from = $this->getFrom($from);
 		$to = $this->getTo($to);
 		if ($to !== $from) {
-			$price *= $from->rate / $to->rate;
+			$price *= $from->getRate() / $to->getRate();
 		}
 
 		return (float) $price;
 	}
 
 
-	public function getFrom(?string $from = null): Property
+	/**
+	 * @return T
+	 */
+	public function getFrom(?string $from = null): CurrencyInterface
 	{
-		return $from === null ? $this->from : $this->ratingList->get($from);
+		/** @var T $currency */
+		$currency = $from === null ? $this->from : $this->ratingList->get($from);
+
+		return $currency;
 	}
 
 
-	public function getTo(?string $to = null): Property
+	/**
+	 * @return T
+	 */
+	public function getTo(?string $to = null): CurrencyInterface
 	{
-		return $to === null ? $this->to : $this->ratingList->get($to);
+		/** @var T $currency */
+		$currency = $to === null ? $this->to : $this->ratingList->get($to);
+
+		return $currency;
 	}
 
 
+	/**
+	 * @return RatingListInterface<T>
+	 */
 	public function getIterator(): RatingListInterface
 	{
 		return $this->ratingList;
@@ -84,7 +108,10 @@ class Exchange implements IteratorAggregate, ArrayAccess
 	}
 
 
-	public function offsetGet(mixed $offset): Property
+	/**
+	 * @return T
+	 */
+	public function offsetGet(mixed $offset): CurrencyInterface
 	{
 		return $this->get($offset);
 	}

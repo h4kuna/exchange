@@ -12,6 +12,10 @@ use h4kuna\Exchange\RatingList\RatingListCache;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 
+/**
+ * @template T of CurrencyInterface
+ * @implements ExchangeFactoryInterface<T>
+ */
 final class ExchangeFactory implements ExchangeFactoryInterface
 {
 	private RatingListCache $ratingListCache;
@@ -49,17 +53,23 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 	}
 
 
+	/**
+	 * @return Exchange<T>
+	 */
 	public function create(
 		?string $from = null,
 		?string $to = null,
 		?CacheEntity $cacheEntity = null,
 	): Exchange
 	{
-		return new Exchange(
+		/** @var Exchange<T> $exchange */
+		$exchange = new Exchange(
 			$from ?? $this->from,
 			$this->ratingListCache->build($cacheEntity ?? new CacheEntity()),
 			$to ?? $this->to,
 		);
+
+		return $exchange;
 	}
 
 

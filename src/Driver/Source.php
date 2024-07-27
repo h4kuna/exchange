@@ -4,7 +4,7 @@ namespace h4kuna\Exchange\Driver;
 
 use DateTimeInterface;
 use DateTimeZone;
-use h4kuna\Exchange\Currency\Property;
+use h4kuna\Exchange\CurrencyInterface;
 use h4kuna\Exchange\Download\SourceData;
 use Psr\Http\Message\ResponseInterface;
 
@@ -19,6 +19,6 @@ interface Source
 	function createSourceData(ResponseInterface $response): SourceData;
 
 
-	function createProperty(mixed $row): Property;
+	function createProperty(mixed $row): CurrencyInterface;
 
 }

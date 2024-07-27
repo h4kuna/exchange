@@ -22,7 +22,7 @@ final class RatingListTest extends TestCase
 			'USD' => new Property(10, 130, 'USD'),
 		]);
 
-		Assert::same(26.0, $ratingList['EUR']->rate);
+		Assert::same(26.0, $ratingList['EUR']->getRate());
 
 		Assert::exception(fn () => $ratingList->getSafe(''), UnknownCurrencyException::class, '[empty string]');
 		Assert::exception(fn () => $ratingList->getSafe('AAA'), UnknownCurrencyException::class, 'AAA');

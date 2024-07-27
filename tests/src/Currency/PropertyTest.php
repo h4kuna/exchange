@@ -16,7 +16,7 @@ final class PropertyTest extends TestCase
 	public function testBasic(): void
 	{
 		$property = new Property(10, 1, 'DOO');
-		Assert::same(.1, $property->rate);
+		Assert::same(.1, $property->getRate());
 		Assert::same('DOO', (string) $property);
 	}
 
