@@ -8,10 +8,9 @@ use h4kuna\Exchange\RatingList\RatingListInterface;
 use IteratorAggregate;
 
 /**
- * @template T of CurrencyInterface
  * @since 2009-06-22 - version 0.5
- * @implements IteratorAggregate<string, T>
- * @implements ArrayAccess<string, T>
+ * @implements IteratorAggregate<string, CurrencyInterface>
+ * @implements ArrayAccess<string, CurrencyInterface>
  * properties become readonly
  */
 class Exchange implements IteratorAggregate, ArrayAccess
@@ -22,7 +21,7 @@ class Exchange implements IteratorAggregate, ArrayAccess
 
 
 	/**
-	 * @param RatingListInterface<T> $ratingList
+	 * @param RatingListInterface<CurrencyInterface> $ratingList
 	 */
 	public function __construct(
 		string|CurrencyInterface $from,
@@ -38,15 +37,11 @@ class Exchange implements IteratorAggregate, ArrayAccess
 
 
 	/**
-	 * @return T
 	 * @throws UnknownCurrencyException
 	 */
 	public function get(string $code): CurrencyInterface
 	{
-		/** @var T $currency */
-		$currency = $this->ratingList->getSafe($code);
-
-		return $currency;
+		return $this->ratingList->getSafe($code);
 	}
 
 
@@ -69,32 +64,26 @@ class Exchange implements IteratorAggregate, ArrayAccess
 	}
 
 
-	/**
-	 * @return T
-	 */
 	public function getFrom(?string $from = null): CurrencyInterface
 	{
-		/** @var T $currency */
-		$currency = $from === null ? $this->from : $this->ratingList->get($from);
-
-		return $currency;
+		return $from === null ? $this->from : $this->ratingList->get($from);
 	}
 
 
-	/**
-	 * @return T
-	 */
 	public function getTo(?string $to = null): CurrencyInterface
 	{
-		/** @var T $currency */
-		$currency = $to === null ? $this->to : $this->ratingList->get($to);
+		return $to === null ? $this->to : $this->ratingList->get($to);
+	}
 
-		return $currency;
+
+	public function isValid(): bool
+	{
+		return $this->ratingList->isValid();
 	}
 
 
 	/**
-	 * @return RatingListInterface<T>
+	 * @return RatingListInterface<CurrencyInterface>
 	 */
 	public function getIterator(): RatingListInterface
 	{
@@ -108,9 +97,6 @@ class Exchange implements IteratorAggregate, ArrayAccess
 	}
 
 
-	/**
-	 * @return T
-	 */
 	public function offsetGet(mixed $offset): CurrencyInterface
 	{
 		return $this->get($offset);

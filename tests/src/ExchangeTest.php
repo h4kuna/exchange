@@ -82,7 +82,6 @@ final class ExchangeTest extends TestCase
 		Assert::exception(fn () => $exchange->get('AAA'), UnknownCurrencyException::class);
 	}
 
-	/** @return Exchange<Property> */
 	private static function createExchange(): Exchange
 	{
 		$ratingList = new RatingList(new \DateTimeImmutable(), null, null, [
@@ -110,10 +109,7 @@ final class ExchangeTest extends TestCase
 
 		$ratingListCache = new RatingListCache($ratingListCache, $sourceDownload);
 
-		/** @var Exchange<Property> $exchange */
-		$exchange = new Exchange('EUR', $ratingListCache->build(new CacheEntity()));
-
-		return $exchange;
+		return new Exchange('EUR', $ratingListCache->build(new CacheEntity()));
 	}
 }
 

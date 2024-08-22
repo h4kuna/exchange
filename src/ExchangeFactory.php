@@ -13,12 +13,13 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 
 /**
- * @template T of CurrencyInterface
- * @implements ExchangeFactoryInterface<T>
+ * @implements ExchangeFactoryInterface<CurrencyInterface>
  */
 final class ExchangeFactory implements ExchangeFactoryInterface
 {
 	private RatingListCache $ratingListCache;
+
+	private CacheEntity $cacheEntity;
 
 
 	/**
@@ -31,8 +32,10 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 		array $allowedCurrencies = [],
 		?ClientInterface $client = null,
 		?RequestFactoryInterface $requestFactory = null,
+		?CacheEntity $cacheEntity = null,
 	)
 	{
+		$this->cacheEntity = $cacheEntity ?? new CacheEntity();
 		$this->ratingListCache = $ratingListCache ?? self::createRatingListCache(Utils::transformCurrencies($allowedCurrencies), $client, $requestFactory);
 	}
 
@@ -53,23 +56,17 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 	}
 
 
-	/**
-	 * @return Exchange<T>
-	 */
 	public function create(
 		?string $from = null,
 		?string $to = null,
 		?CacheEntity $cacheEntity = null,
 	): Exchange
 	{
-		/** @var Exchange<T> $exchange */
-		$exchange = new Exchange(
+		return new Exchange(
 			$from ?? $this->from,
-			$this->ratingListCache->build($cacheEntity ?? new CacheEntity()),
+			$this->ratingListCache->build($cacheEntity ?? $this->cacheEntity),
 			$to ?? $this->to,
 		);
-
-		return $exchange;
 	}
 
 

@@ -36,4 +36,6 @@ interface RatingListInterface extends IteratorAggregate, ArrayAccess
 
 	function getExpire(): ?DateTime;
 
+	function isValid(): bool;
+
 }

@@ -95,4 +95,10 @@ final class RatingList implements RatingListInterface
 		return $this->expire;
 	}
 
+
+	public function isValid(): bool
+	{
+		return $this->expire === null || $this->expire <= new DateTime();
+	}
+
 }
