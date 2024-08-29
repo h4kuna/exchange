@@ -13,9 +13,6 @@ use h4kuna\Exchange\RatingList\RatingListCache;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 
-/**
- * @implements ExchangeFactoryInterface<CurrencyInterface>
- */
 final class ExchangeFactory implements ExchangeFactoryInterface
 {
 	private RatingListCache $ratingListCache;
