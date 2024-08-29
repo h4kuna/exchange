@@ -7,7 +7,7 @@ namespace h4kuna\Exchange\Tests\RatingList;
 require_once __DIR__ . '/../../bootstrap.php';
 
 use Closure;
-use h4kuna\CriticalCache\CacheLocking;
+use h4kuna\CriticalCache\PSR16\CacheLocking;
 use h4kuna\CriticalCache\Utils\Dependency;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceDownloadInterface;
@@ -49,7 +49,7 @@ final class RatingListCacheTest extends TestCase
 
 		$cacheLocking = self::createCacheLocking($ratingList, $cache, 6800);
 		$cacheLocking->shouldReceive('set')
-			->with('a.h4kuna.Exchange.Driver.Cnb.Day.all.v7.1', $ratingList2);
+			->with('h4kuna.Exchange.Driver.Cnb.Day.all.v7.1', $ratingList2);
 		$source = self::createSourceDownload();
 		$source->shouldReceive('execute')
 			->withArgs(function () {
@@ -188,7 +188,7 @@ final class RatingListCacheTest extends TestCase
 
 		$load ??= function (string $key, Closure $callback) use ($cache, $ttl) {
 			$dependency = new Dependency();
-			$callback($dependency, $cache, 'a.');
+			$callback($dependency, $cache);
 			Assert::same($ttl, $dependency->ttl);
 
 			return true;
@@ -198,7 +198,7 @@ final class RatingListCacheTest extends TestCase
 		$cacheLocking = mock(CacheLocking::class)
 			->makePartial();
 		$cacheLocking->shouldReceive('set')
-			->with('a.h4kuna.Exchange.Driver.Cnb.Day.all.v7.1', $ratingList);
+			->with('h4kuna.Exchange.Driver.Cnb.Day.all.v7.1', $ratingList);
 
 		$cacheLocking->shouldReceive('load')
 			->withArgs($load);

@@ -4,7 +4,8 @@ namespace h4kuna\Exchange;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
-use h4kuna\CriticalCache\CacheFactory;
+use h4kuna\CriticalCache\PSR16\CacheLockingFactoryInterface;
+use h4kuna\CriticalCache\PSR16\Locking\CacheLockingFactory;
 use h4kuna\Exchange\Download\SourceDownload;
 use h4kuna\Exchange\Exceptions\MissingDependencyException;
 use h4kuna\Exchange\RatingList\CacheEntity;
@@ -70,9 +71,9 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 	}
 
 
-	private static function createCacheFactory(): CacheFactory
+	private static function createCacheFactory(): CacheLockingFactoryInterface
 	{
-		return new CacheFactory('exchange');
+		return new CacheLockingFactory('exchange');
 	}
 
 

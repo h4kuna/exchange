@@ -2,7 +2,7 @@
 
 namespace h4kuna\Exchange\RatingList;
 
-use h4kuna\CriticalCache\CacheLocking;
+use h4kuna\CriticalCache\PSR16\CacheLocking;
 use h4kuna\CriticalCache\Utils\Dependency;
 use h4kuna\Exchange\Download\SourceDownloadInterface;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
@@ -34,9 +34,8 @@ final class RatingListCache
 		$this->cache->load($cacheEntity->cacheKeyTtl, function (
 			Dependency $dependency,
 			CacheInterface $cache,
-			string $prefix,
 		) use ($cacheEntity, &$ratingList): string {
-			[$ratingList, $ttl] = $this->buildCache($cacheEntity, $cache, $prefix);
+			[$ratingList, $ttl] = $this->buildCache($cacheEntity, $cache);
 			$dependency->ttl = $ttl;
 
 			return self::toDate($ratingList);
@@ -58,12 +57,12 @@ final class RatingListCache
 	 * @return array{RatingListInterface, ?int}
 	 * @throws ClientExceptionInterface
 	 */
-	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache, string $prefix): array
+	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache): array
 	{
 		try {
 			$ratingList = $this->sourceDownload->execute($cacheEntity->source, $cacheEntity->date);
 		} catch (ClientExceptionInterface $e) {
-			$ratingList = $cache->get($prefix . $cacheEntity->cacheKeyAll);
+			$ratingList = $cache->get($cacheEntity->cacheKeyAll);
 			if (($ratingList instanceof RatingListInterface) === false) {
 				throw $e;
 			}
@@ -71,7 +70,7 @@ final class RatingListCache
 		}
 
 		$ttl = $ratingList->getExpire() === null ? null : Utils::countTTL($ratingList->getExpire(), $this->floatTtl);
-		$this->cache->set($prefix . $cacheEntity->cacheKeyAll, $ratingList);
+		$this->cache->set($cacheEntity->cacheKeyAll, $ratingList);
 
 		return [$ratingList, $ttl];
 	}
@@ -83,7 +82,7 @@ final class RatingListCache
 	public function rebuild(CacheEntity $cacheEntity): bool
 	{
 		$oldValue = $this->cache->get($cacheEntity->cacheKeyTtl);
-		[$ratingList, $ttl] = $this->buildCache($cacheEntity, $this->cache, '');
+		[$ratingList, $ttl] = $this->buildCache($cacheEntity, $this->cache);
 		$value = self::toDate($ratingList);
 		$this->cache->set($cacheEntity->cacheKeyTtl, $value, $ttl);
 

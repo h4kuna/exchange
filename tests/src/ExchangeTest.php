@@ -6,7 +6,7 @@ namespace h4kuna\Exchange\Tests;
 
 require_once __DIR__ . '/../bootstrap.php';
 
-use h4kuna\CriticalCache\CacheLocking;
+use h4kuna\CriticalCache\PSR16\CacheLocking;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceDownloadInterface;
 use h4kuna\Exchange\Exceptions\FrozenMethodException;
@@ -81,6 +81,7 @@ final class ExchangeTest extends TestCase
 
 		Assert::exception(fn () => $exchange->get('AAA'), UnknownCurrencyException::class);
 	}
+
 
 	private static function createExchange(): Exchange
 	{
