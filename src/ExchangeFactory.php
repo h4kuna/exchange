@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use h4kuna\CriticalCache\PSR16\CacheLockingFactoryInterface;
 use h4kuna\CriticalCache\PSR16\Locking\CacheLockingFactory;
+use h4kuna\Dir\Dir;
 use h4kuna\Exchange\Download\SourceDownload;
 use h4kuna\Exchange\Exceptions\MissingDependencyException;
 use h4kuna\Exchange\RatingList\CacheEntity;
@@ -31,10 +32,11 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 		?ClientInterface $client = null,
 		?RequestFactoryInterface $requestFactory = null,
 		?CacheEntity $cacheEntity = null,
+		string|Dir|CacheLockingFactoryInterface $tempDir = 'exchange',
 	)
 	{
 		$this->cacheEntity = $cacheEntity ?? new CacheEntity();
-		$this->ratingListCache = $ratingListCache ?? self::createRatingListCache(Utils::transformCurrencies($allowedCurrencies), $client, $requestFactory);
+		$this->ratingListCache = $ratingListCache ?? self::createRatingListCache(Utils::transformCurrencies($allowedCurrencies), $client, $requestFactory, $tempDir);
 	}
 
 
@@ -44,11 +46,16 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 	private static function createRatingListCache(
 		array $allowedCurrencies,
 		?ClientInterface $client,
-		?RequestFactoryInterface $requestFactory
+		?RequestFactoryInterface $requestFactory,
+		string|Dir|CacheLockingFactoryInterface $tempDir,
 	): RatingListCache
 	{
+		$cacheLockingFactory = $tempDir instanceof CacheLockingFactoryInterface
+			? $tempDir
+			: self::createCacheFactory($tempDir);
+
 		return new RatingListCache(
-			self::createCacheFactory()->create(),
+			$cacheLockingFactory->create(),
 			new SourceDownload($client ?? self::createClient(), $requestFactory ?? self::createRequestFactory(), $allowedCurrencies),
 		);
 	}
@@ -68,9 +75,9 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 	}
 
 
-	private static function createCacheFactory(): CacheLockingFactoryInterface
+	private static function createCacheFactory(string|Dir $tempDir): CacheLockingFactoryInterface
 	{
-		return new CacheLockingFactory('exchange');
+		return new CacheLockingFactory($tempDir);
 	}
 
 
