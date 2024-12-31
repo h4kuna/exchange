@@ -14,7 +14,6 @@
   "require": {
     "php": ">=8.0",
     "h4kuna/critical-cache": "^v1.0",
-    "malkusch/lock": "^2.2",
     "psr/http-client": "^1.0",
     "psr/http-factory": "^1.0",
     "psr/http-message": "^1.0 || ^2.0"
@@ -23,6 +22,7 @@
     "guzzlehttp/guzzle": "^7.5",
     "guzzlehttp/psr7": "^2.4",
     "h4kuna/dir": "^0.1.2",
+    "malkusch/lock": "^3.0",
     "mockery/mockery": "^1.6",
     "nette/caching": "^3.2",
     "nette/tester": "^2.5",
@@ -37,11 +37,12 @@
     }
   },
   "suggest": {
+    "ext-simplexml": "If you want to use h4kuna\\Exchange\\Driver\\Ecb or h4kuna\\Exchange\\Driver\\RB.",
     "guzzlehttp/guzzle": "As default implementation for PSR standards.",
     "guzzlehttp/psr7": "Minimum ^2.4 for guzzle.",
     "h4kuna/dir": "If you want to use build-in factory.",
-    "nette/caching": "If you have not own PSR-6 implementation.",
-    "ext-simplexml": "If you want to use h4kuna\\Exchange\\Driver\\Ecb or h4kuna\\Exchange\\Driver\\RB."
+    "malkusch/lock": "As default lock system.",
+    "nette/caching": "If you have not own PSR-6 implementation."
   },
   "autoload-dev": {
     "psr-4": {

@@ -21,7 +21,7 @@ $ composer require h4kuna/exchange
 ```
 Optional packages
 ```sh
-$ composer require guzzlehttp/guzzle guzzlehttp/psr7 h4kuna/dir nette/caching
+$ composer require malkusch/lock guzzlehttp/guzzle guzzlehttp/psr7 h4kuna/dir nette/caching
 ```
 
 Support PSR-6 for cache.
