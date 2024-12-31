@@ -13,9 +13,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.0
+          php-version: 8.2
           coverage: none
 
       - run: composer install --no-progress --prefer-dist
-      - run: composer phpstan -- --no-progress
+      - run: composer stan -- --no-progress
         continue-on-error: true # is only informative
