@@ -7,6 +7,7 @@ use DateTimeZone;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceData;
 use h4kuna\Exchange\Driver\Source;
+use h4kuna\Exchange\Exceptions\XmlResponseFailedException;
 use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
@@ -52,6 +53,10 @@ abstract class Day implements Source
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
 		$xml = Utils::createSimpleXMLElement($response);
+
+		if ($xml->exchangeRateList?->exchangeRates === null) {
+			throw new XmlResponseFailedException((string) $response->getStatusCode());
+		}
 
 		// add CZK
 		$czk = $xml->exchangeRateList->exchangeRates->addChild('exchangeRate');
