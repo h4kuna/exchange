@@ -62,8 +62,8 @@ class Day implements Exchange\Driver\Source
 
 		return new Exchange\Currency\Property(
 			1,
-			1 / floatval(strval($row->xpath('@rate')[0])),
-			(string) $row->xpath('@currency')[0],
+			1 / floatval(strval($row->xpath('@rate')[0])), // @phpstan-ignore offsetAccess.notFound
+			(string) $row->xpath('@currency')[0], // @phpstan-ignore offsetAccess.notFound
 		);
 	}
 

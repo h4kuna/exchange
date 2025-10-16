@@ -73,14 +73,17 @@ final class RatingListCacheTest extends TestCase
 		/** @var MockInterface&CacheLocking $cacheLocking */
 		$cacheLocking = mock(CacheLocking::class);
 		$cacheLocking->makePartial();
-		$cacheLocking->shouldReceive('get')
+		$cacheLocking // @phpstan-ignore method.nonObject
+			->shouldReceive('get')
 			->with('h4kuna.Exchange.Driver.Cnb.Day.ttl')
 			->andReturn($ratingList, $ratingList2);
 
-		$cacheLocking->shouldReceive('set')
+		$cacheLocking // @phpstan-ignore method.nonObject
+			->shouldReceive('set')
 			->with('h4kuna.Exchange.Driver.Cnb.Day.all.v7.1', $ratingList2)
 			->andReturn(true);
-		$cacheLocking->shouldReceive('set')
+		$cacheLocking // @phpstan-ignore method.nonObject
+			->shouldReceive('set')
 			->with('h4kuna.Exchange.Driver.Cnb.Day.ttl', (new \DateTime('now'))->format(\DateTime::RFC3339), 5000)
 			->andReturn(true);
 

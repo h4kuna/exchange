@@ -50,7 +50,7 @@ class Exchange implements IteratorAggregate, ArrayAccess
 	 */
 	public function change(float|int|null $price, ?string $from = null, ?string $to = null): float
 	{
-		if ($price == 0) { // intentionally 0, 0.0, null
+		if ($price === 0 || $price === 0.0 || $price === null) {
 			return .0;
 		}
 

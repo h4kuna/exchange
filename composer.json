@@ -26,9 +26,9 @@
     "mockery/mockery": "^1.6",
     "nette/caching": "^3.2",
     "nette/tester": "^2.5",
-    "phpstan/phpstan": "^1.10",
-    "phpstan/phpstan-deprecation-rules": "^1.1.3",
-    "phpstan/phpstan-strict-rules": "^1.5",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-deprecation-rules": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
     "tracy/tracy": "^2.10"
   },
   "autoload": {
@@ -55,7 +55,7 @@
   },
   "scripts": {
     "coverage": "vendor/bin/tester --coverage coverage.html --coverage-src src/ --colors 1 -s -C tests/src",
-    "qa": "composer stan && composer tests",
+    "qa": ["@stan", "@tests"],
     "stan": "vendor/bin/phpstan analyse",
     "tests": "vendor/bin/tester --colors 1 -s -C tests/src"
   }
