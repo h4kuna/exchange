@@ -53,12 +53,12 @@ final class SourceDownloadTest extends TestCase
 			),
 			'EUR' => new Property(
 				foreign: 1,
-				home: 24.8231,
+				home: 24.82309913635254,
 				code: 'EUR',
 			),
 			'USD' => new Property(
 				foreign: 1,
-				home: 22.93935,
+				home: 22.939350128173828,
 				code: 'USD',
 			),
 		];
@@ -78,12 +78,12 @@ final class SourceDownloadTest extends TestCase
 			),
 			'EUR' => new Property(
 				foreign: 1,
-				home: 25.6894262,
+				home: 25.68942642211914,
 				code: 'EUR',
 			),
 			'USD' => new Property(
 				foreign: 1,
-				home: 23.7399333,
+				home: 23.739933013916016,
 				code: 'USD',
 			),
 		];
@@ -103,12 +103,12 @@ final class SourceDownloadTest extends TestCase
 			),
 			'EUR' => new Property(
 				foreign: 1,
-				home: 23.9567738,
+				home: 23.95677375793457,
 				code: 'EUR',
 			),
 			'USD' => new Property(
 				foreign: 1,
-				home: 22.1387667,
+				home: 22.13876724243164,
 				code: 'USD',
 			),
 		];
