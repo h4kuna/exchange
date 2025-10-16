@@ -62,7 +62,7 @@ class Day implements Exchange\Driver\Source
 
 		return new Exchange\Currency\Property(
 			1,
-			floatval(strval($row->xpath('@rate')[0])),
+			1 / floatval(strval($row->xpath('@rate')[0])),
 			(string) $row->xpath('@currency')[0],
 		);
 	}
