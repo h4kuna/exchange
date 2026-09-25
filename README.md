@@ -6,6 +6,8 @@ Exchange
 [![Total Downloads](https://poser.pugx.org/h4kuna/exchange/downloads?format=flat)](https://packagist.org/packages/h4kuna/exchange)
 [![License](https://poser.pugx.org/h4kuna/exchange/license?format=flat)](https://packagist.org/packages/h4kuna/exchange)
 
+Part of the [h4kuna PHP libraries](https://github.com/h4kuna/library), see the overview of all packages.
+
 Exchange is PHP script works with currencies. You can convert price.
 
 Here is [changelog](changelog.md).
