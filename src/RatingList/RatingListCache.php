@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\RatingList;
 
@@ -10,9 +10,12 @@ use h4kuna\Exchange\Utils;
 use Nette\Utils\DateTime;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\SimpleCache\CacheInterface;
+use function sprintf;
+use const DATE_RFC3339;
 
 final class RatingListCache
 {
+
 	public int $floatTtl = Utils::CacheMinutes - DateTime::MINUTE; // 29 minutes
 
 
@@ -22,7 +25,6 @@ final class RatingListCache
 	)
 	{
 	}
-
 
 	/**
 	 * @throws ClientExceptionInterface
@@ -34,7 +36,10 @@ final class RatingListCache
 		$this->cache->load($cacheEntity->cacheKeyTtl, function (
 			Dependency $dependency,
 			CacheInterface $cache,
-		) use ($cacheEntity, &$ratingList): string {
+		) use (
+			$cacheEntity,
+			&$ratingList,
+): string {
 			[$ratingList, $ttl] = $this->buildCache($cacheEntity, $cache);
 			$dependency->ttl = $ttl;
 
@@ -52,12 +57,15 @@ final class RatingListCache
 		return $ratingList;
 	}
 
-
 	/**
 	 * @return array{RatingListInterface, ?int}
+	 *
 	 * @throws ClientExceptionInterface
 	 */
-	private function buildCache(CacheEntity $cacheEntity, CacheInterface $cache): array
+	private function buildCache(
+		CacheEntity $cacheEntity,
+		CacheInterface $cache,
+	): array
 	{
 		try {
 			$ratingList = $this->sourceDownload->execute($cacheEntity->source, $cacheEntity->date);
@@ -75,7 +83,6 @@ final class RatingListCache
 		return [$ratingList, $ttl];
 	}
 
-
 	/**
 	 * @throws ClientExceptionInterface
 	 */
@@ -89,9 +96,9 @@ final class RatingListCache
 		return $oldValue !== $value;
 	}
 
-
 	private static function toDate(RatingListInterface $ratingList): string
 	{
 		return $ratingList->getDate()->format(DATE_RFC3339);
 	}
+
 }

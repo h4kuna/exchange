@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange;
 
@@ -16,6 +16,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 
 final class ExchangeFactory implements ExchangeFactoryInterface
 {
+
 	private RatingListCache $ratingListCache;
 
 	private CacheEntity $cacheEntity;
@@ -39,7 +40,6 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 		$this->ratingListCache = $ratingListCache ?? self::createRatingListCache(Utils::transformCurrencies($allowedCurrencies), $client, $requestFactory, $tempDir);
 	}
 
-
 	/**
 	 * @param array<string, int> $allowedCurrencies
 	 */
@@ -60,7 +60,6 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 		);
 	}
 
-
 	public function create(
 		?string $from = null,
 		?string $to = null,
@@ -74,19 +73,16 @@ final class ExchangeFactory implements ExchangeFactoryInterface
 		);
 	}
 
-
 	private static function createCacheFactory(string|Dir $tempDir): CacheLockingFactoryInterface
 	{
 		return new CacheLockingFactory($tempDir);
 	}
-
 
 	private static function createClient(): ClientInterface
 	{
 		MissingDependencyException::guzzleClient();
 		return new Client();
 	}
-
 
 	private static function createRequestFactory(): RequestFactoryInterface
 	{

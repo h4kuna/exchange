@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Driver;
 
@@ -10,15 +10,13 @@ use Psr\Http\Message\ResponseInterface;
 
 interface Source
 {
-	function makeUrl(?DateTimeInterface $date): string;
 
+	public function makeUrl(?DateTimeInterface $date): string;
 
-	function getTimeZone(): DateTimeZone;
+	public function getTimeZone(): DateTimeZone;
 
+	public function createSourceData(ResponseInterface $response): SourceData;
 
-	function createSourceData(ResponseInterface $response): SourceData;
-
-
-	function createProperty(mixed $row): CurrencyInterface;
+	public function createProperty(mixed $row): CurrencyInterface;
 
 }

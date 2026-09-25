@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\RatingList;
 
@@ -19,23 +19,19 @@ interface RatingListInterface extends IteratorAggregate, ArrayAccess
 	/**
 	 * check currency if exist before use, then error undefined index
 	 */
-	function get(string $code): CurrencyInterface;
-
+	public function get(string $code): CurrencyInterface;
 
 	/**
 	 * @throws UnknownCurrencyException
 	 */
-	function getSafe(string $code): CurrencyInterface;
+	public function getSafe(string $code): CurrencyInterface;
 
+	public function getRequest(): ?DateTimeImmutable;
 
-	function getRequest(): ?DateTimeImmutable;
+	public function getDate(): DateTimeImmutable;
 
+	public function getExpire(): ?DateTime;
 
-	function getDate(): DateTimeImmutable;
-
-
-	function getExpire(): ?DateTime;
-
-	function isValid(): bool;
+	public function isValid(): bool;
 
 }

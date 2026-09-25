@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange;
 
@@ -12,6 +12,15 @@ use Nette\StaticClass;
 use Nette\Utils\DateTime as NetteDateTime;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
+use function array_flip;
+use function array_map;
+use function is_string;
+use function simplexml_load_string;
+use function sprintf;
+use function strtoupper;
+use function strtr;
+use function time;
+use function trim;
 
 final class Utils
 {
@@ -31,7 +40,6 @@ final class Utils
 		return trim(strtr($str, [',' => '.']));
 	}
 
-
 	public static function createSimpleXMLElement(ResponseInterface $response): SimpleXMLElement
 	{
 		$xml = @simplexml_load_string($response->getBody()->getContents());
@@ -43,14 +51,15 @@ final class Utils
 		return $xml;
 	}
 
-
 	public static function createTimeZone(string|DateTimeZone $timeZone): DateTimeZone
 	{
 		return is_string($timeZone) ? new DateTimeZone($timeZone) : $timeZone;
 	}
 
-
-	public static function toImmutable(?DateTimeInterface $date, DateTimeZone $timeZone): ?DateTimeImmutable
+	public static function toImmutable(
+		?DateTimeInterface $date,
+		DateTimeZone $timeZone,
+	): ?DateTimeImmutable
 	{
 		if ($date === null) {
 			return null;
@@ -68,27 +77,33 @@ final class Utils
 		return $date;
 	}
 
-
-	private static function isSameTimeOffsetTimeZone(DateTimeInterface $date, DateTimeZone $timeZone): bool
+	private static function isSameTimeOffsetTimeZone(
+		DateTimeInterface $date,
+		DateTimeZone $timeZone,
+	): bool
 	{
 		$now = new DateTimeImmutable();
 		return $date->getTimezone()->getOffset($now) === $timeZone->getOffset($now);
 	}
 
-
-	public static function isTodayAndFuture(DateTimeInterface $date, DateTimeZone $timeZone): bool
+	public static function isTodayAndFuture(
+		DateTimeInterface $date,
+		DateTimeZone $timeZone,
+	): bool
 	{
 		return $date->format(self::DateFormat) >= (self::now($timeZone))->format(self::DateFormat);
 	}
-
 
 	public static function now(DateTimeZone $timeZone): DateTimeImmutable
 	{
 		return new DateTimeImmutable('now', $timeZone);
 	}
 
-
-	public static function createFromFormat(string $format, string $value, DateTimeZone $timezone): DateTimeImmutable
+	public static function createFromFormat(
+		string $format,
+		string $value,
+		DateTimeZone $timezone,
+	): DateTimeImmutable
 	{
 		$date = DateTimeImmutable::createFromFormat($format, $value, $timezone);
 		if ($date === false) {
@@ -98,7 +113,6 @@ final class Utils
 		return $date;
 	}
 
-
 	/**
 	 * ['czk', 'eur'] => ['CZK' => 0, 'EUR' => 1]
 	 *
@@ -107,14 +121,17 @@ final class Utils
 	 */
 	public static function transformCurrencies(array $currencies): array
 	{
-		return array_flip(array_map(fn (string $v) => strtoupper($v), $currencies));
+		return array_flip(array_map(static fn (string $v) => strtoupper($v), $currencies));
 	}
-
 
 	/**
 	 * @param int $beforeExpiration // 900 seconds -> 15 minutes
 	 */
-	public static function countTTL(DateTime $dateTime, int $beforeExpiration = 900, ?int $time = null): int
+	public static function countTTL(
+		DateTime $dateTime,
+		int $beforeExpiration = 900,
+		?int $time = null,
+	): int
 	{
 		$time ??= time();
 		if (($dateTime->getTimestamp() - $beforeExpiration) <= $time) {

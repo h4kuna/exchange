@@ -1,11 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Tests;
 
 require_once __DIR__ . '/../bootstrap.php';
 
+use DateTimeImmutable;
 use h4kuna\CriticalCache\PSR16\CacheLocking;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceDownloadInterface;
@@ -18,15 +17,18 @@ use h4kuna\Exchange\RatingList\RatingListCache;
 use Mockery\MockInterface;
 use Tester\Assert;
 use Tester\TestCase;
+use TypeError;
+use function mock;
+use const E_WARNING;
 
 final class ExchangeTest extends TestCase
 {
+
 	public function testGetRatingList(): void
 	{
 		$exchange = self::createExchange();
 		Assert::same($exchange->ratingList, $exchange->getIterator());
 	}
-
 
 	public function testChange(): void
 	{
@@ -39,15 +41,14 @@ final class ExchangeTest extends TestCase
 		Assert::same(26.0, $exchange->change(1, 'EUR', 'CZK'));
 		Assert::same(50.0, $exchange->change(100, 'USD', 'EUR'));
 
-		Assert::exception(function () use ($exchange) {
-			Assert::error(fn () => $exchange->change(100, 'BBB', 'EUR'), E_WARNING);
-		}, \TypeError::class);
+		Assert::exception(static function () use ($exchange): void {
+			Assert::error(static fn () => $exchange->change(100, 'BBB', 'EUR'), E_WARNING);
+		}, TypeError::class);
 
-		Assert::exception(function () use ($exchange) {
-			Assert::error(fn () => $exchange->change(100, 'USD', ''), E_WARNING);
-		}, \TypeError::class);
+		Assert::exception(static function () use ($exchange): void {
+			Assert::error(static fn () => $exchange->change(100, 'USD', ''), E_WARNING);
+		}, TypeError::class);
 	}
-
 
 	public function testIteratorAggregate(): void
 	{
@@ -61,7 +62,6 @@ final class ExchangeTest extends TestCase
 		Assert::same(['CZK', 'EUR', 'USD'], $codes);
 	}
 
-
 	public function testArrayAccess(): void
 	{
 		$exchange = self::createExchange();
@@ -69,29 +69,28 @@ final class ExchangeTest extends TestCase
 		Assert::true(isset($exchange['EUR']));
 		Assert::false(isset($exchange['CCC']));
 
-		Assert::exception(function () use ($exchange) {
+		Assert::exception(static function () use ($exchange): void {
 			unset($exchange['EUR']);
 		}, FrozenMethodException::class);
 
-		Assert::exception(function () use ($exchange) {
+		Assert::exception(static function () use ($exchange): void {
 			$exchange['EUR'] = 'foo'; // @phpstan-ignore-line
 		}, FrozenMethodException::class);
 
-		Assert::exception(fn () => $exchange['AAA'], UnknownCurrencyException::class);
+		Assert::exception(static fn () => $exchange['AAA'], UnknownCurrencyException::class);
 
-		Assert::exception(fn () => $exchange->get('AAA'), UnknownCurrencyException::class);
+		Assert::exception(static fn () => $exchange->get('AAA'), UnknownCurrencyException::class);
 	}
-
 
 	private static function createExchange(): Exchange
 	{
-		$ratingList = new RatingList(new \DateTimeImmutable(), null, null, [
+		$ratingList = new RatingList(new DateTimeImmutable(), null, null, [
 			'CZK' => new Property(1, 1, 'CZK'),
 			'EUR' => new Property(1, 26, 'EUR'),
 			'USD' => new Property(10, 130, 'USD'),
 		]);
 
-		$ratingList2 = new RatingList(new \DateTimeImmutable(), null, null, [
+		$ratingList2 = new RatingList(new DateTimeImmutable(), null, null, [
 			'CZK' => new Property(1, 1, 'CZK'),
 			'EUR' => new Property(1, 28, 'EUR'),
 			'USD' => new Property(10, 135, 'USD'),
@@ -112,6 +111,7 @@ final class ExchangeTest extends TestCase
 
 		return new Exchange('EUR', $ratingListCache->build(new CacheEntity()));
 	}
+
 }
 
 (new ExchangeTest())->run();

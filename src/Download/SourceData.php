@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Download;
 
@@ -6,6 +6,7 @@ use DateTimeImmutable;
 
 final class SourceData
 {
+
 	/**
 	 * @param iterable<mixed> $properties
 	 */

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Driver\RB;
 
@@ -11,6 +11,12 @@ use h4kuna\Exchange\Exceptions\XmlResponseFailedException;
 use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
+use function assert;
+use function floatval;
+use function http_build_query;
+use function intval;
+use function strval;
+use const DATE_RFC3339_EXTENDED;
 
 abstract class Day implements Source
 {
@@ -28,7 +34,6 @@ abstract class Day implements Source
 		$this->timeZone = Utils::createTimeZone($timeZone);
 	}
 
-
 	public function makeUrl(?DateTimeInterface $date): string
 	{
 		$url = self::$url;
@@ -43,12 +48,10 @@ abstract class Day implements Source
 			]);
 	}
 
-
 	public function getTimeZone(): DateTimeZone
 	{
 		return $this->timeZone;
 	}
-
 
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
@@ -75,7 +78,6 @@ abstract class Day implements Source
 		return new SourceData($date, $this->refresh, $xml->exchangeRateList->exchangeRates->exchangeRate);
 	}
 
-
 	public function createProperty(mixed $row): Property
 	{
 		assert($row instanceof SimpleXMLElement);
@@ -86,7 +88,6 @@ abstract class Day implements Source
 			strval($row->currencyFrom),
 		);
 	}
-
 
 	abstract protected function rate(SimpleXMLElement $element): SimpleXMLElement;
 

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Download;
 
@@ -13,5 +13,9 @@ interface SourceDownloadInterface
 	/**
 	 * @throws ClientExceptionInterface
 	 */
-	function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingListInterface;
+	public function execute(
+		Source $sourceExchange,
+		?DateTimeInterface $date,
+	): RatingListInterface;
+
 }

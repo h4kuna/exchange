@@ -1,16 +1,23 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Driver\Ecb;
 
 use DateTimeInterface;
 use DateTimeZone;
-use h4kuna\Exchange;
+use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceData;
+use h4kuna\Exchange\Driver\Source;
+use h4kuna\Exchange\Exceptions\InvalidStateException;
+use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
+use function assert;
+use function floatval;
+use function strval;
 
-class Day implements Exchange\Driver\Source
+class Day implements Source
 {
+
 	public static string $url = 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 	private DateTimeZone $timeZone;
@@ -21,46 +28,42 @@ class Day implements Exchange\Driver\Source
 		private string $refresh = 'midnight',
 	)
 	{
-		$this->timeZone = Exchange\Utils::createTimeZone($timeZone);
+		$this->timeZone = Utils::createTimeZone($timeZone);
 	}
-
 
 	public function makeUrl(?DateTimeInterface $date): string
 	{
 		if ($date !== null) {
-			throw new Exchange\Exceptions\InvalidStateException('Ecb does not support history.');
+			throw new InvalidStateException('Ecb does not support history.');
 		}
 
 		return self::$url;
 	}
-
 
 	public function getTimeZone(): DateTimeZone
 	{
 		return $this->timeZone;
 	}
 
-
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
-		$xml = Exchange\Utils::createSimpleXMLElement($response);
+		$xml = Utils::createSimpleXMLElement($response);
 
 		// including EUR
 		$eur = $xml->Cube->Cube->addChild('Cube');
 		$eur->addAttribute('currency', 'EUR');
 		$eur->addAttribute('rate', '1');
 		assert(isset($xml->Cube->Cube) && $xml->Cube->Cube->attributes() !== null);
-		$date = Exchange\Utils::createFromFormat('!Y-m-d', (string) $xml->Cube->Cube->attributes()['time'], $this->timeZone);
+		$date = Utils::createFromFormat('!Y-m-d', (string) $xml->Cube->Cube->attributes()['time'], $this->timeZone);
 
 		return new SourceData($date, $this->refresh, $xml->Cube->Cube->Cube);
 	}
 
-
-	public function createProperty(mixed $row): Exchange\Currency\Property
+	public function createProperty(mixed $row): Property
 	{
 		assert($row instanceof SimpleXMLElement);
 
-		return new Exchange\Currency\Property(
+		return new Property(
 			1,
 			1 / floatval(strval($row->xpath('@rate')[0])), // @phpstan-ignore offsetAccess.notFound
 			(string) $row->xpath('@currency')[0], // @phpstan-ignore offsetAccess.notFound

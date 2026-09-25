@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Fixtures;
 
@@ -11,11 +11,15 @@ use h4kuna\Exchange\Utils;
 
 final class SourceListBuilder
 {
+
 	/**
 	 * @param class-string<Driver> $driver
 	 * @return array<string, Property>
 	 */
-	public static function make(string $driver, DateTimeInterface $date = null): array
+	public static function make(
+		string $driver,
+		?DateTimeInterface $date = null,
+	): array
 	{
 		$client = new HttpFactory();
 		$day = new $driver(new Client(), $client);

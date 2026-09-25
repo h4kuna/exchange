@@ -1,16 +1,23 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
 use DateTimeInterface;
 use DateTimeZone;
-use h4kuna\Exchange;
 use h4kuna\Exchange\Download\SourceData;
+use h4kuna\Exchange\Driver\Source;
 use h4kuna\Exchange\Utils;
 use Psr\Http\Message\ResponseInterface;
+use function assert;
+use function explode;
+use function floatval;
+use function http_build_query;
+use function intval;
+use function is_string;
 
-class Day implements Exchange\Driver\Source
+class Day implements Source
 {
+
 	public static string $url = 'https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.txt';
 
 	private DateTimeZone $timeZone;
@@ -24,12 +31,10 @@ class Day implements Exchange\Driver\Source
 		$this->timeZone = Utils::createTimeZone($timeZone);
 	}
 
-
 	public function getTimeZone(): DateTimeZone
 	{
 		return $this->timeZone;
 	}
-
 
 	public function makeUrl(?DateTimeInterface $date): string
 	{
@@ -44,7 +49,6 @@ class Day implements Exchange\Driver\Source
 			]);
 	}
 
-
 	public function createSourceData(ResponseInterface $response): SourceData
 	{
 		$data = $response->getBody()->getContents();
@@ -56,7 +60,6 @@ class Day implements Exchange\Driver\Source
 
 		return new SourceData($date, $this->refresh, $list);
 	}
-
 
 	public function createProperty(mixed $row): Property
 	{

@@ -1,10 +1,10 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Driver\Cnb;
 
-use h4kuna\Exchange\Currency;
+use h4kuna\Exchange\Currency\Property as CurrencyProperty;
 
-final class Property extends Currency\Property
+final class Property extends CurrencyProperty
 {
 
 	public function __construct(

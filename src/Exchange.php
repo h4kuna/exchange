@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange;
 
@@ -8,13 +8,15 @@ use h4kuna\Exchange\RatingList\RatingListInterface;
 use IteratorAggregate;
 
 /**
- * @since 2009-06-22 - version 0.5
  * @implements IteratorAggregate<string, CurrencyInterface>
  * @implements ArrayAccess<string, CurrencyInterface>
  * properties become readonly
+ *
+ * @since 2009-06-22 - version 0.5
  */
 class Exchange implements IteratorAggregate, ArrayAccess
 {
+
 	private CurrencyInterface $from;
 
 	private CurrencyInterface $to;
@@ -35,7 +37,6 @@ class Exchange implements IteratorAggregate, ArrayAccess
 			: ($to instanceof CurrencyInterface ? $to : $this->get($to));
 	}
 
-
 	/**
 	 * @throws UnknownCurrencyException
 	 */
@@ -44,11 +45,14 @@ class Exchange implements IteratorAggregate, ArrayAccess
 		return $this->ratingList->getSafe($code);
 	}
 
-
 	/**
 	 * Transfer number by exchange rate.
 	 */
-	public function change(float|int|null $price, ?string $from = null, ?string $to = null): float
+	public function change(
+		float|int|null $price,
+		?string $from = null,
+		?string $to = null,
+	): float
 	{
 		if ($price === 0 || $price === 0.0 || $price === null) {
 			return .0;
@@ -63,24 +67,20 @@ class Exchange implements IteratorAggregate, ArrayAccess
 		return (float) $price;
 	}
 
-
 	public function getFrom(?string $from = null): CurrencyInterface
 	{
 		return $from === null ? $this->from : $this->ratingList->get($from);
 	}
-
 
 	public function getTo(?string $to = null): CurrencyInterface
 	{
 		return $to === null ? $this->to : $this->ratingList->get($to);
 	}
 
-
 	public function isValid(): bool
 	{
 		return $this->ratingList->isValid();
 	}
-
 
 	/**
 	 * @return RatingListInterface<CurrencyInterface>
@@ -90,24 +90,23 @@ class Exchange implements IteratorAggregate, ArrayAccess
 		return $this->ratingList;
 	}
 
-
 	public function offsetExists(mixed $offset): bool
 	{
 		return $this->ratingList->offsetExists($offset);
 	}
-
 
 	public function offsetGet(mixed $offset): CurrencyInterface
 	{
 		return $this->get($offset);
 	}
 
-
-	public function offsetSet(mixed $offset, mixed $value): void
+	public function offsetSet(
+		mixed $offset,
+		mixed $value,
+	): void
 	{
 		$this->ratingList->offsetSet($offset, $value);
 	}
-
 
 	public function offsetUnset(mixed $offset): void
 	{

@@ -1,7 +1,12 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 use h4kuna\CriticalCache\CacheFactory;
-use h4kuna\Exchange;
+use h4kuna\DriverBuilderFactory;
+use h4kuna\Exchange\Driver\Cnb\Day as CnbDay;
+use h4kuna\ExchangeFactory;
+use h4kuna\HttpFactory;
+use Tester\Environment;
+use Tracy\Debugger;
 
 ini_set('date.timezone', 'Europe/Prague');
 
@@ -13,28 +18,28 @@ if (defined('__PHPSTAN_RUNNING__')) {
 	return;
 }
 
-function createExchangeFactory(string $driver = Exchange\Driver\Cnb\Day::class): Exchange\ExchangeFactory
+function createExchangeFactory(string $driver = CnbDay::class): ExchangeFactory
 {
-	$httpFactory = new Exchange\Fixtures\HttpFactory($driver);
-	$driverBuilderFactory = new Exchange\Driver\DriverBuilderFactory($httpFactory, $httpFactory);
+	$httpFactory = new HttpFactory($driver);
+	$driverBuilderFactory = new DriverBuilderFactory($httpFactory, $httpFactory);
 	$allowed = [
 		'CZK',
 		'USD',
 		'EUR',
 	];
 
-	return new Exchange\ExchangeFactory(
+	return new ExchangeFactory(
 		'EUR',
 		null,
 		$allowed,
 		$driverBuilderFactory,
 		new CacheFactory(TEMP_DIR . '/exchange'),
-		$driver
+		$driver,
 	);
 }
 
 
 // Tester\Helpers::purge(TEMP_DIR . '/exchange');
-Tester\Environment::setup();
+Environment::setup();
 
-Tracy\Debugger::enable(false, TEMP_DIR);
+Debugger::enable(false, TEMP_DIR);

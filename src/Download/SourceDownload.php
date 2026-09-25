@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Download;
 
@@ -13,9 +13,11 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionClass;
+use function sprintf;
 
 final class SourceDownload implements SourceDownloadInterface
 {
+
 	/**
 	 * @var array<string, SourceData>
 	 */
@@ -33,8 +35,10 @@ final class SourceDownload implements SourceDownloadInterface
 	{
 	}
 
-
-	public function execute(Source $sourceExchange, ?DateTimeInterface $date): RatingListInterface
+	public function execute(
+		Source $sourceExchange,
+		?DateTimeInterface $date,
+	): RatingListInterface
 	{
 		$date = Utils::toImmutable($date, $sourceExchange->getTimeZone());
 		$key = self::makeKey($sourceExchange, $date);
@@ -42,8 +46,8 @@ final class SourceDownload implements SourceDownloadInterface
 		$sourceData = $this->cache[$key]
 			?? $this->cache[$key] = $sourceExchange->createSourceData(
 				$this->client->sendRequest(
-					$this->createRequest($sourceExchange, $date)
-				)
+					$this->createRequest($sourceExchange, $date),
+				),
 			);
 
 		$expire = $date === null ? new DateTime($sourceData->refresh . sprintf(', +%s seconds', Utils::CacheMinutes), $sourceExchange->getTimeZone()) : null;
@@ -61,8 +65,10 @@ final class SourceDownload implements SourceDownloadInterface
 		return new RatingList($sourceData->date, $date, $expire, $properties);
 	}
 
-
-	private static function makeKey(Source $sourceExchange, ?DateTimeImmutable $date): string
+	private static function makeKey(
+		Source $sourceExchange,
+		?DateTimeImmutable $date,
+	): string
 	{
 		$rf = new ReflectionClass($sourceExchange);
 		do {
@@ -77,8 +83,10 @@ final class SourceDownload implements SourceDownloadInterface
 		return $class . '.' . $date->format(Utils::DateFormat);
 	}
 
-
-	private function createRequest(Source $sourceExchange, ?DateTimeInterface $date): RequestInterface
+	private function createRequest(
+		Source $sourceExchange,
+		?DateTimeInterface $date,
+	): RequestInterface
 	{
 		$request = $this->requestFactory->createRequest('GET', $sourceExchange->makeUrl($date));
 		$request->withHeader('X-Powered-By', 'h4kuna/exchange');

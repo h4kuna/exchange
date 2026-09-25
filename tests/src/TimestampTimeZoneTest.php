@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Tests;
 
@@ -14,6 +14,7 @@ require __DIR__ . '/../bootstrap.php';
  */
 final class TimestampTimeZoneTest extends TestCase
 {
+
 	public function testDefault(): void
 	{
 		$adak = new DateTimeZone('America/Adak');
@@ -28,6 +29,7 @@ final class TimestampTimeZoneTest extends TestCase
 
 		Assert::notSame((new DateTime('midnight', $prague))->getTimestamp(), (new DateTime('midnight', $adak))->getTimestamp());
 	}
+
 }
 
-(new TimestampTimeZoneTest)->run();
+(new TimestampTimeZoneTest())->run();
