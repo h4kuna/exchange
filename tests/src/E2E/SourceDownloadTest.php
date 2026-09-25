@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace h4kuna\Exchange\Tests\E2E;
 
@@ -13,22 +11,30 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
 use h4kuna\Exchange\Currency\Property;
 use h4kuna\Exchange\Download\SourceDownload;
-use h4kuna\Exchange\Driver;
+use h4kuna\Exchange\Driver\Cnb\Day as CnbDay;
+use h4kuna\Exchange\Driver\Cnb\Property as CnbProperty;
+use h4kuna\Exchange\Driver\Ecb\Day as EcbDay;
+use h4kuna\Exchange\Driver\RB\DayBuy;
+use h4kuna\Exchange\Driver\RB\DayCenter;
+use h4kuna\Exchange\Driver\RB\DaySell;
 use h4kuna\Exchange\Exceptions\InvalidStateException;
 use h4kuna\Exchange\Utils;
 use Tester\Assert;
 use Tester\TestCase;
+use function array_keys;
+use function assert;
 
 /**
  * @testCase
  */
 final class SourceDownloadTest extends TestCase
 {
+
 	public function testRbToday(): void
 	{
 		$source = self::createSourceDownload();
 
-		$rateList = $source->execute(new Driver\RB\DayCenter(), null);
+		$rateList = $source->execute(new DayCenter(), null);
 
 		$actual = new DateTimeImmutable('today 00:30', new DateTimeZone('Europe/Prague'));
 		Assert::same(self::format($actual), self::format($rateList->getExpire()));
@@ -36,95 +42,46 @@ final class SourceDownloadTest extends TestCase
 		Assert::same(['EUR', 'USD', 'CZK'], array_keys((array) $rateList->getIterator()));
 	}
 
-
 	public function testRbPast(): void
 	{
 		$source = self::createSourceDownload();
-		$date = self::pastDate();
+		$date = self::rbPastDate();
 
-		// center
-		$rateList = $source->execute(new Driver\RB\DayCenter(), $date);
+		$center = $source->execute(new DayCenter(), $date);
+		$sell = $source->execute(new DaySell(), $date);
+		$buy = $source->execute(new DayBuy(), $date);
 
-		$properties = [
-			'CZK' => new Property(
-				foreign: 1,
-				home: 1.0,
-				code: 'CZK',
-			),
-			'EUR' => new Property(
-				foreign: 1,
-				home: 24.82309913635254,
-				code: 'EUR',
-			),
-			'USD' => new Property(
-				foreign: 1,
-				home: 22.939350128173828,
-				code: 'USD',
-			),
-		];
+		foreach ([$center, $sell, $buy] as $rateList) {
+			Assert::null($rateList->getExpire());
+			Assert::same(self::format($date), self::format($rateList->getRequest()));
+			// saturday, the rate list is from friday or earlier when friday is a holiday
+			Assert::true($rateList->getDate() < $date);
+			Assert::true($rateList->getDate() >= $date->modify('-4 days'));
+			Assert::same(['EUR', 'USD', 'CZK'], array_keys((array) $rateList->getIterator()));
+		}
 
-		Assert::null($rateList->getExpire());
-		Assert::same(self::format($date), self::format($rateList->getRequest()));
-		Assert::same(self::format($date->modify('-1 day')), self::format($rateList->getDate()));
-		Assert::equal($properties, (array) $rateList->getIterator());
+		$centerRates = (array) $center->getIterator();
+		$sellRates = (array) $sell->getIterator();
+		$buyRates = (array) $buy->getIterator();
+		foreach (['EUR', 'USD'] as $code) {
+			$centerRate = $centerRates[$code];
+			$sellRate = $sellRates[$code];
+			$buyRate = $buyRates[$code];
+			assert($centerRate instanceof Property && $sellRate instanceof Property && $buyRate instanceof Property);
+			Assert::same(1, $centerRate->foreign);
+			Assert::same($code, $centerRate->code);
+			Assert::true($buyRate->home < $centerRate->home);
+			Assert::true($centerRate->home < $sellRate->home);
+		}
 
-		// sell
-		$rateList = $source->execute(new Driver\RB\DaySell(), $date);
-		$properties = [
-			'CZK' => new Property(
-				foreign: 1,
-				home: 1.0,
-				code: 'CZK',
-			),
-			'EUR' => new Property(
-				foreign: 1,
-				home: 25.68942642211914,
-				code: 'EUR',
-			),
-			'USD' => new Property(
-				foreign: 1,
-				home: 23.739933013916016,
-				code: 'USD',
-			),
-		];
-
-		Assert::null($rateList->getExpire());
-		Assert::same(self::format($date), self::format($rateList->getRequest()));
-		Assert::same(self::format($date->modify('-1 day')), self::format($rateList->getDate()));
-		Assert::equal($properties, (array) $rateList->getIterator());
-
-		// buy
-		$rateList = $source->execute(new Driver\RB\DayBuy(), $date);
-		$properties = [
-			'CZK' => new Property(
-				foreign: 1,
-				home: 1.0,
-				code: 'CZK',
-			),
-			'EUR' => new Property(
-				foreign: 1,
-				home: 23.95677375793457,
-				code: 'EUR',
-			),
-			'USD' => new Property(
-				foreign: 1,
-				home: 22.13876724243164,
-				code: 'USD',
-			),
-		];
-
-		Assert::null($rateList->getExpire());
-		Assert::same(self::format($date), self::format($rateList->getRequest()));
-		Assert::same(self::format($date->modify('-1 day')), self::format($rateList->getDate()));
-		Assert::equal($properties, (array) $rateList->getIterator());
+		Assert::equal(new Property(foreign: 1, home: 1.0, code: 'CZK'), $centerRates['CZK']);
 	}
-
 
 	public function testCnbToday(): void
 	{
 		$source = self::createSourceDownload([]);
 
-		$rateList = $source->execute(new Driver\Cnb\Day(), null);
+		$rateList = $source->execute(new CnbDay(), null);
 
 		$actual = new DateTimeImmutable('today 15:00', new DateTimeZone('Europe/Prague'));
 		Assert::same(self::format($actual), self::format($rateList->getExpire()));
@@ -133,7 +90,6 @@ final class SourceDownloadTest extends TestCase
 			'CZK',
 			'AUD',
 			'BRL',
-			'BGN',
 			'CNY',
 			'DKK',
 			'EUR',
@@ -165,30 +121,29 @@ final class SourceDownloadTest extends TestCase
 		], array_keys((array) $rateList->getIterator()));
 	}
 
-
 	public function testCnbPast(): void
 	{
 		$source = self::createSourceDownload();
 		$request = self::pastDate();
 
-		$rateList = $source->execute(new Driver\Cnb\Day(), $request);
+		$rateList = $source->execute(new CnbDay(), $request);
 
 		$properties = [
-			'CZK' => new Driver\Cnb\Property(
+			'CZK' => new CnbProperty(
 				foreign: 1,
 				home: 1.0,
 				code: 'CZK',
 				country: 'Česká Republika',
 				name: 'koruna',
 			),
-			'EUR' => new Driver\Cnb\Property(
+			'EUR' => new CnbProperty(
 				foreign: 1,
 				home: 24.875,
 				code: 'EUR',
 				country: 'EMU',
 				name: 'euro',
 			),
-			'USD' => new Driver\Cnb\Property(
+			'USD' => new CnbProperty(
 				foreign: 1,
 				home: 22.853,
 				code: 'USD',
@@ -203,12 +158,11 @@ final class SourceDownloadTest extends TestCase
 		Assert::equal($properties, (array) $rateList->getIterator());
 	}
 
-
 	public function testEcbToday(): void
 	{
 		$source = self::createSourceDownload();
 
-		$rateList = $source->execute(new Driver\Ecb\Day(), null);
+		$rateList = $source->execute(new EcbDay(), null);
 
 		$actual = new DateTimeImmutable('today 00:30', new DateTimeZone('Europe/Berlin'));
 		Assert::same(self::format($actual), self::format($rateList->getExpire()));
@@ -216,28 +170,32 @@ final class SourceDownloadTest extends TestCase
 		Assert::same(['USD', 'CZK', 'EUR'], array_keys((array) $rateList->getIterator()));
 	}
 
-
 	public function testEcbPast(): void
 	{
-		Assert::exception(function () {
+		Assert::exception(static function (): void {
 			$source = self::createSourceDownload();
 
-			$source->execute(new Driver\Ecb\Day(), self::pastDate());
+			$source->execute(new EcbDay(), self::pastDate());
 		}, InvalidStateException::class, 'Ecb does not support history.');
 	}
-
 
 	private static function format(?DateTimeInterface $dateTime): string
 	{
 		return $dateTime === null ? '' : $dateTime->format(DateTimeInterface::RFC3339);
 	}
 
-
 	private static function pastDate(): DateTimeImmutable
 	{
 		return new DateTimeImmutable('2024-02-03', new DateTimeZone('Europe/Prague'));
 	}
 
+	/**
+	 * RB keeps history only about two years back, use a saturday in the last month.
+	 */
+	private static function rbPastDate(): DateTimeImmutable
+	{
+		return new DateTimeImmutable('last saturday -2 weeks', new DateTimeZone('Europe/Prague'));
+	}
 
 	/**
 	 * @param array<string>|null $allowedCurrencies
@@ -250,6 +208,7 @@ final class SourceDownloadTest extends TestCase
 			'USD',
 		]));
 	}
+
 }
 
 (new SourceDownloadTest())->run();
